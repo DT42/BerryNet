@@ -12,7 +12,7 @@ One of the application of this intelligent gateway is to use the camera to monit
 
 ![Figure 3](https://cloud.githubusercontent.com/assets/292790/25498294/0ab79976-2bba-11e7-9114-46e328d15a18.gif)
 
-## About AI Engine
+# AI Engines
 
 The current supported AI Engines leverage work from the following projects:
 
