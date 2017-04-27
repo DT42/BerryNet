@@ -1,0 +1,103 @@
+diff --git a/www/freeboard/css/freeboard.css b/www/freeboard/css/freeboard.css
+index 9537101..acdb5ea 100644
+--- a/www/freeboard/css/freeboard.css
++++ b/www/freeboard/css/freeboard.css
+@@ -1154,7 +1154,7 @@ header h1 {
+ }
+ 
+ #admin-bar {
+-	background-color: #313131;
++	background-color: #f6f6f6;
+ 	width: 100%;
+ 	height: 200px;
+ 	position: relative;
+@@ -1298,7 +1298,23 @@ header h1 {
+ }
+ 
+ #admin-menu h1 {
++        color: #130f6c;
++}
+ 
++#admin-menu h2 {
++        color: #130f6c;
++}
++
++#admin-menu .board-toolbar li {
++        color: #209de2;
++}
++
++#admin-menu .text-button {
++        color: #209de2;
++}
++
++#admin-menu .table td {
++        color: #464646;
+ }
+ 
+ .section-title {
+@@ -2104,7 +2120,7 @@ td.form-table-value > input[type="checkbox"] {
+ ul.board-toolbar {
+ 	padding: 0px;
+ 	margin: 0px;
+-	text-transform: uppercase;
++	/*text-transform: uppercase;*/
+ 	font-size: 11px;
+ }
+ 
+diff --git a/www/freeboard/index.html b/www/freeboard/index.html
+index 7c10bf8..11ad1de 100755
+--- a/www/freeboard/index.html
++++ b/www/freeboard/index.html
+@@ -7,7 +7,7 @@
+     <meta name="apple-mobile-web-app-capable" content="yes" />
+     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+     <meta name="viewport" content = "width = device-width, initial-scale = 1, user-scalable = no" />
+-    <link href="css/freeboard.min.css" rel="stylesheet" />
++    <link href="css/freeboard.css" rel="stylesheet" />
+     <script src="js/freeboard.thirdparty.min.js"></script>
+     <script type="text/javascript">
+         // head.js("js/freeboard_plugins.min.js",
+@@ -44,21 +44,25 @@
+     <div id="admin-bar">
+         <div id="admin-menu">
+             <div id="board-tools">
+-                <h1 id="board-logo" class="title bordered">freeboard</h1>
++                <div>
++                    <img src="img/iii-logo-long.png" width="80%" height="80%">
++                    <!--<h1 class="title">Institute for Information Industry</h1>-->
++                </div>
++                <!--<h1 id="board-logo" class="title bordered">freeboard</h1>-->
+                 <div id="board-actions">
+                     <ul class="board-toolbar vertical">
+-                        <li data-bind="click: loadDashboardFromLocalFile"><i id="full-screen-icon" class="icon-folder-open icon-white"></i><label id="full-screen">Load Freeboard</label></li>
+-                        <li><i class="icon-download-alt icon-white"></i>
+-                            <label data-bind="click: saveDashboardClicked">Save Freeboard</label>
++                        <li data-bind="click: loadDashboardFromLocalFile"><i id="full-screen-icon" class="icon-folder-open"></i><label id="full-screen">Load Dashboard</label></li>
++                        <li><i class="icon-download-alt"></i>
++                            <label data-bind="click: saveDashboardClicked">Save Dashboard</label>
+                             <label style="display: none;" data-bind="click: saveDashboard" data-pretty="true">[Pretty]</label>
+                             <label style="display: none;" data-bind="click: saveDashboard" data-pretty="false">[Minified]</label>
+                         </li>
+-                        <li id="add-pane" data-bind="click: createPane"><i class="icon-plus icon-white"></i><label>Add Pane</label></li>
++                        <li id="add-pane" data-bind="click: createPane"><i class="icon-plus"></i><label>Add Pane</label></li>
+                     </ul>
+                 </div>
+             </div>
+             <div id="datasources">
+-                <h2 class="title">DATASOURCES</h2>
++                <h2 class="title">Data Sources</h2>
+ 
+                 <div class="datasource-list-container">
+                     <table class="table table-condensed sub-table" id="datasources-list" data-bind="if: datasources().length">
+@@ -77,9 +81,9 @@
+                             <td data-bind="text: last_updated"></td>
+                             <td>
+                                 <ul class="board-toolbar">
+-                                    <li data-bind="click: updateNow"><i class="icon-refresh icon-white"></i></li>
++                                    <li data-bind="click: updateNow"><i class="icon-refresh"></i></li>
+                                     <li data-bind="pluginEditor: {operation: 'delete', type: 'datasource'}">
+-                                        <i class="icon-trash icon-white"></i></li>
++                                        <i class="icon-trash"></i></li>
+                                 </ul>
+                             </td>
+                         </tr>

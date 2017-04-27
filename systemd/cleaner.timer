@@ -1,0 +1,9 @@
+[Unit]
+Description=Timer to clean snapshots every 5 min.
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=5min
+
+[Install]
+WantedBy=timers.target

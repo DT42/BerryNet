@@ -1,0 +1,15 @@
+[Unit]
+Description=MQTT client agent for classifier or detector
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/usr/local/rpi3-ai-gateway/inference
+PIDFile=/tmp/agent.pid
+ExecStart=/usr/bin/node agent.js
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+WantedBy=graphical.target

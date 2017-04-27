@@ -1,0 +1,146 @@
+#!/bin/bash
+#
+# Copyright 2017 DT42
+# 
+# This file is part of BerryNet.
+# 
+# BerryNet is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# BerryNet is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with BerryNet.  If not, see <http://www.gnu.org/licenses/>.
+
+# One-click IoT gateway deployment script.
+
+install_system_dependencies() {
+    sudo apt-get update
+    sudo apt-get install -y python-dev python-opencv mongodb libkrb5-dev libzmq3-dev libyaml-dev imagemagick
+    sudo service mongodb start
+    sudo -H pip install watchdog cython
+}
+
+install_optional_dependencies() {
+    sudo apt-get install -y mosquitto-clients
+}
+
+install_tensorflow() {
+    TENSORFLOW_VERSION="1.0.1"
+    TENSORFLOW_PKGNAME="tensorflow-${TENSORFLOW_VERSION}-cp27-none-linux_armv7l.whl"
+    if [ ! -e "$TENSORFLOW_PKGNAME" ]; then
+        wget https://github.com/samjabrahams/tensorflow-on-raspberry-pi/releases/download/v${TENSORFLOW_VERSION}/$TENSORFLOW_PKGNAME
+    else
+        echo "$TENSORFLOW_PKGNAME has existed, skip to download it."
+    fi
+    sudo -H pip install $TENSORFLOW_PKGNAME
+}
+
+install_darkflow() {
+    pushd inference
+    git clone https://github.com/thtrieu/darkflow.git
+
+    # build cython-implemented library
+    pushd darkflow > /dev/null
+    python setup.py build_ext --inplace
+    # add color index in the inference result for drawing bounding boxes
+    patch -p 1 < ../../patch/darkflow/darkflow-app-example.patch
+    cp ../detection_server.py .
+    # install darkflow system-wide
+    sudo pip install .
+
+    popd > /dev/null
+    popd > /dev/null
+}
+
+download_classifier_model() {
+    # Inception v3 is default classifier model
+    INCEPTION_PKGNAME=inception_dec_2015.zip
+    pushd inference > /dev/null
+    mkdir -p image
+    if [ ! -e model ]; then
+        mkdir model
+        pushd model > /dev/null
+        wget https://storage.googleapis.com/download.tensorflow.org/models/$INCEPTION_PKGNAME
+        unzip $INCEPTION_PKGNAME
+        mv imagenet_comp_graph_label_strings.txt output_labels.txt
+        mv tensorflow_inception_graph.pb output_graph.pb
+        popd
+    fi
+    popd > /dev/null
+}
+
+download_detector_model() {
+    pushd inference/darkflow > /dev/null
+    mkdir bin
+    wget -O bin/tiny-yolo.weights http://pjreddie.com/media/files/tiny-yolo.weights
+    wget -O cfg/tiny-yolo.cfg https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/tiny-yolo.cfg
+}
+
+install_nodejs() {
+    # v6.x is LTS, if you want the latest feature, change to "setup_7.x".
+    curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
+    sudo apt-get install -y nodejs
+}
+
+install_nodejs_legacy() {
+    # FIXME: Use bash as default ambiguously.
+    # Raspbian is 32-bit, so we download armv7l instead of arm64.
+    NODEJS_VERSION="v6.10.2"
+    NODEJS_OS="linux"
+    NODEJS_ARCH="armv7l"
+    #NODEJS_ARCH="x64"
+    NODEJS_PKGNAME="node-$NODEJS_VERSION-$NODEJS_OS-$NODEJS_ARCH"
+    if [ ! -e "$NODEJS_PKGNAME" ]; then
+        if [ ! -e "$PWD/$NODEJS_PKGNAME.tar.xz" ]; then
+            wget https://nodejs.org/dist/$NODEJS_VERSION/$NODEJS_PKGNAME.tar.xz
+        fi
+        tar xJf $NODEJS_PKGNAME.tar.xz
+        echo "export PATH=$PWD/$NODEJS_PKGNAME/bin:\$PATH" >> $HOME/.bashrc
+    fi
+    export PATH=$PWD/$NODEJS_PKGNAME/bin:$PATH
+}
+
+install_dashboard() {
+    if [ ! -e "dashboard" ]; then
+        git clone https://github.com/v-i-s-h/PiIoT-dashboard.git dashboard
+        pushd dashboard > /dev/null
+        patch -p 1 < ../patch/ui-dt42-theme.patch
+        cp ../patch/www/freeboard/img/dt42-logo.png www/freeboard/img
+        cp ../patch/www/freeboard/css/dt42.css www/freeboard/css
+        cp ../config/dashboard.json www/freeboard/
+        popd > /dev/null
+    fi
+}
+
+install_systemd_configs() {
+    sudo cp systemd/* /etc/systemd/system
+}
+
+install_gateway() {
+    local working_dir="/usr/local/rpi3-ai-gateway"
+    sudo mkdir -p $working_dir
+    sudo cp -a broker.js camera.js cleaner.sh config.js dashboard inference journal.js localimg.js mail.js package.json $working_dir
+    # install npm dependencies
+    pushd $working_dir > /dev/null
+    sudo npm install
+    popd > /dev/null
+}
+
+install_system_dependencies
+install_optional_dependencies
+install_tensorflow
+download_classifier_model
+install_darkflow
+download_detector_model
+install_nodejs
+install_dashboard
+install_systemd_configs
+install_gateway
+
+echo "Installation is completed successfully!"

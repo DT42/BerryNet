@@ -1,0 +1,23 @@
+/* DT42 Style Guideline v1.0
+ *
+ * Primary color palette
+ *
+ *     deep red:    #8c3837
+ *     pink red:    #c55754
+ *     white:       #ffffff
+ *
+ * Secondary color palette
+ *
+ *     deep blue:   #19242c
+ *     blue:        #23435e
+ *     light blue:  #aaaaaa
+ *     light white: #fafae5
+ */
+
+#admin-bar {
+        background-color: #fafae5;
+}
+
+#datasources h2 {
+        color: #8c3938;
+}

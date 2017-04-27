@@ -1,0 +1,15 @@
+[Unit]
+Description=MQTT broker
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/usr/local/rpi3-ai-gateway
+PIDFile=/tmp/broker.pid
+ExecStart=/usr/bin/node broker.js
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+WantedBy=graphical.target
