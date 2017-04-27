@@ -12,6 +12,16 @@ One of the application of this intelligent gateway is to use the camera to monit
 
 ![Figure 3](https://cloud.githubusercontent.com/assets/292790/25498294/0ab79976-2bba-11e7-9114-46e328d15a18.gif)
 
+## About AI Engine
+
+The current supported AI Engines leverage work from the following projects:
+
+* [TensorFlow](https://www.tensorflow.org/)
+* [Darkflow](https://github.com/thtrieu/darkflow)
+* [Darknet](https://pjreddie.com/darknet/)
+
+The current supported classification model is Inception v3 [[1]](https://arxiv.org/pdf/1512.00567.pdf) and the detection model is TinyYOLO [[2]](https://pjreddie.com/media/files/papers/YOLO9000.pdf)
+
 
 # Installation
 
@@ -19,6 +29,14 @@ One of the application of this intelligent gateway is to use the camera to monit
 $ git clone https://github.com/DT42/BerryNet.git
 $ cd BerryNet
 $ ./configure
+```
+
+# Start and Stop BerryNet
+
+BerryNet is managed by [systemd](https://freedesktop.org/wiki/Software/systemd/). You can manage BerryNet via `berry-manager`:
+
+```
+$ berrynet-manager [start | stop | status | log]
 ```
 
 # Configuration
