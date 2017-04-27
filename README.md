@@ -2,15 +2,15 @@
 
 This project turns Raspberry Pi 3 into an intelligent gateway with deep learning running on it. No internet connection is required, everything is done locally on the Raspberry Pi 3 itself. At DT42, we believe that bringing deep learning to edge devices is the trend towards the future. It not only saves costs of data transmission and storage but also makes devices able to respond according to the events shown in the images or videos without connecting to the cloud.
 
-![Figure 1]()
+![Figure 1](https://cloud.githubusercontent.com/assets/292790/25498295/0ab85618-2bba-11e7-90f3-45a792c79b3d.jpg)
 
 Figure 1 shows the software architecture of the project, we use Node.js, MQTT and an AI engine to analyze images or video frames with deep learning. So far, there are two supported AI engines, the classification engine and the object detection engine. Figure 2 shows the differences between classification and object detection.
 
-![Figure 2]()
+![Figure 2](https://cloud.githubusercontent.com/assets/292790/25498296/0abcc752-2bba-11e7-93cf-0450fe5d7eff.png)
 
 One of the application of this intelligent gateway is to use the camera to monitor the place you care about. For example, Figure 3 shows the analyzed results from the camera hosted in the DT42 office. The frames were captured by the IP camera and they were submitted into the AI engine. The output from the AI engine will be shown in the dashboard. We are working on the Email and IM notification so you can get a notification when there is a dog coming into the meeting area with the next release.
 
-![Figure 3]()
+![Figure 3](https://cloud.githubusercontent.com/assets/292790/25498294/0ab79976-2bba-11e7-9114-46e328d15a18.gif)
 
 
 # Installation
