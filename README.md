@@ -6,7 +6,7 @@ This project turns Raspberry Pi 3 into an intelligent gateway with deep learning
 
 Figure 1 shows the software architecture of the project, we use Node.js, MQTT and an AI engine to analyze images or video frames with deep learning. So far, there are two supported AI engines, the classification engine and the object detection engine. Figure 2 shows the differences between classification and object detection.
 
-![Figure 2](https://cloud.githubusercontent.com/assets/292790/25498296/0abcc752-2bba-11e7-93cf-0450fe5d7eff.png)
+![Figure 2](https://cloud.githubusercontent.com/assets/292790/25520013/d9497738-2c2c-11e7-9693-3840647f2e1e.jpg)
 
 One of the application of this intelligent gateway is to use the camera to monitor the place you care about. For example, Figure 3 shows the analyzed results from the camera hosted in the DT42 office. The frames were captured by the IP camera and they were submitted into the AI engine. The output from the AI engine will be shown in the dashboard. We are working on the Email and IM notification so you can get a notification when there is a dog coming into the meeting area with the next release.
 
