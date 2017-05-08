@@ -15,5 +15,9 @@
     "pino": "^2.13.0",
     "prompt": "^1.0.0",
     "request": "^2.79.0"
+  },
+  "devDependencies": {
+    "eslint": "^3.19.0",
+    "eslint-config-google": "^0.7.1"
   }
 }
