@@ -7,8 +7,6 @@ Type=simple
 WorkingDirectory=/usr/local/berrynet
 PIDFile=/tmp/cleaner.pid
 ExecStart=/bin/bash cleaner.sh
-Restart=always
-RestartSec=10
 
 [Install]
 WantedBy=multi-user.target
