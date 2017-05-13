@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 Type=simple
-WorkingDirectory=/usr/local/rpi3-ai-gateway
+WorkingDirectory=/usr/local/berrynet
 PIDFile=/tmp/camera.pid
 ExecStart=/usr/bin/node camera.js
 Restart=always

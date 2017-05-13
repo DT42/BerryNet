@@ -17,8 +17,9 @@ One of the application of this intelligent gateway is to use the camera to monit
 The current supported AI Engines leverage work from the following projects:
 
 * [TensorFlow](https://www.tensorflow.org/)
-* [Darkflow](https://github.com/thtrieu/darkflow)
+* [TensorFlow on RPi3](https://github.com/samjabrahams/tensorflow-on-raspberry-pi) (Sam is looking for donation)
 * [Darknet](https://pjreddie.com/darknet/)
+* [Darkflow](https://github.com/thtrieu/darkflow)
 
 The current supported classification model is Inception v3 [[1]](https://arxiv.org/pdf/1512.00567.pdf) and the detection model is TinyYOLO [[2]](https://pjreddie.com/media/files/papers/YOLO9000.pdf)
 
@@ -33,7 +34,7 @@ $ ./configure
 
 # Start and Stop BerryNet
 
-BerryNet is managed by [systemd](https://freedesktop.org/wiki/Software/systemd/). You can manage BerryNet via `berry-manager`:
+BerryNet is managed by [systemd](https://freedesktop.org/wiki/Software/systemd/). You can manage BerryNet via `berrynet-manager`:
 
 ```
 $ berrynet-manager [start | stop | status | log]

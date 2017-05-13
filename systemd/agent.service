@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 Type=simple
-WorkingDirectory=/usr/local/rpi3-ai-gateway/inference
+WorkingDirectory=/usr/local/berrynet/inference
 PIDFile=/tmp/agent.pid
 ExecStart=/usr/bin/node agent.js
 Restart=always

@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 Type=simple
-WorkingDirectory=/usr/local/rpi3-ai-gateway/dashboard
+WorkingDirectory=/usr/local/berrynet/dashboard
 PIDFile=/tmp/server.pid
 ExecStart=/usr/bin/node server.js
 Restart=always

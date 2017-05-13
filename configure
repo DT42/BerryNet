@@ -19,6 +19,8 @@
 
 # One-click IoT gateway deployment script.
 
+LOG="/tmp/berrynet.log"
+
 install_system_dependencies() {
     sudo apt-get update
     sudo apt-get install -y python-dev python-opencv mongodb libkrb5-dev libzmq3-dev libyaml-dev imagemagick
@@ -70,7 +72,7 @@ download_classifier_model() {
         unzip $INCEPTION_PKGNAME
         mv imagenet_comp_graph_label_strings.txt output_labels.txt
         mv tensorflow_inception_graph.pb output_graph.pb
-        popd
+        popd > /dev/null
     fi
     popd > /dev/null
 }
@@ -80,6 +82,7 @@ download_detector_model() {
     mkdir bin
     wget -O bin/tiny-yolo.weights http://pjreddie.com/media/files/tiny-yolo.weights
     wget -O cfg/tiny-yolo.cfg https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/tiny-yolo.cfg
+    popd > /dev/null
 }
 
 install_nodejs() {
@@ -123,24 +126,25 @@ install_systemd_configs() {
 }
 
 install_gateway() {
-    local working_dir="/usr/local/rpi3-ai-gateway"
+    local working_dir="/usr/local/berrynet"
     sudo mkdir -p $working_dir
     sudo cp -a broker.js camera.js cleaner.sh config.js dashboard inference journal.js localimg.js mail.js package.json $working_dir
+    sudo cp berrynet-manager /usr/loca/bin
     # install npm dependencies
     pushd $working_dir > /dev/null
     sudo npm install
     popd > /dev/null
 }
 
-install_system_dependencies
-install_optional_dependencies
-install_tensorflow
-download_classifier_model
-install_darkflow
-download_detector_model
-install_nodejs
-install_dashboard
-install_systemd_configs
-install_gateway
+install_system_dependencies 2>&1 | tee -a $LOG
+install_optional_dependencies 2>&1 | tee -a $LOG
+install_tensorflow 2>&1 | tee -a $LOG
+download_classifier_model 2>&1 | tee -a $LOG
+install_darkflow 2>&1 | tee -a $LOG
+download_detector_model 2>&1 | tee -a $LOG
+install_nodejs 2>&1 | tee -a $LOG
+install_dashboard 2>&1 | tee -a $LOG
+install_systemd_configs 2>&1 | tee -a $LOG
+install_gateway 2>&1 | tee -a $LOG
 
-echo "Installation is completed successfully!"
+echo "Installation is completed successfully!" | tee -a $LOG
