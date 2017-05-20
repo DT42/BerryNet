@@ -49,6 +49,9 @@ All the configurations are in `config.js`.
   * Two types of AI engines currently: object classifier and object detector.
 
 * Configure IP camera's snapshot access interface.
+
+  * The [camera connection database](https://www.ispyconnect.com/sources.aspx) can generate snapshot access URL if your IP camera is supported.
+
 * MQTT topics.
 
 
