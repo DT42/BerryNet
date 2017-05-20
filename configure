@@ -1,19 +1,19 @@
 #!/bin/bash
 #
 # Copyright 2017 DT42
-# 
+#
 # This file is part of BerryNet.
-# 
+#
 # BerryNet is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # BerryNet is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with BerryNet.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -44,11 +44,11 @@ install_tensorflow() {
 }
 
 install_darkflow() {
-    pushd inference
-    git clone https://github.com/thtrieu/darkflow.git
+    git submodule init
+    git submodule update
 
     # build cython-implemented library
-    pushd darkflow > /dev/null
+    pushd inference/darkflow > /dev/null
     python setup.py build_ext --inplace
     # add color index in the inference result for drawing bounding boxes
     patch -p 1 < ../../patch/darkflow/darkflow-app-example.patch
@@ -56,7 +56,6 @@ install_darkflow() {
     # install darkflow system-wide
     sudo pip install .
 
-    popd > /dev/null
     popd > /dev/null
 }
 
