@@ -59,7 +59,7 @@ client.on('message', (t, m) => {
         log('camera client: cannot get image.');
       } else {
         log('camera client: publishing image.');
-        client.publish(topicNotifyLINE, data);
+        // client.publish(topicNotifyLINE, data);
         client.publish(topicActionInference, data);
       }
     });

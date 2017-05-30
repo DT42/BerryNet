@@ -17,9 +17,6 @@
 
 'use strict';
 
-const fs = require('fs');
-const path = require('path');
-const moment = require('moment');
 const mqtt = require('mqtt');
 const line = require('@line/bot-sdk');
 const imgur = require('imgur');
@@ -29,6 +26,7 @@ const broker = config.brokerHost;
 const client = mqtt.connect(broker);
 const topicActionLog = config.topicActionLog;
 const topicNotifyLINE = config.topicNotifyLINE;
+const topicDashboardInferenceResult = config.topicDashboardInferenceResult;
 const targetUserID = config.LINETargetUserID;
 
 // create LINE SDK config
@@ -45,50 +43,42 @@ function log(m) {
   console.log(m);
 }
 
-function saveBufferToImage(b, filepath) {
-  fs.writeFile(filepath, b, (e) => {
-    if (e)
-      log(`LINE client: cannot save buffer to image.`);
-    else
-      log(`LINE client: saved buffer to image ${filepath} successfully.`);
-  });
-}
-
 client.on('connect', () => {
   client.subscribe(topicNotifyLINE);
-  log(`LINE client: connected to ${broker} successfully.`);
+  client.subscribe(topicDashboardInferenceResult);
+  log(`client connected to ${broker} successfully.`);
 });
 
 client.on('message', (t, m) => {
   const size = m.length;
-  log(`LINE client: on topic ${t}, received ${size} bytes.`)
+  log(`client on topic ${t}, received ${size} bytes.`)
+
+  if (t === topicDashboardInferenceResult) {
+    const result = m.toString();
+    LINEClient.pushMessage(targetUserID, { type: 'text', text: result });
+    return;
+  }
 
   // save image to file and upload it to imgur for display in LINE message
-  const now = moment().format('YYYYMMDD-HHmmss');
-  const snapshot = `snapshot-${now}.jpg`
-  const snapshot_path = path.join('/tmp', snapshot)
-  saveBufferToImage(m, snapshot_path);
+  const snapshot_path = m.toString();
   imgur.uploadFile(snapshot_path)
     .then((json) => {
-      var imgur_link = json.data.link;
-      imgur_link = imgur_link.replace('http:\/\/', 'https:\/\/');
-      log(`LINE client: An image has been uploaded to imgur. link: ${imgur_link}`);
+      var imgurLink = json.data.link;
+      imgurLink = imgurLink.replace('http:\/\/', 'https:\/\/');
+      log(`An image has been uploaded to imgur. link: ${imgurLink}`);
 
       // Image can only be delivered via 'https://' URL, 'http://' doesn't work 
-      LINEClient.pushMessage(targetUserID, [{ type: 'text', 
-                                              text: now },
-                                            { type: 'image', 
-                                              originalContentUrl: imgur_link,
-                                              previewImageUrl: imgur_link }
-                                           ])
+      LINEClient.pushMessage(targetUserID, { type: 'image', 
+                                             originalContentUrl: imgurLink,
+                                             previewImageUrl: imgurLink })
         .then((v) => {
-          log(`LINE client: message sent to ${targetUserID} successfully.`);
+          log(`A message sent to ${targetUserID} successfully.`);
         })
         .catch((err) => {
-          log(`LINE client: an error occurred, ${err}.`);
+          log(`An error occurred, ${err}.`);
         });
     })
     .catch((err) => {
-      log(`LINE client: an error occurred. ${err}`);
+      log(`An error occurred. ${err}`);
     });
 });

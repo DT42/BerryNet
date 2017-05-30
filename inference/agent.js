@@ -30,6 +30,7 @@ const topicActionLog = config.topicActionLog;
 const topicActionInference = config.topicActionInference;
 const topicDashboardSnapshot = config.topicDashboardSnapshot;
 const topicDashboardInferenceResult = config.topicDashboardInferenceResult;
+const topicNotifyLINE = config.topicNotifyLINE;
 const inferenceEngine = config.inferenceEngine;
 
 function log(m) {
@@ -107,6 +108,7 @@ client.on('message', (t, m) => {
             console.log('Unknown owner ' + inferenceEngine);
           }
 
+          client.publish(topicNotifyLINE, dashboard_image_path);
           client.publish(topicDashboardInferenceResult, result.toString().replace(/(\n)+/g, '<br />'))
         })
       } else {
