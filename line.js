@@ -15,11 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with BerryNet.  If not, see <http://www.gnu.org/licenses/>.
 
-// Usage:
-// ./mail.js <sender account> <sender password> <recipient mail address>
-// This app assumes the user uses gmail.
-// You may need to configure "Allow Less Secure Apps" in your Gmail account.
-
 'use strict';
 
 const fs = require('fs');
@@ -34,7 +29,7 @@ const broker = config.brokerHost;
 const client = mqtt.connect(broker);
 const topicActionLog = config.topicActionLog;
 const topicNotifyLINE = config.topicNotifyLINE;
-const channelID = config.LINEChannelID;
+const targetUserID = config.LINETargetUserID;
 
 // create LINE SDK config
 const LINEConfig = {
@@ -80,14 +75,14 @@ client.on('message', (t, m) => {
       log(`LINE client: An image has been uploaded to imgur. link: ${imgur_link}`);
 
       // Image can only be delivered via 'https://' URL, 'http://' doesn't work 
-      LINEClient.pushMessage(channelID, [{ type: 'text', 
-                                           text: now },
-                                         { type: 'image', 
-                                           originalContentUrl: imgur_link,
-                                           previewImageUrl: imgur_link }
-                                        ])
+      LINEClient.pushMessage(targetUserID, [{ type: 'text', 
+                                              text: now },
+                                            { type: 'image', 
+                                              originalContentUrl: imgur_link,
+                                              previewImageUrl: imgur_link }
+                                           ])
         .then((v) => {
-          log(`LINE client: message sent to ${channelID} successfully.`);
+          log(`LINE client: message sent to ${targetUserID} successfully.`);
         })
         .catch((err) => {
           log(`LINE client: an error occurred, ${err}.`);

@@ -60,7 +60,7 @@ config.sender_password = config.senderPassword;
 config.receiver_email = config.receiverEmail;
 
 // Authentication and channel information for LINE
-config.LINEChannelID = 'LINE_CHANNEL_ID';
+config.LINETargetUserID = 'LINE_TARGET_USER_ID';
 config.LINEChannelSecret = 'LINE_CHANNEL_SECRET';
 config.LINEChannelAccessToken = 'LINE_CHANNEL_ACCESS_TOKEN';
 
