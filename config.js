@@ -41,6 +41,7 @@ config.topicEventCamera = padTopicBase('event/camera');
 config.topicEventLocalImage = padTopicBase('event/localImage');
 config.topicNotifyEmail = padTopicBase('notify/email');
 config.topicNotifySMS = padTopicBase('notify/sms');
+config.topicNotifyLINE = padTopicBase('notify/line');
 config.topicDashboardLog = padTopicBase('dashboard/log');
 config.topicDashboardSnapshot = padTopicBase('dashboard/snapshot');
 config.topicDashboardInferenceResult = padTopicBase('dashboard/inferenceResult');
@@ -57,6 +58,11 @@ config.receiverEmail = 'RECEIVER_EMAIL';
 config.sender_email = config.senderEmail;
 config.sender_password = config.senderPassword;
 config.receiver_email = config.receiverEmail;
+
+// Authentication and channel information for LINE
+config.LINEChannelID = 'LINE_CHANNEL_ID';
+config.LINEChannelSecret = 'LINE_CHANNEL_SECRET';
+config.LINEChannelAccessToken = 'LINE_CHANNEL_ACCESS_TOKEN';
 
 // make config importable
 module.exports = config;

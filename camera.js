@@ -28,6 +28,7 @@ const client = mqtt.connect(broker);
 const topicActionLog = config.topicActionLog;
 const topicActionInference = config.topicActionInference;
 const topicEventCamera = config.topicEventCamera;
+const topicNotifyLINE = config.topicNotifyLINE;
 const cameraURI = config.ipcameraSnapshot;
 const snapshotFile = '/tmp/snapshot.jpg';
 const cameraCmd = '/usr/bin/raspistill';
@@ -58,6 +59,7 @@ client.on('message', (t, m) => {
         log('camera client: cannot get image.');
       } else {
         log('camera client: publishing image.');
+        client.publish(topicNotifyLINE, data);
         client.publish(topicActionInference, data);
       }
     });
