@@ -50,7 +50,7 @@ All the configurations are in `config.js`.
 
 * Configure IP camera's snapshot access interface.
 
-  * The [camera connection database](https://www.ispyconnect.com/sources.aspx) can generate snapshot access URL if your IP camera is supported.
+  * Please refer to [IP camera setup](doc/ipcam.md) for more details.
 
 * MQTT topics.
 
