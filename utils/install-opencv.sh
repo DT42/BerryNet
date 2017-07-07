@@ -1,11 +1,12 @@
 #!/bin/bash
 
 # TODO: Create a Debian package based on
-#       <opencv>/opencv-3.1.0/build/install_manifest.txt
+#       <opencv>/opencv-VERSION/build/install_manifest.txt
 
+OPENCV_VERSION="3.1.0"
 OPENCV_DIR="/tmp/opencv"
-OPENCV_SRC_DIR="$OPENCV_DIR/opencv-3.1.0"
-OPENCV_CONTRIB_SRC_DIR="$OPENCV_DIR/opencv_contrib-3.1.0"
+OPENCV_SRC_DIR="$OPENCV_DIR/opencv-$OPENCV_VERSION"
+OPENCV_CONTRIB_SRC_DIR="$OPENCV_DIR/opencv_contrib-$OPENCV_VERSION"
 
 install_dependencies() {
     sudo apt-get update
@@ -25,26 +26,31 @@ download_opencv() {
     rm -rf $OPENCV_DIR
     mkdir -p $OPENCV_DIR
     pushd $OPENCV_DIR > /dev/null
-    wget -O opencv.zip https://github.com/Itseez/opencv/archive/3.1.0.zip
+    wget -O opencv.zip https://github.com/opencv/opencv/archive/${OPENCV_VERSION}.zip
     unzip opencv.zip
-    wget -O opencv_contrib.zip https://github.com/Itseez/opencv_contrib/archive/3.1.0.zip
+    wget -O opencv_contrib.zip https://github.com/opencv/opencv_contrib/archive/${OPENCV_VERSION}.zip
     unzip opencv_contrib.zip
     popd > /dev/null
 }
 
 compile_opencv() {
-    rm -rf $OPENCV_SRC_DIR/build 
-    mkdir $OPENCV_SRC_DIR/build 
-    pushd $OPENCV_SRC_DIR/build > /dev/null 
+    rm -rf $OPENCV_SRC_DIR/build
+    mkdir $OPENCV_SRC_DIR/build
+    pushd $OPENCV_SRC_DIR/build > /dev/null
     cmake \
         -D CMAKE_BUILD_TYPE="RELEASE" \
         -D CMAKE_INSTALL_PREFIX="/usr/local" \
         -D OPENCV_EXTRA_MODULES_PATH="$OPENCV_CONTRIB_SRC_DIR/modules" \
         $OPENCV_SRC_DIR
     make -j3
+    popd > /dev/null
+}
+
+install_opencv() {
+    pushd $OPENCV_SRC_DIR/build > /dev/null
     sudo make install
     sudo ldconfig
-    popd
+    popd > /dev/null
 }
 
 clean_opencv() {
@@ -55,4 +61,5 @@ clean_opencv() {
 install_dependencies
 download_opencv
 compile_opencv
+install_opencv
 #clean_opencv
