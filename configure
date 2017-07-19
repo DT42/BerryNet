@@ -23,7 +23,7 @@ LOG="/tmp/berrynet.log"
 
 install_system_dependencies() {
     sudo apt-get update
-    sudo apt-get install -y python-dev python-pip python-opencv mongodb libkrb5-dev libzmq3-dev libyaml-dev imagemagick curl
+    sudo apt-get install -y python-dev python-pip python-opencv mongodb libkrb5-dev libzmq3-dev libyaml-dev imagemagick curl fswebcam
     sudo service mongodb start
     sudo -H pip install watchdog cython
 }
