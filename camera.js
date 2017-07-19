@@ -34,6 +34,8 @@ const cameraCmd = '/usr/bin/raspistill';
 const cameraArgs = ['-vf', '-hf',
   '-w', '1024', '-h', '768',
   '-o', snapshotFile];
+const usbCameraCmd = '/usr/bin/fswebcam';
+const usbCameraArgs = ['-r', '1024x768', '--no-banner', '-D', '0.5', snapshotFile];
 
 function log(m) {
   client.publish(topicActionLog, m);
@@ -75,6 +77,17 @@ client.on('message', (t, m) => {
         }
       }
     );
+  } else if (action == 'snapshot_usb') {
+    // Take a snapshot from USB camera.
+    spawnsync(usbCameraCmd, usbCameraArgs);
+    fs.readFile(snapshotFile, function(err, data) {
+      if (err) {
+        log('camera client: cannot get image.');
+      } else {
+        log('camera client: publishing image.');
+        client.publish(topicActionInference, data);
+      }
+    });
   } else {
     log('camera client: unkown action.');
   }

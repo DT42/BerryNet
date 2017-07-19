@@ -90,6 +90,12 @@ To capture an image via configured IP camera
 $ mosquitto_pub -h localhost -t berrynet/event/camera -m snapshot_ipcam
 ```
 
+To capture an image via USB webcam
+
+```
+$ mosquitto_pub -h localhost -t berrynet/event/camera -m snapshot_usb
+```
+
 To provide a local image
 
 ```
