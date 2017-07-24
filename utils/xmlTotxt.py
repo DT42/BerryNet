@@ -1,9 +1,13 @@
-'''
+"""
 
 $python xmlTotxt.py -n $FOLDER -u $LABELME_USER
  --classes $CLASS_1 $CLASS_2 $CLASS_3...
 
-'''
+FOLDER: LabelMe project folder name
+LABELME_USER: LabelMe user name
+CLASS_i: Class labels defined on LabelMe
+
+"""
 import os
 from os.path import join
 import argparse
@@ -12,13 +16,13 @@ from shutil import copyfile
 import xml.etree.ElementTree as ET
 
 
-def convert(size, X, Y):
+def convert(size, in_x, in_y):
     dw = 1./size[0]
     dh = 1./size[1]
-    x = (X[0] + X[1])/2.0
-    y = (Y[0] + Y[1])/2.0
-    w = X[1] - X[0]
-    h = Y[1] - Y[0]
+    x = (in_x[0] + in_x[1])/2.0
+    y = (in_y[0] + in_y[1])/2.0
+    w = in_x[1] - in_x[0]
+    h = in_y[1] - in_y[0]
     x = x*dw
     w = w*dw
     y = y*dh
@@ -27,25 +31,25 @@ def convert(size, X, Y):
 
 
 def convert_annotation(in_dir, out_dir, image_id, out_id, classes):
-    in_file = open('%s/%s.xml' % (in_dir, image_id))
-    o_file = open(out_dir + '/%s.txt' % out_id, 'w')
+    in_file = open("%s/%s.xml" % (in_dir, image_id))
+    o_file = open(out_dir + "/%s.txt" % out_id, "w")
     tree = ET.parse(in_file)
     root = tree.getroot()
-    size = root.find('imagesize')
-    h = float(size.find('nrows').text)
-    w = float(size.find('ncols').text)
+    size = root.find("imagesize")
+    h = float(size.find("nrows").text)
+    w = float(size.find("ncols").text)
 
-    for obj in root.iter('object'):
+    for obj in root.iter("object"):
         X = []
         Y = []
-        cls = obj.find('name').text
+        cls = obj.find("name").text
         if cls not in classes:
             logging.debug("%s is not in the selected class" % cls)
             continue
         cls_id = classes.index(cls)
-        for pt in obj.find('polygon').findall('pt'):
-            X.append(float(pt.find('x').text))
-            Y.append(float(pt.find('y').text))
+        for pt in obj.find("polygon").findall("pt"):
+            X.append(float(pt.find("x").text))
+            Y.append(float(pt.find("y").text))
         if (len(X) < 2 or len(Y) < 2):
             logging.warning("%s doesn't have sufficient info, ignore" % cls)
             continue
@@ -54,7 +58,7 @@ def convert_annotation(in_dir, out_dir, image_id, out_id, classes):
         Y = list(set(Y))
         Y.sort()
         bb = convert((w, h), X, Y)
-        o_file.write(str(cls_id) + " " + " ".join([str(a) for a in bb]) + '\n')
+        o_file.write(str(cls_id) + " " + " ".join([str(a) for a in bb]) + "\n")
 
 
 def find_output_id(out_img_dir, image_id, suffix):
@@ -111,7 +115,7 @@ def main():
     elif args.verbosity >= 2:
         log_level = logging.DEBUG
     logging.basicConfig(level=log_level,
-                        format='[xmlTotxt: %(levelname)s] %(message)s')
+                        format="[xmlTotxt: %(levelname)s] %(message)s")
 
     logging.info(args.classes)
 
@@ -132,21 +136,21 @@ def main():
 
     foutput = join(args.root, "train.txt")
     if args.delete:
-        output = open(foutput, 'w')
+        output = open(foutput, "w")
     else:
-        output = open(foutput, 'a')
+        output = open(foutput, "a")
 
     for _img_path in os.listdir(in_img_dir):
         img_path = os.path.join(in_img_dir, _img_path)
-        suffix = os.path.basename(_img_path).split('.')[1]
+        suffix = os.path.basename(_img_path).split(".")[1]
         logging.debug("Find %s" % img_path)
-        image_id = os.path.basename(_img_path).split('.')[0]
+        image_id = os.path.basename(_img_path).split(".")[0]
         out_id, out_img_path = find_output_id(out_img_dir, image_id, suffix)
         convert_annotation(in_dir, out_dir, image_id, out_id, args.classes)
         logging.info("Copy %s to %s" % (img_path, out_img_path))
         copyfile(img_path, out_img_path)
 
-        output.write(out_img_path + '\n')
+        output.write(out_img_path + "\n")
 
 
 if __name__ == '__main__':
