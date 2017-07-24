@@ -8,12 +8,13 @@ LABELME_USER: LabelMe user name
 CLASS_i: Class labels defined on LabelMe
 
 """
-import os
-from os.path import join
 import argparse
 import logging
-from shutil import copyfile
+import os
 import xml.etree.ElementTree as ET
+
+from os.path import join
+from shutil import copyfile
 
 
 def convert(size, in_x, in_y):
