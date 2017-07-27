@@ -102,6 +102,18 @@ To provide a local image
 $ mosquitto_pub -h localhost -t berrynet/event/localImage -m <image_path>
 ```
 
+To start streaming from USB camera
+
+```
+$ mosquitto_pub -h localhost -t berrynet/event/camera -m stream_usb_start
+```
+
+To stop streaming from USB camera
+
+```
+$ mosquitto_pub -h localhost -t berrynet/event/camera -m stream_usb_stop
+```
+
 # Use Your Data To Train
 
 The original instruction of retraining YOLOv2 model see [github repository of darknet](https://github.com/AlexeyAB/darknet#how-to-train-to-detect-your-custom-objects)
