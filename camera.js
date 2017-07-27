@@ -22,6 +22,7 @@ const mqtt = require('mqtt');
 const request = require('request');
 const spawnsync = require('child_process').spawnSync;
 const config = require('./config');
+const cv = require('opencv');
 
 const broker = config.brokerHost;
 const client = mqtt.connect(broker);
@@ -36,6 +37,9 @@ const cameraArgs = ['-vf', '-hf',
   '-o', snapshotFile];
 const usbCameraCmd = '/usr/bin/fswebcam';
 const usbCameraArgs = ['-r', '1024x768', '--no-banner', '-D', '0.5', snapshotFile];
+var cameraIntervalID = null;
+var cameraInterval = 1000.0 / 0.1; // 0.1 fps
+var cameraCV = null;
 
 function log(m) {
   client.publish(topicActionLog, m);
@@ -88,6 +92,37 @@ client.on('message', (t, m) => {
         client.publish(topicActionInference, data);
       }
     });
+  } else if (action == 'stream_usb_start') {
+      if ((!cameraCV) && (!cameraIntervalID)) {
+	  cameraCV = new cv.VideoCapture(0);
+	  cameraCV.setWidth(1024);
+	  cameraCV.setHeight(768);
+	  cameraIntervalID = setInterval(function() {
+	      cameraCV.read(function(err, im) {
+		  if (err) {
+		      throw err;
+		  }
+		  im.save(snapshotFile);
+		  fs.readFile(snapshotFile, function(err, data) {
+		      if (err) {
+			  log('camera client: cannot get image.');
+		      } else {
+			  log('camera client: publishing image.');
+			  client.publish(topicActionInference, data);
+		      }
+		  });
+	      });
+	  }, cameraInterval);
+      }
+  } else if (action == 'stream_usb_stop') {
+      if (cameraCV) {
+	  cameraCV.release();
+	  cameraCV = null;
+      }
+      if (cameraIntervalID) {
+	  clearInterval(cameraIntervalID);
+	  cameraIntervalID = null;
+      }
   } else {
     log('camera client: unkown action.');
   }
