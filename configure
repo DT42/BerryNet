@@ -79,8 +79,8 @@ download_classifier_model() {
 download_detector_model() {
     pushd inference/darkflow > /dev/null
     mkdir bin
-    wget -O bin/tiny-yolo.weights http://pjreddie.com/media/files/tiny-yolo.weights
-    wget -O cfg/tiny-yolo.cfg https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/tiny-yolo.cfg
+    wget -O bin/tiny-yolo.weights https://s3.amazonaws.com/berrynet/models/tinyyolo/tiny-yolo.weights
+    wget -O cfg/tiny-yolo.cfg https://s3.amazonaws.com/berrynet/models/tinyyolo/tiny-yolo.cfg
     popd > /dev/null
 }
 
