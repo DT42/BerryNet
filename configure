@@ -26,6 +26,7 @@ install_system_dependencies() {
     sudo apt-get install -y python-dev python-pip python-opencv mongodb libkrb5-dev libzmq3-dev libyaml-dev imagemagick curl fswebcam wget git libopencv-dev
     sudo service mongodb start
     sudo -H pip install watchdog cython
+    sudo npm install npm -g
 }
 
 install_optional_dependencies() {
@@ -131,7 +132,7 @@ install_gateway() {
     sudo cp berrynet-manager /usr/local/bin
     # install npm dependencies
     pushd $working_dir > /dev/null
-    sudo npm install
+    sudo /usr/local/bin/npm install
     popd > /dev/null
 }
 
