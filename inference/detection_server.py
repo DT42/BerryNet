@@ -1,17 +1,17 @@
 # Copyright 2017 DT42
-# 
+#
 # This file is part of BerryNet.
-# 
+#
 # BerryNet is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # BerryNet is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with BerryNet.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -159,7 +159,7 @@ def main():
     _logging('config dir: {}'.format(options['model']))
 
     server(tfnet)
- 
+
 
 if __name__ == '__main__':
     logging.basicConfig(filename='/tmp/dlDetector.log', level=logging.DEBUG)
@@ -174,7 +174,7 @@ if __name__ == '__main__':
     with open(pidfile, 'w') as f:
         f.write(pid)
 
-    # workaround the issue that SIGINT cannot be received (fork a child to 
+    # workaround the issue that SIGINT cannot be received (fork a child to
     # avoid blocking the main process in Thread.join()
     child_pid = os.fork()
     if child_pid == 0:

@@ -1,17 +1,17 @@
 # Copyright 2017 DT42
-# 
+#
 # This file is part of BerryNet.
-# 
+#
 # BerryNet is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # BerryNet is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with BerryNet.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -153,7 +153,7 @@ class EventHandler(PatternMatchingEventHandler):
 
 def main(_):
     """Called by Tensorflow"""
- 
+
     global sess, threads
 
     # Creates graph from saved GraphDef.
@@ -172,7 +172,7 @@ def main(_):
                                         args=(labels,)))
     for t in threads: t.start()
     for t in threads: t.join()
- 
+
 
 if __name__ == '__main__':
     pid = str(os.getpid())
@@ -188,7 +188,7 @@ if __name__ == '__main__':
     logging("model_dir: ", FLAGS.model_dir)
     logging("image_dir: ", FLAGS.image_dir)
 
-    # workaround the issue that SIGINT cannot be received (fork a child to 
+    # workaround the issue that SIGINT cannot be received (fork a child to
     # avoid blocking the main process in Thread.join()
     child_pid = os.fork()
     if child_pid == 0:

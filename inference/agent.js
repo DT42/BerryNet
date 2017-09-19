@@ -1,17 +1,17 @@
 // Copyright 2017 DT42
-// 
+//
 // This file is part of BerryNet.
-// 
+//
 // BerryNet is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // BerryNet is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with BerryNet.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -54,13 +54,13 @@ client.on('connect', () => {
 client.on('message', (t, m) => {
   const size = m.length;
   const now = moment().format('YYYYMMDD-HHmmss');
-  const inference_server_img_dir = __dirname + '/image'
-  const snapshot = `snapshot-${now}.jpg`
-  const snapshot_path = path.join(inference_server_img_dir, snapshot)
-  const donefile_path = snapshot_path + '.done'
-  const resultfile_path = snapshot_path + '.txt'
-  const resultdonefile_path = snapshot_path + '.txt.done'
-  const dashboard_image_path = __dirname + '/../dashboard/www/freeboard/snapshot.jpg'
+  const inference_server_img_dir = __dirname + '/image';
+  const snapshot = `snapshot-${now}.jpg`;
+  const snapshot_path = path.join(inference_server_img_dir, snapshot);
+  const donefile_path = snapshot_path + '.done';
+  const resultfile_path = snapshot_path + '.txt';
+  const resultdonefile_path = snapshot_path + '.txt.done';
+  const dashboard_image_path = __dirname + '/../dashboard/www/freeboard/snapshot.jpg';
 
   log(`inference client: on topic ${t}, received ${size} bytes.`);
 
@@ -93,7 +93,7 @@ client.on('message', (t, m) => {
         fs.readFile(resultfile_path, (err, result) => {
           if (err) throw err
 
-          watcher.close()
+          watcher.close();
 
           if (inferenceEngine === 'classifier') {
             fs.writeFile(dashboard_image_path, m, (err, written, buffer) => {
@@ -107,15 +107,15 @@ client.on('message', (t, m) => {
             console.log('Unknown owner ' + inferenceEngine);
           }
 
-          client.publish(topicDashboardInferenceResult, result.toString().replace(/(\n)+/g, '<br />'))
+          client.publish(topicDashboardInferenceResult, result.toString().replace(/(\n)+/g, '<br />'));
         })
       } else {
         console.log('Detect change of ' + filename + ', but comparing target is ' + snapshot + '.txt.done');
       }
     } else if (eventType == 'rename') {
-      console.log('watch get rename event for ' + filename)
+      console.log('watch get rename event for ' + filename);
     } else {
-      console.log('watch get unknown event, ' + eventType)
+      console.log('watch get unknown event, ' + eventType);
     }
-  })
+  });
 });
