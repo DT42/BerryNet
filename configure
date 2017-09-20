@@ -104,6 +104,7 @@ install_dashboard() {
 
 install_systemd_configs() {
     sudo cp systemd/* /etc/systemd/system
+    sudo cp config/bcm2835-v4l2.conf /etc/modules-load.d
 }
 
 install_gateway() {
