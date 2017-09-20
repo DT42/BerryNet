@@ -105,6 +105,10 @@ install_dashboard() {
 install_systemd_configs() {
     sudo cp systemd/* /etc/systemd/system
     sudo cp config/bcm2835-v4l2.conf /etc/modules-load.d
+    # enable ramfs to speedup I/O
+    echo -e "tmpfs /var/ramfs tmpfs nodev,nosuid,size=50M 0 0" \
+        | sudo tee -a /etc/fstab
+    sudo mount -a
 }
 
 install_gateway() {
