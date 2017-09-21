@@ -65,6 +65,44 @@ install_darkflow() {
     popd > /dev/null
 }
 
+install_darknet() {
+    # build dependencies
+    pip install --user PeachPy
+    pip install --user git+https://github.com/Maratyszcza/confu
+
+    pushd /tmp > /dev/null
+    git clone https://github.com/ninja-build/ninja.git
+    pushd ninja > /dev/null
+    git checkout release
+    ./configure.py --bootstrap
+    popd > /dev/null
+    popd > /dev/null
+
+    sudo apt-get install -y clang
+
+    pushd /tmp > /dev/null
+    git clone https://github.com/thomaspark-pkj/NNPACK-darknet.git
+    pushd NNPACK-darknet > /dev/null
+    $HOME/.local/bin/confu setup
+    python ./configure.py --backend auto
+    /tmp/ninja/ninja
+    sudo cp lib/{libgoogletest-core.a,libnnpack.a,libpthreadpool.a} /usr/lib/
+    sudo cp include/nnpack.h /usr/include/
+    sudo cp deps/pthreadpool/include/pthreadpool.h /usr/include/
+    popd > /dev/null
+    popd > /dev/null
+
+    # detection backend
+    pushd inference > /dev/null
+    git clone https://github.com/thomaspark-pkj/darknet-nnpack.git darknet
+    pushd darknet > /dev/null
+    patch -p 1 < ../../patch/01-detection-backend.patch
+    patch -p 1 < ../../patch/02-detection-utilities.patch
+    make -j
+    popd > /dev/null
+    popd > /dev/null
+}
+
 download_classifier_model() {
     # Inception v3 is default classifier model
     INCEPTION_PKGNAME=inception_dec_2015.zip
