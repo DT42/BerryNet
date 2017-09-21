@@ -26,6 +26,7 @@ const dlDetector = exec('cd inference/darkflow && python detection_server.py', e
 const inferenceAgent = exec('cd inference && node agent.js', execCallback);
 const localImageAgent = exec('node localimg.js', execCallback);
 const webBrowser = exec('DISPLAY=:0 sensible-browser http://localhost:8080/index.html#source=dashboard.json', execCallback);
+const dataCollector = exec('node data_collector.js', execCallback);
 
 broker.stdout.on('data', function(data) {
   console.log("[broker] " + data);
@@ -55,6 +56,10 @@ inferenceAgent.stdout.on('data', function(data) {
   console.log('[inferenceAgent] ' + data);
 });
 
+dataCollector.stdout.on('data', function(data) {
+  console.log('[dataCollector] ' + data);
+});
+
 process.on('SIGINT', function() {
   console.log('Get SIGINT');
   broker.kill();
@@ -65,5 +70,6 @@ process.on('SIGINT', function() {
   //dlClassifier.kill();
   dlDetector.kill();
   inferenceAgent.kill();
+  dataCollector.kill();
   process.exit(0);
 });
