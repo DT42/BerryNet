@@ -92,12 +92,11 @@ install_darknet() {
     popd > /dev/null
     popd > /dev/null
 
-    # detection backend
+    # build detection backend (darknet)
     pushd inference > /dev/null
     git clone https://github.com/thomaspark-pkj/darknet-nnpack.git darknet
     pushd darknet > /dev/null
     patch -p 1 < ../../patch/01-detection-backend.patch
-    patch -p 1 < ../../patch/02-detection-utilities.patch
     make -j
     popd > /dev/null
     popd > /dev/null

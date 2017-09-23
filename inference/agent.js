@@ -73,23 +73,8 @@ client.on('message', (t, m) => {
   // Listen to classifier/detector's result done file.  When result done
   // file (.txt.done) is created, result is available.
   var watcher = fs.watch(inference_server_img_dir, (eventType, filename) => {
-    /* Merge inference result and snapshot into single image. */
-    if (eventType === 'change') {
+    if (eventType === 'rename') {
       if (filename === (snapshot + '.txt.done')) {
-        /*
-        fs.open(resultfile_path, 'r', (err, fd) => {
-          if (err) {
-            if (err.code === 'ENOENT') {
-              console.error(resultfile_path + ' does not exist');
-              return;
-            }
-            throw err;
-          }
-
-          readMyData(fd);
-        });
-        */
-
         fs.readFile(resultfile_path, (err, result) => {
           if (err) throw err
 
@@ -110,12 +95,12 @@ client.on('message', (t, m) => {
           client.publish(topicDashboardInferenceResult, result.toString().replace(/(\n)+/g, '<br />'));
         })
       } else {
-        console.log('Detect change of ' + filename + ', but comparing target is ' + snapshot + '.txt.done');
+        console.log('rename event for ' +
+                    filename +
+                    ', but it is not inference result done file.');
       }
-    } else if (eventType == 'rename') {
-      console.log('watch get rename event for ' + filename);
     } else {
-      console.log('watch get unknown event, ' + eventType);
+      console.log(eventType + ' event for ' + filename + ', ignore it.');
     }
   });
 });
