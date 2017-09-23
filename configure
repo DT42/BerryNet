@@ -100,6 +100,10 @@ install_darknet() {
     make -j
     popd > /dev/null
     popd > /dev/null
+
+    cp utils/darknet/detectord.py inference/darknet
+    mkdir inference/darknet/utils
+    cp utils/darknet/utils/localrun.sh inference/darknet/utils
 }
 
 download_classifier_model() {
