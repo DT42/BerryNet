@@ -33,7 +33,7 @@ fi
 
 case $1 in
   start | stop | status)
-	sudo systemctl $1 detection_fast_server.service agent.service broker.service dashboard.service localimg.service camera.service journal.service cleaner.timer
+	sudo systemctl $1 detection_fast_server.service agent.service broker.service dashboard.service localimg.service camera.service journal.service cleaner.timer data_collector.service
     ;;
   log)
 	sudo journalctl -x --no-pager -u detection_fast_server.service
@@ -44,6 +44,7 @@ case $1 in
 	sudo journalctl -x --no-pager -u camera.service
 	sudo journalctl -x --no-pager -u journal.service
 	sudo journalctl -x --no-pager -u cleaner.timer
+	sudo journalctl -x --no-pager -u data_collector.timer
     ;;
   *)
     help
