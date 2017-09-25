@@ -172,6 +172,7 @@ install_nodejs 2>&1 | tee -a $LOG
 install_tensorflow 2>&1 | tee -a $LOG
 download_classifier_model 2>&1 | tee -a $LOG
 install_darkflow 2>&1 | tee -a $LOG
+install_darknet 2>&1 | tee -a $LOG
 download_detector_model 2>&1 | tee -a $LOG
 install_dashboard 2>&1 | tee -a $LOG
 install_systemd_configs 2>&1 | tee -a $LOG
