@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SNAPSHOT_DIR="$1"
-DARKFLOW_DIR="/usr/local/berrynet/inference/darkflow"
+MODEL_DIR="/var/lib/dlmodels/tinyyolo-20170816"
 
 usage() {
     echo "Usage: <darknet-root>/utils/local_debug.sh SNAPSHOT_DIR"
@@ -16,6 +16,6 @@ else
 fi
 
 python detectord.py \
-    -c $DARKFLOW_DIR/cfg/tiny-yolo.cfg \
-    -w $DARKFLOW_DIR/bin/tiny-yolo.weights \
+    -c $MODEL_DIR/assets/tiny-yolo.cfg \
+    -w $MODEL_DIR/tiny-yolo.weights \
     $SNAPSHOT_DIR
