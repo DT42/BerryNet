@@ -156,7 +156,7 @@ install_gateway() {
     local working_dir="/usr/local/berrynet"
     sudo mkdir -p $working_dir
     sudo cp -a \
-        broker.js camera.js cleaner.sh config.js dashboard data_collector.js \
+        broker.js camera.js config.js dashboard data_collector.js \
         inference journal.js localimg.js mail.js package.json \
         $working_dir
     sudo cp berrynet-manager /usr/local/bin

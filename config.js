@@ -49,7 +49,7 @@ config.topicDashboardInferenceResult = padTopicBase('dashboard/inferenceResult')
 config.ipcameraSnapshot = '';
 
 // data collector configs
-config.storageDirPath = '';
+config.storageDirPath = '/tmp/berrynet-data';
 
 // email notification
 config.senderEmail = 'SENDER_EMAIL';

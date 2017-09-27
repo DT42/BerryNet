@@ -88,6 +88,16 @@ client.on('message', (t, m) => {
           } else if (inferenceEngine === 'detector') {
             console.log('Snapshot is created by detector, only notify dashboard to update.');
             client.publish(topicDashboardSnapshot, 'snapshot.jpg');
+
+            // Delete intermediate files.
+            //
+            // Note: Data collector will not be affected. It retrieves data from
+            //   * topicActionInference: contains snapshot raw data
+            //   * topicDashboardSnapshot: to copy snapshot with bounding boxes
+            //   * topicDashboardInferenceResult: contains inference result string
+            fs.unlink(snapshot_path, (e) => {});
+            fs.unlink(resultfile_path, (e) => {});
+            fs.unlink(resultdonefile_path, (e) => {});
           } else {
             console.log('Unknown owner ' + inferenceEngine);
           }
