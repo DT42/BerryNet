@@ -111,6 +111,7 @@ client.on('message', (t, m) => {
 			  client.publish(topicActionInference, data);
 		      }
 		  });
+                  im.release();
 	      });
 	  }, cameraInterval);
       }
