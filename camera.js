@@ -37,9 +37,11 @@ const cameraArgs = ['-vf', '-hf',
   '-o', snapshotFile];
 const usbCameraCmd = '/usr/bin/fswebcam';
 const usbCameraArgs = ['-r', '1024x768', '--no-banner', '-D', '0.5', snapshotFile];
+const fps = 30;
 var cameraIntervalID = null;
-var cameraInterval = 1000.0 / 0.1; // 0.1 fps
+var cameraInterval = 1000.0 / fps;
 var cameraCV = null;
+var frameCounter = 0;
 
 function log(m) {
   client.publish(topicActionLog, m);
@@ -93,37 +95,42 @@ client.on('message', (t, m) => {
       }
     });
   } else if (action == 'stream_usb_start') {
-      if ((!cameraCV) && (!cameraIntervalID)) {
-	  cameraCV = new cv.VideoCapture(0);
-	  cameraCV.setWidth(1024);
-	  cameraCV.setHeight(768);
-	  cameraIntervalID = setInterval(function() {
-	      cameraCV.read(function(err, im) {
-		  if (err) {
-		      throw err;
-		  }
-		  im.save(snapshotFile);
-		  fs.readFile(snapshotFile, function(err, data) {
-		      if (err) {
-			  log('camera client: cannot get image.');
-		      } else {
-			  log('camera client: publishing image.');
-			  client.publish(topicActionInference, data);
-		      }
-		  });
-                  im.release();
-	      });
-	  }, cameraInterval);
-      }
+    if ((!cameraCV) && (!cameraIntervalID)) {
+      cameraCV = new cv.VideoCapture(0);
+      cameraCV.setWidth(1024);
+      cameraCV.setHeight(768);
+      cameraIntervalID = setInterval(function() {
+        cameraCV.read(function(err, im) {
+          if (err) {
+            throw err;
+          }
+          if (frameCounter < fps) {
+            frameCounter++;
+          } else {
+            frameCounter = 0;
+            im.save(snapshotFile);
+            fs.readFile(snapshotFile, function(err, data) {
+              if (err) {
+                log('camera client: cannot get image.');
+              } else {
+                log('camera client: publishing image.');
+                client.publish(topicActionInference, data);
+              }
+            });
+          }
+          im.release();
+        });
+      }, cameraInterval);
+    }
   } else if (action == 'stream_usb_stop') {
-      if (cameraCV) {
-	  cameraCV.release();
-	  cameraCV = null;
-      }
-      if (cameraIntervalID) {
-	  clearInterval(cameraIntervalID);
-	  cameraIntervalID = null;
-      }
+    if (cameraCV) {
+      cameraCV.release();
+      cameraCV = null;
+    }
+    if (cameraIntervalID) {
+      clearInterval(cameraIntervalID);
+      cameraIntervalID = null;
+    }
   } else {
     log('camera client: unkown action.');
   }
