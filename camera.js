@@ -142,6 +142,27 @@ client.on('message', (t, m) => {
       clearInterval(cameraIntervalID);
       cameraIntervalID = null;
     }
+  } else if (action == 'stream_nest_ipcam_start') {
+    if (!cameraIntervalID) {
+      cameraIntervalID = setInterval(function() {
+        request.get(
+          {uri: cameraURI, encoding: null},
+          (e, res, body) => {
+            if (!e && res.statusCode == 200) {
+              log('camera client: publishing image.');
+              client.publish(topicActionInference, body);
+            } else {
+              log('camera client: cannot get image.');
+            }
+          }
+        );
+      }, cameraInterval);
+    }
+  } else if (action == 'stream_nest_ipcam_stop') {
+    if (cameraIntervalID) {
+      clearInterval(cameraIntervalID);
+      cameraIntervalID = null;
+    }
   } else {
     log('camera client: unkown action.');
   }

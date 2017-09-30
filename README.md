@@ -103,6 +103,13 @@ $ mosquitto_pub -h localhost -t berrynet/event/camera -m stream_boardcam_start
 $ mosquitto_pub -h localhost -t berrynet/event/camera -m stream_boardcam_stop
 ```
 
+To start and stop streaming from Nest IP camera
+
+```
+$ mosquitto_pub -h localhost -t berrynet/event/camera -m stream_nest_ipcam_start
+$ mosquitto_pub -h localhost -t berrynet/event/camera -m stream_nest_ipcam_stop
+```
+
 
 # Enable Data Collector
 
