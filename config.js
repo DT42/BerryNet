@@ -48,6 +48,10 @@ config.topicDashboardInferenceResult = padTopicBase('dashboard/inferenceResult')
 // IP camera
 config.ipcameraSnapshot = '';
 
+// Board camera, e.g. USB and RPi cameras
+config.boardcameraImageWidth = 640;
+config.boardcameraImageHeight = 480;
+
 // data collector configs
 config.storageDirPath = '/tmp/berrynet-data';
 

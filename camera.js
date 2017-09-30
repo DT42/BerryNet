@@ -31,12 +31,16 @@ const topicActionInference = config.topicActionInference;
 const topicEventCamera = config.topicEventCamera;
 const cameraURI = config.ipcameraSnapshot;
 const snapshotFile = '/tmp/snapshot.jpg';
+const snapshotWidth = config.boardcameraImageWidth;
+const snapshotHeight = config.boardcameraImageHeight;
 const cameraCmd = '/usr/bin/raspistill';
 const cameraArgs = ['-vf', '-hf',
-  '-w', '1024', '-h', '768',
+  '-w', snapshotWidth,
+  '-h', snapshotHeight,
   '-o', snapshotFile];
 const usbCameraCmd = '/usr/bin/fswebcam';
-const usbCameraArgs = ['-r', '1024x768', '--no-banner', '-D', '0.5', snapshotFile];
+const usbCameraArgs = ['-r', snapshotWidth + 'x' + snapshotHeight,
+  '--no-banner', '-D', '0.5', snapshotFile];
 const fps = 30;
 var cameraIntervalID = null;
 var cameraInterval = 1000.0 / fps;
@@ -97,14 +101,14 @@ client.on('message', (t, m) => {
   } else if (action == 'stream_usb_start') {
     if ((!cameraCV) && (!cameraIntervalID)) {
       cameraCV = new cv.VideoCapture(0);
-      cameraCV.setWidth(1024);
-      cameraCV.setHeight(768);
+      cameraCV.setWidth(snapshotWidth);
+      cameraCV.setHeight(snapshotHeight);
       cameraIntervalID = setInterval(function() {
         cameraCV.read(function(err, im) {
           if (err) {
             throw err;
           }
-          if (frameCounter < fps) {
+          if (frameCounter < fps * 2) {
             frameCounter++;
           } else {
             frameCounter = 0;
