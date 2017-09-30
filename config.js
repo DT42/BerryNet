@@ -53,7 +53,7 @@ config.boardcameraImageWidth = 640;
 config.boardcameraImageHeight = 480;
 
 // data collector configs
-config.storageDirPath = '/tmp/berrynet-data';
+config.storageDirPath = '';
 
 // email notification
 config.senderEmail = 'SENDER_EMAIL';
