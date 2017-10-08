@@ -54,7 +54,7 @@ client.on('connect', () => {
 
 client.on('message', (t, m) => {
   // secretly save a copy of the image
-  if (t == topicNotifyEmail) {
+  if (t === topicNotifyEmail) {
     const filename = 'snapshot.jpg';
     saveBufferToImage(m, snapshot);
     client.publish(topicDashboardSnapshot, filename);

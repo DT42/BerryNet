@@ -26,13 +26,12 @@ help() {
     exit 1
 }
 
-if [ $# -lt 1 ]
-    then
-        help
+if [ $# -lt 1 ]; then
+    help
 fi
 
 case $1 in
-  start | stop | status)
+    start | stop | status)
 	sudo systemctl $1 \
             detection_fast_server.service \
             agent.service \
@@ -41,9 +40,10 @@ case $1 in
             localimg.service \
             camera.service \
             journal.service \
-            data_collector.service
-    ;;
-  log)
+            data_collector.service \
+            line.service
+        ;;
+    log)
 	sudo journalctl -x --no-pager -u detection_fast_server.service
 	sudo journalctl -x --no-pager -u agent.service
 	sudo journalctl -x --no-pager -u broker.service
@@ -52,7 +52,8 @@ case $1 in
 	sudo journalctl -x --no-pager -u camera.service
 	sudo journalctl -x --no-pager -u journal.service
 	sudo journalctl -x --no-pager -u data_collector.service
-    ;;
-  *)
-    help
+	sudo journalctl -x --no-pager -u line.service
+        ;;
+    *)
+        help
 esac

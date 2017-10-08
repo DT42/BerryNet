@@ -20,6 +20,7 @@ const broker = exec('node broker.js', execCallback);
 const cameraAgent = exec('node camera.js', execCallback);
 //const eventNotifier = exec('node mail.js ' + config.sender_email + ' ' + config.sender_email_password + ' ' + config.receiver_email, execCallback);
 const eventLogger = exec('node journal.js', execCallback);
+const LINEAgent = exec('node line.js', execCallback);
 const webServer = exec('cd dashboard && node server.js', execCallback);
 //const dlClassifier = exec('cd inference && python classify_server.py --model_dir=model --image_dir=image', execCallback);
 const dlDetector = exec('cd inference/darkflow && python detection_server.py', execCallback);
@@ -44,6 +45,10 @@ eventLogger.stdout.on('data', function(data) {
   console.log('[eventLogger] ' + data);
 });
 
+LINEAgent.stdout.on('data', function(data) {
+  console.log('[LINEAgent] ' + data);
+});
+
 webServer.stdout.on('data', function(data) {
   console.log('[webServer] ' + data);
 });
@@ -65,6 +70,7 @@ process.on('SIGINT', function() {
   broker.kill();
   cameraAgent.kill();
   eventNotifier.kill();
+  LINEAgent.kill();
   eventLogger.kill();
   webServer.kill();
   //dlClassifier.kill();
