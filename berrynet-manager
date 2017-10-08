@@ -1,19 +1,19 @@
 #! /bin/sh
 #
 # Copyright 2017 DT42
-# 
+#
 # This file is part of BerryNet.
-# 
+#
 # BerryNet is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # BerryNet is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with BerryNet.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -33,18 +33,26 @@ fi
 
 case $1 in
   start | stop | status)
-	sudo systemctl $1 detection_server.service agent.service broker.service dashboard.service localimg.service camera.service journal.service cleaner.timer
+	sudo systemctl $1 \
+            detection_fast_server.service \
+            agent.service \
+            broker.service \
+            dashboard.service \
+            localimg.service \
+            camera.service \
+            journal.service \
+            data_collector.service
     ;;
   log)
-	sudo journalctl -x --no-pager -u detection_server.service
+	sudo journalctl -x --no-pager -u detection_fast_server.service
 	sudo journalctl -x --no-pager -u agent.service
 	sudo journalctl -x --no-pager -u broker.service
 	sudo journalctl -x --no-pager -u dashboard.service
 	sudo journalctl -x --no-pager -u localimg.service
 	sudo journalctl -x --no-pager -u camera.service
 	sudo journalctl -x --no-pager -u journal.service
-	sudo journalctl -x --no-pager -u cleaner.timer
+	sudo journalctl -x --no-pager -u data_collector.service
     ;;
   *)
     help
-esac 
+esac

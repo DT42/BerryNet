@@ -78,22 +78,16 @@ For more details about dashboard configuration (e.g. how to add widgets), please
 
 # Provide Image Input
 
-To capture an image via Pi camera
-
-```
-$ mosquitto_pub -h localhost -t berrynet/event/camera -m snapshot_picam
-```
-
 To capture an image via configured IP camera
 
 ```
 $ mosquitto_pub -h localhost -t berrynet/event/camera -m snapshot_ipcam
 ```
 
-To capture an image via USB webcam
+To capture an image via board-connected camera (RPi camera or USB webcam)
 
 ```
-$ mosquitto_pub -h localhost -t berrynet/event/camera -m snapshot_usb
+$ mosquitto_pub -h localhost -t berrynet/event/camera -m snapshot_boardcam
 ```
 
 To provide a local image
@@ -102,17 +96,33 @@ To provide a local image
 $ mosquitto_pub -h localhost -t berrynet/event/localImage -m <image_path>
 ```
 
-To start streaming from USB camera
+To start and stop streaming from board-connected camera
 
 ```
-$ mosquitto_pub -h localhost -t berrynet/event/camera -m stream_usb_start
+$ mosquitto_pub -h localhost -t berrynet/event/camera -m stream_boardcam_start
+$ mosquitto_pub -h localhost -t berrynet/event/camera -m stream_boardcam_stop
 ```
 
-To stop streaming from USB camera
+To start and stop streaming from Nest IP camera
 
 ```
-$ mosquitto_pub -h localhost -t berrynet/event/camera -m stream_usb_stop
+$ mosquitto_pub -h localhost -t berrynet/event/camera -m stream_nest_ipcam_start
+$ mosquitto_pub -h localhost -t berrynet/event/camera -m stream_nest_ipcam_stop
 ```
+
+
+# Enable Data Collector
+
+You might want to store the snapshot and inference results for data analysis.
+
+To enable data collector, you can set the storage directory path in config.js:
+
+```
+config.storageDirPath = '<data-storage-dirpath>';
+```
+
+and restart BerryNet.
+
 
 # Use Your Data To Train
 
