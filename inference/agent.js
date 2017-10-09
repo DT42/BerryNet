@@ -49,7 +49,10 @@ function saveBufferToImage(b, filepath) {
 }
 
 const parseDarknet = function(str) {
-  let [label, confidence, x, y, width, height] = str.split(' ');
+  const elements = str.split(' ');
+  // label might consists of multiple words, e.g. cell phone.
+  const label = elements.slice(0, elements.length - 5).join(' ');
+  let [confidence, x, y, width, height] = elements.slice(elements.length - 5);
   let result = {
     label: label,
     confidence: parseFloat(confidence),
