@@ -27,7 +27,7 @@ const client = mqtt.connect(broker);
 const topicActionLog = config.topicActionLog;
 const topicActionInference = config.topicActionInference;
 const topicDashboardSnapshot = config.topicDashboardSnapshot;
-const topicDashboardInferenceResult = config.topicDashboardInferenceResult;
+const topicJSONInferenceResult = config.topicJSONInferenceResult;
 const storageDirPath = config.storageDirPath;
 
 
@@ -95,8 +95,8 @@ function callbackSaveData(topic, message) {
     */
     fs.createReadStream(config.snapshot)
       .pipe(fs.createWriteStream(detectionImage));
-  } else if (topic == topicDashboardInferenceResult) {
-    console.log('Get ' + topicDashboardInferenceResult);
+  } else if (topic == topicJSONInferenceResult) {
+    console.log('Get ' + topicJSONInferenceResult);
 
     const detectionJSON = path.join(
       storageDirPath,
@@ -119,7 +119,7 @@ client.on('connect', () => {
   client.subscribe(topicActionLog);
   client.subscribe(topicActionInference);
   client.subscribe(topicDashboardSnapshot);
-  client.subscribe(topicDashboardInferenceResult);
+  client.subscribe(topicJSONInferenceResult);
   log(`log client: connected to ${broker} successfully.`);
 });
 

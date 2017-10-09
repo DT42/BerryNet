@@ -30,6 +30,7 @@ const topicActionLog = config.topicActionLog;
 const topicActionInference = config.topicActionInference;
 const topicDashboardSnapshot = config.topicDashboardSnapshot;
 const topicDashboardInferenceResult = config.topicDashboardInferenceResult;
+const topicJSONInferenceResult = config.topicJSONInferenceResult;
 const topicNotifyLINE = config.topicNotifyLINE;
 const inferenceEngine = config.inferenceEngine;
 
@@ -46,6 +47,29 @@ function saveBufferToImage(b, filepath) {
       log(`inference client: saved buffer to image ${filepath} successfully.`);
   });
 }
+
+const parseDarknet = function(str) {
+  let [label, confidence, x, y, width, height] = str.split(' ');
+  let result = {
+    label: label,
+    confidence: parseFloat(confidence),
+    top: parseInt(y),
+    bottom: parseInt(y) + parseInt(height),
+    left: parseInt(x),
+    right: parseInt(x) + parseInt(width)
+  };
+  return result
+}
+
+const darknetToJSON = function(data) {
+  let dataStrList = data.toString().replace(/\n$/, '').split('\n');
+  let jsonResult = [];
+  for (let i in dataStrList) {
+    let item = `${dataStrList[i]}`;
+    jsonResult.push(parseDarknet(item));
+  }
+  return jsonResult;
+};
 
 client.on('connect', () => {
   client.subscribe(topicActionInference);
@@ -86,9 +110,15 @@ client.on('message', (t, m) => {
               console.log('Written snapshot to dashboard image directory: ' + dashboard_image_path);
               client.publish(topicDashboardSnapshot, 'snapshot.jpg');
             })
+            client.publish(topicDashboardInferenceResult,
+              result.toString().replace(/(\n)+/g, '<br />'));
           } else if (inferenceEngine === 'detector') {
             console.log('Snapshot is created by detector, only notify dashboard to update.');
             client.publish(topicDashboardSnapshot, 'snapshot.jpg');
+            client.publish(topicDashboardInferenceResult,
+              result.toString().replace(/(\n)+/g, '<br />'));
+            client.publish(topicJSONInferenceResult,
+              JSON.stringify(darknetToJSON(result)));
 
             // Delete intermediate files.
             //
@@ -104,7 +134,6 @@ client.on('message', (t, m) => {
           }
 
           client.publish(topicNotifyLINE, dashboard_image_path);
-          client.publish(topicDashboardInferenceResult, result.toString().replace(/(\n)+/g, '<br />'))
         })
       } else {
         console.log('rename event for ' +
