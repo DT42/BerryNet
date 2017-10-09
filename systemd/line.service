@@ -1,12 +1,14 @@
 [Unit]
-Description=Clean snapshots every 5 min
+Description=LINE client agent for notification
 After=network.target
 
 [Service]
 Type=simple
 WorkingDirectory=/usr/local/berrynet
-PIDFile=/tmp/cleaner.pid
-ExecStart=/bin/bash cleaner.sh
+PIDFile=/tmp/line.pid
+ExecStart=/usr/bin/node line.js
+Restart=always
+RestartSec=10
 
 [Install]
 WantedBy=multi-user.target

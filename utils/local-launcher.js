@@ -20,12 +20,14 @@ const broker = exec('node broker.js', execCallback);
 const cameraAgent = exec('node camera.js', execCallback);
 //const eventNotifier = exec('node mail.js ' + config.sender_email + ' ' + config.sender_email_password + ' ' + config.receiver_email, execCallback);
 const eventLogger = exec('node journal.js', execCallback);
+const LINEAgent = exec('node line.js', execCallback);
 const webServer = exec('cd dashboard && node server.js', execCallback);
 //const dlClassifier = exec('cd inference && python classify_server.py --model_dir=model --image_dir=image', execCallback);
 const dlDetector = exec('cd inference/darkflow && python detection_server.py', execCallback);
 const inferenceAgent = exec('cd inference && node agent.js', execCallback);
 const localImageAgent = exec('node localimg.js', execCallback);
 const webBrowser = exec('DISPLAY=:0 sensible-browser http://localhost:8080/index.html#source=dashboard.json', execCallback);
+const dataCollector = exec('node data_collector.js', execCallback);
 
 broker.stdout.on('data', function(data) {
   console.log("[broker] " + data);
@@ -43,6 +45,10 @@ eventLogger.stdout.on('data', function(data) {
   console.log('[eventLogger] ' + data);
 });
 
+LINEAgent.stdout.on('data', function(data) {
+  console.log('[LINEAgent] ' + data);
+});
+
 webServer.stdout.on('data', function(data) {
   console.log('[webServer] ' + data);
 });
@@ -55,15 +61,21 @@ inferenceAgent.stdout.on('data', function(data) {
   console.log('[inferenceAgent] ' + data);
 });
 
+dataCollector.stdout.on('data', function(data) {
+  console.log('[dataCollector] ' + data);
+});
+
 process.on('SIGINT', function() {
   console.log('Get SIGINT');
   broker.kill();
   cameraAgent.kill();
   eventNotifier.kill();
+  LINEAgent.kill();
   eventLogger.kill();
   webServer.kill();
   //dlClassifier.kill();
   dlDetector.kill();
   inferenceAgent.kill();
+  dataCollector.kill();
   process.exit(0);
 });

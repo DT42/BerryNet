@@ -41,22 +41,36 @@ config.topicEventCamera = padTopicBase('event/camera');
 config.topicEventLocalImage = padTopicBase('event/localImage');
 config.topicNotifyEmail = padTopicBase('notify/email');
 config.topicNotifySMS = padTopicBase('notify/sms');
+config.topicNotifyLINE = padTopicBase('notify/line');
 config.topicDashboardLog = padTopicBase('dashboard/log');
 config.topicDashboardSnapshot = padTopicBase('dashboard/snapshot');
 config.topicDashboardInferenceResult = padTopicBase('dashboard/inferenceResult');
+config.topicJSONInferenceResult = padTopicBase('data/jsonInferenceResult');
 
 // IP camera
 config.ipcameraSnapshot = '';
 
+// Board camera, e.g. USB and RPi cameras
+config.boardcameraImageWidth = 640;
+config.boardcameraImageHeight = 480;
+
+// data collector configs
+config.storageDirPath = '';
+
 // email notification
-config.senderEmail = 'SENDER_EMAIL';
-config.senderPassword = 'SENDER_PASSWORD';
-config.receiverEmail = 'RECEIVER_EMAIL';
+config.senderEmail = '';
+config.senderPassword = '';
+config.receiverEmail = '';
 
 // for compatibility
 config.sender_email = config.senderEmail;
 config.sender_password = config.senderPassword;
 config.receiver_email = config.receiverEmail;
+
+// Authentication and channel information for LINE
+config.LINETargetUserID = '';
+config.LINEChannelSecret = '';
+config.LINEChannelAccessToken = '';
 
 // make config importable
 module.exports = config;

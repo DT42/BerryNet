@@ -23,13 +23,19 @@ LOG="/tmp/berrynet.log"
 
 install_system_dependencies() {
     sudo apt-get update
-    sudo apt-get install -y python-dev python-pip python-opencv mongodb libkrb5-dev libzmq3-dev libyaml-dev imagemagick curl
+    sudo apt-get install -y python-dev python-pip python-opencv mongodb libkrb5-dev libzmq3-dev libyaml-dev imagemagick curl fswebcam wget git libopencv-dev
     sudo service mongodb start
     sudo -H pip install watchdog cython
 }
 
 install_optional_dependencies() {
     sudo apt-get install -y mosquitto-clients
+}
+
+install_nodejs() {
+    # v6.x is LTS, if you want the latest feature, change to "setup_7.x".
+    curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
+    sudo apt-get install -y nodejs
 }
 
 install_tensorflow() {
@@ -59,6 +65,47 @@ install_darkflow() {
     popd > /dev/null
 }
 
+install_darknet() {
+    # build dependencies
+    pip install --user PeachPy
+    pip install --user git+https://github.com/Maratyszcza/confu
+
+    pushd /tmp > /dev/null
+    git clone https://github.com/ninja-build/ninja.git
+    pushd ninja > /dev/null
+    git checkout release
+    ./configure.py --bootstrap
+    popd > /dev/null
+    popd > /dev/null
+
+    sudo apt-get install -y clang
+
+    pushd /tmp > /dev/null
+    git clone https://github.com/thomaspark-pkj/NNPACK-darknet.git
+    pushd NNPACK-darknet > /dev/null
+    $HOME/.local/bin/confu setup
+    python ./configure.py --backend auto
+    /tmp/ninja/ninja
+    sudo cp lib/{libgoogletest-core.a,libnnpack.a,libpthreadpool.a} /usr/lib/
+    sudo cp include/nnpack.h /usr/include/
+    sudo cp deps/pthreadpool/include/pthreadpool.h /usr/include/
+    popd > /dev/null
+    popd > /dev/null
+
+    # build detection backend (darknet)
+    pushd inference > /dev/null
+    git clone https://github.com/thomaspark-pkj/darknet-nnpack.git darknet
+    pushd darknet > /dev/null
+    patch -p 1 < ../../patch/01-detection-backend.patch
+    make -j
+    popd > /dev/null
+    popd > /dev/null
+
+    cp utils/darknet/detectord.py inference/darknet
+    mkdir inference/darknet/utils
+    cp utils/darknet/utils/localrun.sh inference/darknet/utils
+}
+
 download_classifier_model() {
     # Inception v3 is default classifier model
     INCEPTION_PKGNAME=inception_dec_2015.zip
@@ -79,33 +126,9 @@ download_classifier_model() {
 download_detector_model() {
     pushd inference/darkflow > /dev/null
     mkdir bin
-    wget -O bin/tiny-yolo.weights https://s3.amazonaws.com/berrynet/models/tinyyolo/tiny-yolo.weights
-    wget -O cfg/tiny-yolo.cfg https://s3.amazonaws.com/berrynet/models/tinyyolo/tiny-yolo.cfg
     popd > /dev/null
-}
-
-install_nodejs() {
-    # v6.x is LTS, if you want the latest feature, change to "setup_7.x".
-    curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
-    sudo apt-get install -y nodejs
-}
-
-install_nodejs_legacy() {
-    # FIXME: Use bash as default ambiguously.
-    # Raspbian is 32-bit, so we download armv7l instead of arm64.
-    NODEJS_VERSION="v6.10.2"
-    NODEJS_OS="linux"
-    NODEJS_ARCH="armv7l"
-    #NODEJS_ARCH="x64"
-    NODEJS_PKGNAME="node-$NODEJS_VERSION-$NODEJS_OS-$NODEJS_ARCH"
-    if [ ! -e "$NODEJS_PKGNAME" ]; then
-        if [ ! -e "$PWD/$NODEJS_PKGNAME.tar.xz" ]; then
-            wget https://nodejs.org/dist/$NODEJS_VERSION/$NODEJS_PKGNAME.tar.xz
-        fi
-        tar xJf $NODEJS_PKGNAME.tar.xz
-        echo "export PATH=$PWD/$NODEJS_PKGNAME/bin:\$PATH" >> $HOME/.bashrc
-    fi
-    export PATH=$PWD/$NODEJS_PKGNAME/bin:$PATH
+    wget -O /tmp/tinyyolo_20170816_all.deb https://s3.amazonaws.com/berrynet/models/tinyyolo/tinyyolo_20170816_all.deb
+    sudo dpkg -i /tmp/tinyyolo_20170816_all.deb
 }
 
 install_dashboard() {
@@ -122,26 +145,35 @@ install_dashboard() {
 
 install_systemd_configs() {
     sudo cp systemd/* /etc/systemd/system
+    sudo cp config/bcm2835-v4l2.conf /etc/modules-load.d
+    # enable ramfs to speedup I/O
+    echo -e "tmpfs /var/ramfs tmpfs nodev,nosuid,size=50M 0 0" \
+        | sudo tee -a /etc/fstab
+    sudo mount -a
 }
 
 install_gateway() {
     local working_dir="/usr/local/berrynet"
     sudo mkdir -p $working_dir
-    sudo cp -a broker.js camera.js cleaner.sh config.js dashboard inference journal.js localimg.js mail.js package.json $working_dir
+    sudo cp -a \
+        broker.js camera.js config.js dashboard data_collector.js \
+        inference journal.js localimg.js mail.js line.js package.json \
+        $working_dir
     sudo cp berrynet-manager /usr/local/bin
     # install npm dependencies
     pushd $working_dir > /dev/null
-    sudo npm install
+    sudo npm install --unsafe-perm
     popd > /dev/null
 }
 
 install_system_dependencies 2>&1 | tee -a $LOG
 install_optional_dependencies 2>&1 | tee -a $LOG
+install_nodejs 2>&1 | tee -a $LOG
 install_tensorflow 2>&1 | tee -a $LOG
 download_classifier_model 2>&1 | tee -a $LOG
 install_darkflow 2>&1 | tee -a $LOG
+install_darknet 2>&1 | tee -a $LOG
 download_detector_model 2>&1 | tee -a $LOG
-install_nodejs 2>&1 | tee -a $LOG
 install_dashboard 2>&1 | tee -a $LOG
 install_systemd_configs 2>&1 | tee -a $LOG
 install_gateway 2>&1 | tee -a $LOG
