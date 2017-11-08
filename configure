@@ -182,6 +182,10 @@ install_caffe2() {
     fi
 }
 
+download_classifier_model_caffe2() {
+    sh ./utils/install-caffe2-models.sh
+}
+
 install_system_dependencies 2>&1 | tee -a $LOG
 
 DISTRIBUTIONID=`lsb_release -i -s`
@@ -197,5 +201,6 @@ install_dashboard 2>&1 | tee -a $LOG
 install_systemd_configs 2>&1 | tee -a $LOG
 install_gateway 2>&1 | tee -a $LOG
 install_caffe2 2>&1 | tee -a $LOG
+download_classifier_model_caffe2 2>&1 | tee -a $LOG
 
 echo "Installation is completed successfully!" | tee -a $LOG
