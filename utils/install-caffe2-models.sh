@@ -3,13 +3,20 @@
 # Main dependencies
 
 sudo apt-get update
-sudo apt-get install -y git-lfs
+#sudo apt-get install -y git-lfs
 
 # Download models
 
 TMPDIR1=`mktemp -d`
+
+
+cd /caffe2/build
+sudo python -m caffe2.python.models.download squeezenet
+sudo mkdir -p "$TMPDIR1"/models
+sudo mv -f squeezenet "$TMPDIR1"/models
 cd "$TMPDIR1"
-git lfs clone https://github.com/caffe2/models.git
+#git lfs clone https://github.com/caffe2/models.git
+
 
 # Install models
 
