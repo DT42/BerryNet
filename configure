@@ -66,14 +66,20 @@ install_darkflow() {
 }
 
 install_darknet() {
+    local peachpy_version="0.0.1"
+    local confu_version="cc90068"
+    local ninja_version="v1.8.2"
+    local nnpack_darknet_version="1ecda10"
+    local darknet_nnpack_version="fa5bddc"
+
     # build dependencies
-    pip install --user PeachPy
-    pip install --user git+https://github.com/Maratyszcza/confu
+    pip install --user PeachPy==$peachpy_version
+    pip install --user git+https://github.com/Maratyszcza/confu@$confu_version
 
     pushd /tmp > /dev/null
     git clone https://github.com/ninja-build/ninja.git
     pushd ninja > /dev/null
-    git checkout release
+    git reset --hard $ninja_version
     ./configure.py --bootstrap
     popd > /dev/null
     popd > /dev/null
@@ -83,6 +89,7 @@ install_darknet() {
     pushd /tmp > /dev/null
     git clone https://github.com/thomaspark-pkj/NNPACK-darknet.git
     pushd NNPACK-darknet > /dev/null
+    git reset --hard $nnpack_darknet_version
     $HOME/.local/bin/confu setup
     python ./configure.py --backend auto
     /tmp/ninja/ninja
@@ -96,6 +103,7 @@ install_darknet() {
     pushd inference > /dev/null
     git clone https://github.com/thomaspark-pkj/darknet-nnpack.git darknet
     pushd darknet > /dev/null
+    git reset --hard $darknet_nnpack_version
     patch -p 1 < ../../patch/01-detection-backend.patch
     make -j
     popd > /dev/null
@@ -132,9 +140,11 @@ download_detector_model() {
 }
 
 install_dashboard() {
+    local dashboard_version="8f24074"
     if [ ! -e "dashboard" ]; then
         git clone https://github.com/v-i-s-h/PiIoT-dashboard.git dashboard
         pushd dashboard > /dev/null
+	git reset --hard $dashboard_version
         patch -p 1 < ../patch/ui-dt42-theme.patch
         cp ../patch/www/freeboard/img/dt42-logo.png www/freeboard/img
         cp ../patch/www/freeboard/css/dt42.css www/freeboard/css
