@@ -21,6 +21,10 @@
 
 LOG="/tmp/berrynet.log"
 
+install_berrynet_repository() {
+    sudo cp apt/berrynet.list /etc/apt/sources.list.d
+}
+
 install_system_dependencies() {
     sudo apt-get update
     sudo apt-get install -y python-dev python-pip python-opencv mongodb libkrb5-dev libzmq3-dev libyaml-dev imagemagick curl fswebcam wget git libopencv-dev
@@ -176,6 +180,7 @@ install_gateway() {
     popd > /dev/null
 }
 
+install_berrynet_repository 2>&1 | tee -a $LOG
 install_system_dependencies 2>&1 | tee -a $LOG
 install_optional_dependencies 2>&1 | tee -a $LOG
 install_nodejs 2>&1 | tee -a $LOG
