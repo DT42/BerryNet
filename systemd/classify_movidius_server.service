@@ -1,0 +1,18 @@
+[Unit]
+Description=movidius classification server
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/usr/local/berrynet/inference
+PIDFile=/tmp/classify_movidius_server.pid
+ExecStart=/usr/bin/python classify_movidius_server.py \
+    --model=/tmp/movidius/model \
+    --label=/tmp/movidius/labels.txt \
+    --image_dir=/usr/local/berrynet/inference/image
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+WantedBy=graphical.target
