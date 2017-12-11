@@ -40,6 +40,22 @@ from watchdog.observers import Observer
 from watchdog.events import PatternMatchingEventHandler
 
 
+class DLEngine(object):
+    def process_input(self, tensor):
+        return tensor
+
+    def inference(self, tensor):
+        output = None
+        return output
+
+    def process_output(self, output)
+        return output
+
+    def save_output(self, output, filepath)
+        with open(filepath, 'w') as f:
+            f.write(output)
+
+
 class EventHandler(PatternMatchingEventHandler):
     def process(self, event):
         """
@@ -83,17 +99,14 @@ class EngineService(object):
         while True:
             input_name = self.image_queue.get()
             image_data = cv2.imread(input_name).astype(np.float32)
-            image_data = mv.process_inceptionv3_input(image_data)
+            image_data = self.engine.process_input(image_data)
 
             output = self.engine.inference(image_data)
-            inceptionv3_outputs = mv.process_inceptionv3_output(output,
-                                                                self.engine.get_labels())
+            model_outputs = self.engine.process_output(output)
 
             output_name = input_name + '.txt'
             output_done_name = output_name + '.done'
-            with open(output_name, 'w') as f:
-                for i in inceptionv3_outputs:
-                    print("%s (score = %.5f)" % (i[0], i[1]), file=f)
+            self.engine.save_output(model_outputs, output_name)
             self.touch(output_done_name)
             logging.debug(input_name + " classified!")
 

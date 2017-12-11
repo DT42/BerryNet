@@ -23,7 +23,29 @@ import logging
 
 import movidius as mv
 from engineservice import EngineService
+from engineservice import DLEngine
 from dlmodelmgr import DLModelManager
+
+
+class MovidiusEngine(DLEngine):
+    def __init__(self, model, label):
+        self.mvng = mv.MovidiusNeuralGraph(model, label)
+
+    def process_input(self, tensor):
+        return mv.process_inceptionv3_input(image_data)
+
+    def inference(self, tensor):
+        return self.mvng.inference(tensor)
+
+    def process_output(self, output):
+        return mv.process_inceptionv3_output(
+                   output,
+                   self.mvng.get_labels())
+
+    def save_output(self, output, filepath):
+        with open(filepath, 'w') as f:
+            for i in outputs:
+                print("%s (score = %.5f)" % (i[0], i[1]), file=f)
 
 
 def parse_args():
@@ -56,6 +78,6 @@ if __name__ == '__main__':
     logging.debug('label filepath: ' + args['label'])
     logging.debug('image_dir: ' + args['image_dir'])
 
-    mvng = mv.MovidiusNeuralGraph(args['model'], args['label'])
-    engine_service = EngineService(args['service_name'], mvng)
+    movidius_engine = MovidiusEngine(args['model'], args['label'])
+    engine_service = EngineService(args['service_name'], movidius_engine)
     engine_service.run(args)
