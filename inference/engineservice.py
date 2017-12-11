@@ -35,6 +35,7 @@ import movidius as mv
 import numpy as np
 import Queue
 
+from dlmodelmgr import DLModelManager
 from watchdog.observers import Observer
 from watchdog.events import PatternMatchingEventHandler
 
@@ -53,7 +54,7 @@ class EventHandler(PatternMatchingEventHandler):
         _msg = event.src_path
         self.image_queue.put(_msg.rstrip('.done'))
         os.remove(_msg)
-        logging.debug(_msg, event.event_type)
+        logging.debug(_msg + ' ' + event.event_type)
 
     # ignore all other types of events except 'modified'
     def on_created(self, event):
@@ -77,7 +78,7 @@ class EngineService(object):
     def server(self):
         """Infinite loop serving inference requests"""
 
-        logging.info(threading.current_thread().getName(), "is running")
+        logging.info(threading.current_thread().getName() + "is running")
 
         while True:
             input_name = self.image_queue.get()
@@ -94,7 +95,7 @@ class EngineService(object):
                 for i in inceptionv3_outputs:
                     print("%s (score = %.5f)" % (i[0], i[1]), file=f)
             self.touch(output_done_name)
-            logging.debug(input_name, " classified!")
+            logging.debug(input_name + " classified!")
 
     def run(self, args):
         self.record_pid()
@@ -147,10 +148,13 @@ class EngineService(object):
 
 def parse_args():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--model', required=True,
+    ap.add_argument('--model',
                     help='Model file path')
-    ap.add_argument('--label', required=True,
+    ap.add_argument('--label',
                     help='Label file path')
+    ap.add_argument('--model_package',
+                    default='',
+                    help='Model package name')
     ap.add_argument('--image_dir', required=True,
                     help='Path to image file')
     ap.add_argument('--service_name', required=True,
@@ -161,10 +165,16 @@ def parse_args():
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG)
     args = parse_args()
-    logging.debug('model filepath: ', args['model'])
-    logging.debug('label filepath: ', args['label'])
-    logging.debug('image_dir: ', args['image_dir'])
+    if args['model_package'] != '':
+        dlmm = DLModelManager()
+        meta = dlmm.get_model_meta(args['model_package'])
+        args['model'] = meta['model']
+        args['label'] = meta['label']
+    logging.debug('model filepath: ' + args['model'])
+    logging.debug('label filepath: ' + args['label'])
+    logging.debug('image_dir: ' + args['image_dir'])
 
     mvng = mv.MovidiusNeuralGraph(args['model'], args['label'])
     engine_service = EngineService(args['service_name'], mvng)
