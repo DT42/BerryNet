@@ -18,6 +18,8 @@
 """Movidius inference engine.
 """
 
+from __future__ import print_function
+
 import argparse
 import logging
 
@@ -32,7 +34,7 @@ class MovidiusEngine(DLEngine):
         self.mvng = mv.MovidiusNeuralGraph(model, label)
 
     def process_input(self, tensor):
-        return mv.process_inceptionv3_input(image_data)
+        return mv.process_inceptionv3_input(tensor)
 
     def inference(self, tensor):
         return self.mvng.inference(tensor)
@@ -44,7 +46,7 @@ class MovidiusEngine(DLEngine):
 
     def save_output(self, output, filepath):
         with open(filepath, 'w') as f:
-            for i in outputs:
+            for i in output:
                 print("%s (score = %.5f)" % (i[0], i[1]), file=f)
 
 

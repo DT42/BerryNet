@@ -48,10 +48,10 @@ class DLEngine(object):
         output = None
         return output
 
-    def process_output(self, output)
+    def process_output(self, output):
         return output
 
-    def save_output(self, output, filepath)
+    def save_output(self, output, filepath):
         with open(filepath, 'w') as f:
             f.write(output)
 
