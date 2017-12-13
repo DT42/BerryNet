@@ -31,7 +31,6 @@ import threading
 import time
 
 import cv2
-import movidius as mv
 import numpy as np
 import Queue
 
@@ -49,6 +48,12 @@ class DLEngine(object):
             'model_output': '',
             'model_output_filepath': ''
         }
+
+    def create(self):
+        # Workaround to posepone TensorFlow initialization.
+        # If TF is initialized in __init__, and pass an engine instance
+        # to engine service, TF session will stuck in run().
+        pass
 
     def process_input(self, tensor):
         return tensor
@@ -106,8 +111,9 @@ class EngineService(object):
     def server(self):
         """Infinite loop serving inference requests"""
 
-        logging.info(threading.current_thread().getName() + "is running")
+        logging.info(threading.current_thread().getName() + " is running")
 
+        self.engine.create()
         while True:
             input_name = self.image_queue.get()
             image_data = cv2.imread(input_name).astype(np.float32)
@@ -136,27 +142,13 @@ class EngineService(object):
             observer = Observer()
             observer.schedule(self.event_handler, path=args['image_dir'])
             observer.start()
-            self.main(args)
+            self.server()
         else:  # parent
             try:
                 os.wait()
             except KeyboardInterrupt:
                 os.kill(child_pid, signal.SIGKILL)
                 self.erase_pid()
-
-    def main(self, args):
-        threads = []
-
-        # Create a server thread for each CPU core
-        cpu_count = multiprocessing.cpu_count()
-        for i in xrange(cpu_count/4):
-            threads.append(
-                threading.Thread(target=self.server,
-                                 name='Server thread %d' % i))
-        for t in threads:
-            t.start()
-        for t in threads:
-            t.join()
 
     def record_pid(self):
         """Write a PID pidfile /tmp/<service_name>.pid.
@@ -193,6 +185,8 @@ def parse_args():
 
 
 if __name__ == '__main__':
+    import movidius as mv
+
     logging.basicConfig(level=logging.DEBUG)
     args = parse_args()
     if args['model_package'] != '':
