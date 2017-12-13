@@ -43,7 +43,7 @@ from watchdog.events import PatternMatchingEventHandler
 class DLEngine(object):
     def __init__(self):
         self.model_input_cache = []
-        self.model_output_cache = ''
+        self.model_output_cache = []
         self.cache = {
             'model_input': [],
             'model_output': '',
@@ -65,7 +65,7 @@ class DLEngine(object):
 
     def save_cache(self):
         with open(self.cache['model_output_filepath'], 'w') as f:
-            f.write(self.model_output_cache)
+            f.write(str(self.cache['model_output']))
 
 
 class EventHandler(PatternMatchingEventHandler):
@@ -111,16 +111,16 @@ class EngineService(object):
         while True:
             input_name = self.image_queue.get()
             image_data = cv2.imread(input_name).astype(np.float32)
-            self.cache_data('model_input', image_data)
+            self.engine.cache_data('model_input', image_data)
             image_data = self.engine.process_input(image_data)
 
             output = self.engine.inference(image_data)
             model_outputs = self.engine.process_output(output)
-            self.cache_data('model_ouptut', model_outputs)
+            self.engine.cache_data('model_output', model_outputs)
 
             output_name = input_name + '.txt'
             output_done_name = output_name + '.done'
-            self.cache_data('model_output_filepath', output_name)
+            self.engine.cache_data('model_output_filepath', output_name)
             self.engine.save_cache()
             self.touch(output_done_name)
             logging.debug(input_name + " classified!")

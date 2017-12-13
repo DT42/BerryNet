@@ -31,6 +31,7 @@ from dlmodelmgr import DLModelManager
 
 class MovidiusEngine(DLEngine):
     def __init__(self, model, label):
+        super(MovidiusEngine, self).__init__()
         self.mvng = mv.MovidiusNeuralGraph(model, label)
 
     def process_input(self, tensor):
@@ -44,9 +45,9 @@ class MovidiusEngine(DLEngine):
                    output,
                    self.mvng.get_labels())
 
-    def save_output(self, output, filepath):
-        with open(filepath, 'w') as f:
-            for i in output:
+    def save_cache(self):
+        with open(self.cache['model_output_filepath'], 'w') as f:
+            for i in self.cache['model_output']:
                 print("%s (score = %.5f)" % (i[0], i[1]), file=f)
 
 
