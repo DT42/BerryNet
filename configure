@@ -175,14 +175,7 @@ install_caffe2() {
     if [ x"$DISTRIBUTIONID" = x"Ubuntu" ]; then
 	sh ./utils/install-caffe2-ubuntu.sh
     elif [ x"$DISTRIBUTIONID" = x"Raspbian" ]; then
-	pushd /
-	sudo git clone --recursive https://github.com/caffe2/caffe2.git
-	popd
-	pushd /caffe2
-	sudo git checkout v0.8.1 -b b0.8.1
-	sudo sed -i.bak1 's/MAKE_VERBOSE_MAKEFILE=1/MAKE_VERBOSE_MAKEFILE=1 -DUSE_GLOO=OFF/' ./scripts/build_raspbian.sh
-	sudo ./scripts/build_raspbian.sh
-	popd
+	sh ./utils/install-caffe2-raspbian.sh
     fi
 }
 
