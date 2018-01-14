@@ -7,6 +7,7 @@ sudo apt-get install -y \
       build-essential \
       git \
       cmake \
+      googletest \
       libgflags-dev \
       libgoogle-glog-dev \
       libprotobuf-dev \
@@ -14,7 +15,9 @@ sudo apt-get install -y \
       python-pip \
       python-numpy \
       protobuf-compiler \
-      python-protobuf
+      python-protobuf \
+      python-skimage \
+      python-future
 
 # Build and install caffe2
 
