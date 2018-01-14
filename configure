@@ -20,6 +20,7 @@
 # One-click IoT gateway deployment script.
 
 LOG="/tmp/berrynet.log"
+DISTRIBUTIONID=`lsb_release -i -s`
 
 install_berrynet_repository() {
     sudo cp apt/berrynet.list /etc/apt/sources.list.d
@@ -28,6 +29,7 @@ install_berrynet_repository() {
 install_system_dependencies() {
     sudo apt-get update
     sudo apt-get install -y python-dev python-pip python-opencv mongodb libkrb5-dev libzmq3-dev libyaml-dev imagemagick curl fswebcam wget git libopencv-dev
+    sudo apt-get install -y lsb-release
     sudo service mongodb start
     sudo -H pip install watchdog cython
 }
@@ -43,14 +45,18 @@ install_nodejs() {
 }
 
 install_tensorflow() {
-    TENSORFLOW_VERSION="1.0.1"
-    TENSORFLOW_PKGNAME="tensorflow-${TENSORFLOW_VERSION}-cp27-none-linux_armv7l.whl"
-    if [ ! -e "$TENSORFLOW_PKGNAME" ]; then
-        wget https://github.com/samjabrahams/tensorflow-on-raspberry-pi/releases/download/v${TENSORFLOW_VERSION}/$TENSORFLOW_PKGNAME
-    else
-        echo "$TENSORFLOW_PKGNAME has existed, skip to download it."
+    if [ x"$DISTRIBUTIONID" = x"Ubuntu" ]; then
+	sudo -H pip install tensorflow
+    elif [ x"$DISTRIBUTIONID" = x"Raspbian" ]; then
+	TENSORFLOW_VERSION="1.0.1"
+	TENSORFLOW_PKGNAME="tensorflow-${TENSORFLOW_VERSION}-cp27-none-linux_armv7l.whl"
+	if [ ! -e "$TENSORFLOW_PKGNAME" ]; then
+            wget https://github.com/samjabrahams/tensorflow-on-raspberry-pi/releases/download/v${TENSORFLOW_VERSION}/$TENSORFLOW_PKGNAME
+	else
+            echo "$TENSORFLOW_PKGNAME has existed, skip to download it."
+	fi
+	sudo -H pip install $TENSORFLOW_PKGNAME
     fi
-    sudo -H pip install $TENSORFLOW_PKGNAME
 }
 
 install_darkflow() {
@@ -180,6 +186,18 @@ install_gateway() {
     popd > /dev/null
 }
 
+install_caffe2() {
+    if [ x"$DISTRIBUTIONID" = x"Ubuntu" ]; then
+	sh ./utils/install-caffe2-ubuntu.sh
+    elif [ x"$DISTRIBUTIONID" = x"Raspbian" ]; then
+	sh ./utils/install-caffe2-raspbian.sh
+    fi
+}
+
+download_classifier_model_caffe2() {
+    sh ./utils/install-caffe2-models.sh
+}
+
 install_berrynet_repository 2>&1 | tee -a $LOG
 install_system_dependencies 2>&1 | tee -a $LOG
 install_optional_dependencies 2>&1 | tee -a $LOG
@@ -192,5 +210,7 @@ download_detector_model 2>&1 | tee -a $LOG
 install_dashboard 2>&1 | tee -a $LOG
 install_systemd_configs 2>&1 | tee -a $LOG
 install_gateway 2>&1 | tee -a $LOG
+install_caffe2 2>&1 | tee -a $LOG
+download_classifier_model_caffe2 2>&1 | tee -a $LOG
 
 echo "Installation is completed successfully!" | tee -a $LOG
