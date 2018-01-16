@@ -19,7 +19,7 @@
 
 # One-click IoT gateway deployment script.
 
-LOG="/tmp/berrynet.log"
+LOG="$HOME/.cache/berrynet.log"
 DISTRIBUTIONID=`lsb_release -i -s`
 
 install_berrynet_repository() {
