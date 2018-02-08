@@ -35,6 +35,7 @@ result from 'cat.jpg.txt'.
 from __future__ import print_function
 
 import argparse
+import json
 import multiprocessing
 import os
 import signal
@@ -67,6 +68,25 @@ def touch(fname, times=None):
         os.utime(fname, times)
 
 
+def generalize_inference_result(ncs_classifications):
+    """Result format conversion from NCS classification to generic format.
+
+    param list ncs_classifications: [(label, confidence), ...]
+    return dict r: generic inference result format
+    """
+    r = {
+        'annotations': []
+    }
+    conf_digits = 2
+    for label, confidence in ncs_classifications:
+        r['annotations'].append({
+            'type': 'classification',
+            'label': label,
+            'confidence': round(float(confidence), conf_digits)
+        })
+    return r
+
+
 def server():
     """Infinite loop serving inference requests"""
 
@@ -86,9 +106,13 @@ def server():
 
         output_name = input_name + '.txt'
         output_done_name = output_name + '.done'
+        inference_result = generalize_inference_result(inceptionv3_outputs)
+        logging(json.dumps(inference_result, indent=4))
         with open(output_name, 'w') as f:
-            for i in inceptionv3_outputs:
-                print("%s (score = %.5f)" % (i[0], i[1]), file=f)
+            json.dump(inference_result, f, indent=4)
+        #with open(output_name, 'w') as f:
+        #    for i in inceptionv3_outputs:
+        #        print("%s (score = %.5f)" % (i[0], i[1]), file=f)
         touch(output_done_name)
         logging(input_name, " classified!")
 
