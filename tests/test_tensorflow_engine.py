@@ -19,6 +19,7 @@ class TestTensorFlowEngine(unittest.TestCase):
             cv2.imread(jpg_filepath),
             cv2.COLOR_BGR2RGB)
         tfe.process_output(tfe.inference(tfe.process_input(rgb_array)))
+        tfe.process_output(tfe.inference(tfe.process_input(rgb_array)))
         #self.assertEqual('foo'.upper(), 'FOO')
 
     #def test_isupper(self):
