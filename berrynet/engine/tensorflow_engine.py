@@ -50,17 +50,20 @@ class TensorFlowEngine(DLEngine):
         self.output_layer = output_layer
         self.top_k = top_k
 
+        # NOTE: Do NOT call read_tensor_from_nparray twice to prevent from
+        #       recreating unexpected placeholders.
+        self.tensor_op = self.read_tensor_from_nparray(
+            input_height=299,
+            input_width=299,
+            input_mean=0,
+            input_std=255)
+
     def create(self):
         # Create session
         self.sess = tf.Session()
 
     def process_input(self, rgb_array):
-        tensor_op = self.read_tensor_from_nparray(
-            input_height=299,
-            input_width=299,
-            input_mean=0,
-            input_std=255)
-        return self.sess.run(tensor_op,
+        return self.sess.run(self.tensor_op,
                              feed_dict={'inarray:0': rgb_array})
 
     def inference(self, tensor):
