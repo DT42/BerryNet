@@ -30,6 +30,7 @@ setup(
     install_requires=[
         'logzero',
         'opencv-python',
+        'paho-mqtt',
         'tensorflow'
     ],
     python_requires='>=3',  # recognized by pip >= 9.0.0
