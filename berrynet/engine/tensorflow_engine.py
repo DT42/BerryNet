@@ -28,7 +28,7 @@ import tensorflow as tf
 
 from berrynet import logger
 #from berrynet.dlmodelmgr import DLModelManager
-from berrynet.engineservice import DLEngine
+from berrynet.engine import DLEngine
 
 
 class TensorFlowEngine(DLEngine):
