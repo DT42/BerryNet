@@ -22,7 +22,6 @@ import argparse
 import logging
 
 from berrynet.dlmodelmgr import DLModelManager
-from berrynet.engine import movidius as mv
 from berrynet.engine.movidius_classification_engine import MovidiusEngine
 from berrynet.service import EngineService
 
@@ -54,9 +53,8 @@ def main():
         args['label'] = meta['label']
     logging.debug('model filepath: ' + args['model'])
     logging.debug('label filepath: ' + args['label'])
-    logging.debug('image_dir: ' + args['image_dir'])
 
-    mvng = mv.MovidiusNeuralGraph(args['model'], args['label'])
+    mvng = MovidiusEngine(args['model'], args['label'])
     comm_config = {
         'subscribe': {},
         'broker': {
