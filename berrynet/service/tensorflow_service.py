@@ -21,9 +21,22 @@
 import argparse
 import logging
 
+from berrynet.comm import payload
 from berrynet.dlmodelmgr import DLModelManager
 from berrynet.engine.tensorflow_engine import TensorFlowEngine
 from berrynet.service import EngineService
+
+
+class TensorFlowService(EngineService):
+    def __init__(self, service_name, engine, comm_config):
+        super(TensorFlowService, self).__init__(service_name,
+                                                engine,
+                                                comm_config)
+
+    def result_hook(self, generalized_result):
+        logging.debug('result_hook, annotations: {}'.format(generalized_result['annotations']))
+        self.comm.send('berrynet/engine/tensorflow/result',
+                       payload.serialize_payload(generalized_result))
 
 
 def parse_args():
@@ -63,9 +76,9 @@ def main():
             'port': 1883
         }
     }
-    engine_service = EngineService(args['service_name'],
-                                   tfe,
-                                   comm_config)
+    engine_service = TensorFlowService(args['service_name'],
+                                       tfe,
+                                       comm_config)
     engine_service.run(args)
 
 

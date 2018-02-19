@@ -42,7 +42,7 @@ class EngineService(object):
         t = datetime.now()
         logging.debug('payload size: {}'.format(len(pl)))
         logging.debug('payload type: {}'.format(type(pl)))
-        jpg_json = payload.deserialize_jpg(pl.decode('utf-8'))
+        jpg_json = payload.deserialize_payload(pl.decode('utf-8'))
         jpg_bytes = payload.destringify_jpg(jpg_json['bytes'])
         logging.debug('destringify_jpg: {} ms'.format(duration(t)))
 
@@ -60,6 +60,15 @@ class EngineService(object):
         #self.engine.cache_data('model_output', model_outputs)
         #self.engine.cache_data('model_output_filepath', output_name)
         #self.engine.save_cache()
+
+        self.result_hook(self.generalize_result(jpg_json, model_outputs))
+
+    def generalize_result(self, eng_input, eng_output):
+        eng_input.update({'annotations': eng_output})
+        return eng_input
+
+    def result_hook(self, generalized_result):
+        logging.debug('base result_hook')
 
     def run(self, args):
         """Infinite loop serving inference requests"""
