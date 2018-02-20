@@ -18,12 +18,12 @@
 """Engine service is a bridge between incoming data and inference engine.
 """
 
-import logging
 import os
 import time
 
 from datetime import datetime
 
+from berrynet import logger
 from berrynet.comm import Communicator
 from berrynet.comm import payload
 
@@ -40,22 +40,22 @@ class EngineService(object):
         duration = lambda t: (datetime.now() - t).microseconds / 1000
 
         t = datetime.now()
-        logging.debug('payload size: {}'.format(len(pl)))
-        logging.debug('payload type: {}'.format(type(pl)))
+        logger.debug('payload size: {}'.format(len(pl)))
+        logger.debug('payload type: {}'.format(type(pl)))
         jpg_json = payload.deserialize_payload(pl.decode('utf-8'))
         jpg_bytes = payload.destringify_jpg(jpg_json['bytes'])
-        logging.debug('destringify_jpg: {} ms'.format(duration(t)))
+        logger.debug('destringify_jpg: {} ms'.format(duration(t)))
 
         t = datetime.now()
         rgb_array = payload.jpg2rgb(jpg_bytes)
-        logging.debug('jpg2rgb: {} ms'.format(duration(t)))
+        logger.debug('jpg2rgb: {} ms'.format(duration(t)))
 
         t = datetime.now()
         image_data = self.engine.process_input(rgb_array)
         output = self.engine.inference(image_data)
         model_outputs = self.engine.process_output(output)
-        logging.debug('Result: {}'.format(model_outputs))
-        logging.debug('Classification takes {} ms'.format(duration(t)))
+        logger.debug('Result: {}'.format(model_outputs))
+        logger.debug('Classification takes {} ms'.format(duration(t)))
 
         #self.engine.cache_data('model_output', model_outputs)
         #self.engine.cache_data('model_output_filepath', output_name)
@@ -68,7 +68,7 @@ class EngineService(object):
         return eng_input
 
     def result_hook(self, generalized_result):
-        logging.debug('base result_hook')
+        logger.debug('base result_hook')
 
     def run(self, args):
         """Infinite loop serving inference requests"""

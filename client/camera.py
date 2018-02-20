@@ -4,9 +4,9 @@ from datetime import datetime
 
 import cv2
 
+from berrynet import logger
 from berrynet.comm import Communicator
 from berrynet.comm import payload
-from logzero import logger
 
 
 def main():

@@ -24,8 +24,9 @@ from __future__ import print_function
 
 import argparse
 import json
-import logging
 import os
+
+from berrynet import logger
 
 
 class DLModelManager(object):
@@ -56,7 +57,7 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
-    logging.debug('model package name: ', args['modelname'])
+    logger.debug('model package name: ', args['modelname'])
 
     dlmm = DLModelManager()
     for name in dlmm.get_model_names():

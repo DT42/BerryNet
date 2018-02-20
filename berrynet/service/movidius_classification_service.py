@@ -21,6 +21,7 @@
 import argparse
 import logging
 
+from berrynet import logger
 from berrynet.comm import payload
 from berrynet.dlmodelmgr import DLModelManager
 from berrynet.engine.movidius_classification_engine import MovidiusEngine
@@ -34,7 +35,7 @@ class MovidiusClassificationService(EngineService):
                                                             comm_config)
 
     def result_hook(self, generalized_result):
-        logging.debug('result_hook, annotations: {}'.format(generalized_result['annotations']))
+        logger.debug('result_hook, annotations: {}'.format(generalized_result['annotations']))
         self.comm.send('berrynet/engine/mvclassification/result',
                        payload.serialize_payload(generalized_result))
 
@@ -52,20 +53,26 @@ def parse_args():
                     help='Engine service name used as PID filename')
     ap.add_argument('--num_top_predictions', default=5,
                     help='Display this many predictions')
+    ap.add_argument('--debug',
+                    action='store_true',
+                    help='Debug mode toggle')
     return vars(ap.parse_args())
 
 
 def main():
     # Test Movidius engine
-    logging.basicConfig(level=logging.DEBUG)
     args = parse_args()
+    if args['debug']:
+        logger.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.INFO)
     if args['model_package'] != '':
         dlmm = DLModelManager()
         meta = dlmm.get_model_meta(args['model_package'])
         args['model'] = meta['model']
         args['label'] = meta['label']
-    logging.debug('model filepath: ' + args['model'])
-    logging.debug('label filepath: ' + args['label'])
+    logger.debug('model filepath: ' + args['model'])
+    logger.debug('label filepath: ' + args['label'])
 
     mvng = MovidiusEngine(args['model'], args['label'])
     comm_config = {

@@ -1,14 +1,10 @@
 #!/usr/bin/python3
 
-import logging
-
 import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
 
+from berrynet import logger
 from logzero import setup_logger
-
-
-logger = setup_logger(name='comm', logfile='/tmp/comm.log')
 
 
 def on_connect(client, userdata, flags, rc):
@@ -32,10 +28,6 @@ class Communicator(object):
         self.client.comm_config = comm_config
         self.client.on_connect = on_connect
         self.client.on_message = on_message
-        if debug:
-            logger.setLevel(logging.DEBUG)
-        else:
-            logger.setLevel(logging.INFO)
 
     def run(self):
         self.client.connect(

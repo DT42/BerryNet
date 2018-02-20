@@ -20,10 +20,10 @@
 
 import argparse
 import json
-import logging
 
 from os.path import join as pjoin
 
+from berrynet import logger
 from berrynet.comm import Communicator
 from berrynet.comm import payload
 
@@ -44,7 +44,7 @@ class DashboardService(object):
             '{0}: {1}<br>'.format(anno['label'], anno['confidence'])
             for anno in payload_json['annotations']
         ]
-        logging.debug('inference results: {}'.format(inference_result))
+        logger.debug('inference results: {}'.format(inference_result))
 
         with open(pjoin(self.basedir, 'snapshot.jpg'), 'wb') as f:
             f.write(jpg_bytes)
@@ -65,7 +65,6 @@ def parse_args():
 
 
 def main():
-    logging.basicConfig(level=logging.DEBUG)
     args = parse_args()
 
     comm_config = {
