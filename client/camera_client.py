@@ -1,5 +1,8 @@
 #!/usr/bin/python3
 
+import argparse
+import time
+
 from datetime import datetime
 
 import cv2
@@ -9,7 +12,30 @@ from berrynet.comm import Communicator
 from berrynet.comm import payload
 
 
+def parse_args():
+    ap = argparse.ArgumentParser()
+    ap.add_argument(
+        '--mode',
+        default='stream',
+        help='Camera creates frame(s) from stream or file. (default: stream)'
+    )
+    ap.add_argument(
+        '--fps',
+        type=int,
+        default=1,
+        help='Frame per second in streaming mode. (default: 1)'
+    )
+    ap.add_argument(
+        '--filepath',
+        default='',
+        help='Input image path in file mode. (default: empty)'
+    )
+    return vars(ap.parse_args())
+
+
 def main():
+    args = parse_args()
+
     comm_config = {
         'subscribe': {},
         'broker': {
@@ -21,8 +47,7 @@ def main():
 
     duration = lambda t: (datetime.now() - t).microseconds / 1000
 
-    video_mode = False
-    if video_mode:
+    if args['mode'] == 'stream':
         counter = 0
         capture = cv2.VideoCapture(0)
         while True:
@@ -36,12 +61,10 @@ def main():
             comm.send('data/rgbimage', mqtt_payload)
             logger.debug('send: {} ms'.format(duration(t)))
 
-            counter += 1
-            if counter >= 30:
-                break
-    else:
+            time.sleep(1.0 / args['fps'])
+    elif args['mode'] == 'file':
         # Prepare MQTT payload
-        im = cv2.imread('/home/debug/codes/tensorflow/tensorflow/examples/label_image/data/grace_hopper.jpg')
+        im = cv2.imread(args['filepath'])
         retval, jpg_bytes = cv2.imencode('.jpg', im)
 
         t = datetime.now()
@@ -54,6 +77,8 @@ def main():
         comm.send('data/rgbimage', mqtt_payload)
         logger.debug('mqtt.publish: {} ms'.format(duration(t)))
         logger.debug('publish at {}'.format(datetime.now().isoformat()))
+    else:
+        logger.error('User assigned unknown mode {}'.format(args['mode']))
 
 
 if __name__ == '__main__':
