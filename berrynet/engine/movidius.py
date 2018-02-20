@@ -83,8 +83,21 @@ def process_inceptionv3_input(img):
 
 
 def process_inceptionv3_output(output, labels):
-    top_inds = output.argsort()[::-1][:5]
-    return [(labels[top_inds[i]], output[top_inds[i]]) for i in range(5)]
+    processed_output = {'annotations': []}
+    decimal_digits = 2
+    tok_k = 5
+    top_inds = output.argsort()[::-1][:top_k]
+    for i in range(top_k):
+        human_string = labels[top_inds[i]]
+        score = round(float(output[top_inds[i]]), decimal_digits)
+        anno = {
+            'type': 'classification',
+            'label': human_string,
+            'confidence': score
+        }
+        processed_output['annotations'].append(anno)
+    return processed_output
+    #return [(labels[top_inds[i]], output[top_inds[i]]) for i in range(5)]
 
 
 def print_inceptionv3_output(output, labels):

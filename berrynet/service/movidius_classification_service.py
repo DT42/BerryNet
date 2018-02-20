@@ -21,9 +21,22 @@
 import argparse
 import logging
 
+from berrynet.comm import payload
 from berrynet.dlmodelmgr import DLModelManager
 from berrynet.engine.movidius_classification_engine import MovidiusEngine
 from berrynet.service import EngineService
+
+
+class MovidiusClassificationService(EngineService):
+    def __init__(self, service_name, engine, comm_config):
+        super(MovidiusClassificationService, self).__init__(service_name,
+                                                            engine,
+                                                            comm_config)
+
+    def result_hook(self, generalized_result):
+        logging.debug('result_hook, annotations: {}'.format(generalized_result['annotations']))
+        self.comm.send('berrynet/engine/mvclassification/result',
+                       payload.serialize_payload(generalized_result))
 
 
 def parse_args():
@@ -62,9 +75,9 @@ def main():
             'port': 1883
         }
     }
-    engine_service = EngineService(args['service_name'],
-                                   mvng,
-                                   comm_config)
+    engine_service = MovidiusClassificationService(args['service_name'],
+                                                   mvng,
+                                                   comm_config)
     engine_service.run(args)
 
 

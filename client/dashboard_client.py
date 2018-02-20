@@ -33,6 +33,7 @@ class DashboardService(object):
         self.service_name = service_name
         self.comm_config = comm_config
         self.comm_config['subscribe']['berrynet/engine/tensorflow/result'] = self.update
+        self.comm_config['subscribe']['berrynet/engine/mvclassification/result'] = self.update
         self.comm = Communicator(self.comm_config, debug=True)
         self.basedir = '/usr/local/berrynet/dashboard/www/freeboard'
 
