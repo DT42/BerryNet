@@ -64,7 +64,7 @@ class EngineService(object):
         self.result_hook(self.generalize_result(jpg_json, model_outputs))
 
     def generalize_result(self, eng_input, eng_output):
-        eng_input.update({'annotations': eng_output})
+        eng_input.update(eng_output)
         return eng_input
 
     def result_hook(self, generalized_result):

@@ -21,6 +21,7 @@
 from __future__ import print_function
 
 import argparse
+import json
 
 import cv2
 import numpy as np
@@ -71,14 +72,22 @@ class TensorFlowEngine(DLEngine):
                              {self.input_layer: tensor})
 
     def process_output(self, output):
+        processed_output = {'annotations': []}
+        decimal_digits = 2
         predictions = np.squeeze(output)
         top_k_index = predictions.argsort()[-self.top_k:][::-1]
 
         for node_id in top_k_index:
             human_string = self.labels[node_id]
-            score = predictions[node_id]
+            score = round(float(predictions[node_id]), decimal_digits)
+            anno = {
+                'type': 'classification',
+                'label': human_string,
+                'confidence': score
+            }
+            processed_output['annotations'].append(anno)
             logger.debug('%s (score = %.5f)' % (human_string, score))
-        return 'TBD'
+        return processed_output
 
     def save_cache(self):
         pass

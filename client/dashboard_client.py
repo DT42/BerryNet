@@ -39,7 +39,11 @@ class DashboardService(object):
     def update(self, pl):
         payload_json = payload.deserialize_payload(pl.decode('utf-8'))
         jpg_bytes = payload.destringify_jpg(payload_json['bytes'])
-        inference_result = payload_json['annotations']
+        inference_result = [
+            '{0}: {1}<br>'.format(anno['label'], anno['confidence'])
+            for anno in payload_json['annotations']
+        ]
+        logging.debug('inference results: {}'.format(inference_result))
 
         with open(pjoin(self.basedir, 'snapshot.jpg'), 'wb') as f:
             f.write(jpg_bytes)
