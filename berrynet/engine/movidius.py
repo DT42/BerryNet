@@ -85,7 +85,7 @@ def process_inceptionv3_input(img):
 def process_inceptionv3_output(output, labels):
     processed_output = {'annotations': []}
     decimal_digits = 2
-    tok_k = 5
+    top_k = 5
     top_inds = output.argsort()[::-1][:top_k]
     for i in range(top_k):
         human_string = labels[top_inds[i]]
