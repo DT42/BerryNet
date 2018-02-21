@@ -6,7 +6,7 @@ from setuptools import find_packages
 
 setup(
     name='berrynet',
-    version='v2.3.0rc1',
+    version='v3.0.0rc1',
     description='BerryNet',
     long_description=
         'TBD',
