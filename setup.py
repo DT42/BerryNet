@@ -38,8 +38,8 @@ setup(
     # https://setuptools.readthedocs.io/en/latest/setuptools.html
     #
     # Warning: package_data only looks for module's top level
-    package_data={
-    },
+    #package_data={
+    #},
     #data_files=[
     #    ('docs', ['docs/cheatsheet.txt', 'docs/references.txt']),
     #],
@@ -50,9 +50,13 @@ setup(
     # https://setuptools.readthedocs.io/en/latest/setuptools.html
     #
     # http://python-packaging.readthedocs.io/en/latest/command-line-scripts.html
-    #entry_points={
-    #    'console_scripts': ['hellowheels-cli=hellowheels.command_line:main']
-    #},
+    entry_points={
+        'console_scripts': [
+            'bn_camera=berrynet.client.camera:main',
+            'bn_dashboard=berrynet.client.dashboard:main',
+            'bn_data_collector=berrynet.client.data_collector:main',
+        ]
+    },
     #ext_modules=[
     #    Extension(
     #        'hellowheels.lib.clib',
