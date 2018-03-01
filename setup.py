@@ -31,7 +31,7 @@ setup(
         'logzero',
         'opencv-python',
         'paho-mqtt',
-        'tensorflow'
+        'tensorflow>=1.1.0'
     ],
     python_requires='>=3',  # recognized by pip >= 9.0.0
     # The "Including Data Files" session
