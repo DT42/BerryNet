@@ -1,2 +1,11 @@
-*.pyc
+# Byte-compiled / optimized / DLL files
 __pycache__
+*.pyc
+
+# Distribution / packaging
+build
+dist
+*.egg-info
+
+# Environments
+env
