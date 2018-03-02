@@ -58,7 +58,7 @@ def main():
             t = datetime.now()
             retval, jpg_bytes = cv2.imencode('.jpg', im)
             mqtt_payload = payload.serialize_jpg(jpg_bytes)
-            comm.send('data/rgbimage', mqtt_payload)
+            comm.send('berrynet/data/rgbimage', mqtt_payload)
             logger.debug('send: {} ms'.format(duration(t)))
 
             time.sleep(1.0 / args['fps'])
@@ -74,7 +74,7 @@ def main():
 
         # Client publishes payload
         t = datetime.now()
-        comm.send('data/rgbimage', mqtt_payload)
+        comm.send('berrynet/data/rgbimage', mqtt_payload)
         logger.debug('mqtt.publish: {} ms'.format(duration(t)))
         logger.debug('publish at {}'.format(datetime.now().isoformat()))
     else:
