@@ -33,7 +33,7 @@ class EngineService(object):
         self.service_name = service_name
         self.engine = engine
         self.comm_config = comm_config
-        self.comm_config['subscribe']['data/rgbimage'] = self.inference
+        self.comm_config['subscribe']['berrynet/data/rgbimage'] = self.inference
         self.comm = Communicator(self.comm_config, debug=True)
 
     def inference(self, pl):
