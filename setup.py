@@ -6,7 +6,7 @@ from setuptools import find_packages
 
 setup(
     name='berrynet',
-    version='v3.0.0rc3',
+    version='v3.0.0rc4',
     description='BerryNet',
     long_description=
         'TBD',
@@ -30,9 +30,15 @@ setup(
     install_requires=[
         'logzero',
         'opencv-python',
-        'paho-mqtt',
-        'tensorflow>=1.1.0'
+        'paho-mqtt'
     ],
+    # Without TF: pip3 install berrynet
+    # TF CPU mode: pip3 install berrynet[tf]
+    # TF GPU mode: pip3 install berrynet[tf_gpu]
+    extra_require={
+        'tf': ['tensorflow>=1.2.1'],
+        'tf_gpu': ['tensorflow-gpu>=1.2.1']
+    },
     python_requires='>=3',  # recognized by pip >= 9.0.0
     # The "Including Data Files" session
     # https://setuptools.readthedocs.io/en/latest/setuptools.html
