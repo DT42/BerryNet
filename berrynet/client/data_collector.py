@@ -33,6 +33,8 @@ from berrynet.comm import payload
 class DataCollectorService(object):
     def __init__(self, comm_config, data_dirpath):
         self.comm_config = comm_config
+        for topic, functor in self.comm_config['subscribe'].items():
+            self.comm_config['subscribe'][topic] = eval(functor)
         self.comm_config['subscribe']['berrynet/engine/tensorflow/result'] = self.update
         self.comm_config['subscribe']['berrynet/engine/mvclassification/result'] = self.update
         self.comm = Communicator(self.comm_config, debug=True)
@@ -74,14 +76,24 @@ def parse_args():
         default='localhost',
         help='MQTT broker IP.'
     )
+    ap.add_argument(
+        '--topic-config',
+        default=None,
+        help='Path of the MQTT topic subscription JSON.'
+    )
     return vars(ap.parse_args())
 
 
 def main():
     args = parse_args()
 
+    if args['topic_config']:
+        with open(args['topic_config']) as f:
+            topic_config = json.load(f)
+    else:
+        topic_config = {}
     comm_config = {
-        'subscribe': {},
+        'subscribe': topic_config,
         'broker': {
             'address': args['broker_ip'],
             'port': 1883
