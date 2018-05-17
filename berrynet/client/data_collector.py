@@ -65,7 +65,7 @@ class DataCollectorService(object):
 def parse_args():
     ap = argparse.ArgumentParser()
     ap.add_argument(
-        '--data_dirpath',
+        '--data-dirpath',
         default='/tmp/berrynet-data',
         help='Dirpath where to store collected data.'
     )
