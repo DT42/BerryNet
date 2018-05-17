@@ -30,6 +30,11 @@ def parse_args():
         default='',
         help='Input image path in file mode. (default: empty)'
     )
+    ap.add_argument(
+        '--broker-ip',
+        default='localhost',
+        help='MQTT broker IP.'
+    )
     return vars(ap.parse_args())
 
 
@@ -39,7 +44,7 @@ def main():
     comm_config = {
         'subscribe': {},
         'broker': {
-            'address': 'localhost',
+            'address': args['broker_ip'],
             'port': 1883
         }
     }
