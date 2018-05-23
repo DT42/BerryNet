@@ -59,6 +59,26 @@ class DataCollectorService(object):
         with open(pjoin(self.data_dirpath, timestamp + '.json'), 'w') as f:
             f.write(json.dumps(payload_json, indent=4))
 
+    def save_pipeline_result(self, pl):
+        if not os.path.exists(self.data_dirpath):
+            try:
+                os.mkdir(self.data_dirpath)
+            except Exception as e:
+                logger.warn('Failed to create {}'.format(self.data_dirpath))
+                raise(e)
+
+        payload_json = payload.deserialize_payload(
+                           pl.decode('utf-8'))['annotations']
+        jpg_bytes = payload.destringify_jpg(payload_json['image_blob'])
+        payload_json.pop('image_blob')
+        logger.debug('inference text result: {}'.format(payload_json))
+
+        timestamp = datetime.now().isoformat()
+        with open(pjoin(self.data_dirpath, timestamp + '.jpg'), 'wb') as f:
+            f.write(jpg_bytes)
+        with open(pjoin(self.data_dirpath, timestamp + '.json'), 'w') as f:
+            f.write(json.dumps(payload_json, indent=4))
+
     def run(self, args):
         """Infinite loop serving inference requests"""
         self.comm.run()
