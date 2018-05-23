@@ -67,8 +67,7 @@ class DataCollectorService(object):
                 logger.warn('Failed to create {}'.format(self.data_dirpath))
                 raise(e)
 
-        payload_json = payload.deserialize_payload(
-                           pl.decode('utf-8'))['annotations']
+        payload_json = payload.deserialize_payload(pl.decode('utf-8'))
         jpg_bytes = payload.destringify_jpg(payload_json['image_blob'])
         payload_json.pop('image_blob')
         logger.debug('inference text result: {}'.format(payload_json))
