@@ -1,0 +1,5 @@
+berrynet (3.2.0-1) UNRELEASED; urgency=low
+
+  * Initial release (Closes: #898152)
+
+ -- Ying-Chun Liu (PaulLiu) <paulliu@debian.org>  Wed, 20 Jun 2018 14:57:55 +0800
