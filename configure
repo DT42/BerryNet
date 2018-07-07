@@ -28,16 +28,22 @@ INSTALL_DARKFLOW="N"
 INSTALL_DARKNET="Y"
 INSTALL_TENSORFLOW="N"
 
+install_berrynet_repository() {
+    sudo apt update
+    sudo apt-get install -y dirmngr
+    sudo cp apt/berrynet.list /etc/apt/sources.list.d
+    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv D7ACFE23
+    sudo apt update
+}
+
 install_system_dependencies() {
     sudo apt-get update
     sudo apt-get install -y \
         curl \
-        dirmngr \
         fswebcam \
         git \
         imagemagick \
         libkrb5-dev \
-        libopencv-dev \
         libyaml-dev \
         libzmq3-dev \
         lsb-release \
@@ -52,10 +58,8 @@ install_system_dependencies() {
         watchdog
 }
 
-install_berrynet_repository() {
-    sudo cp apt/berrynet.list /etc/apt/sources.list.d
-    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv D7ACFE23
-    sudo apt update
+install_opencv() {
+    sudo apt-get install -y libopencv-dev
 }
 
 install_nodejs() {
@@ -227,8 +231,9 @@ download_classifier_model_caffe2() {
     sh ./utils/install-caffe2-models.sh
 }
 
-install_system_dependencies 2>&1 | tee -a $LOG
 install_berrynet_repository 2>&1 | tee -a $LOG
+install_system_dependencies 2>&1 | tee -a $LOG
+install_opencv 2>&1 | tee -a $LOG
 install_nodejs 2>&1 | tee -a $LOG
 install_darknet 2>&1 | tee -a $LOG
 download_detector_model 2>&1 | tee -a $LOG
