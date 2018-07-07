@@ -19,23 +19,43 @@
 
 # One-click IoT gateway deployment script.
 
-LOG="$HOME/.cache/berrynet.log"
-DISTRIBUTIONID=`lsb_release -i -s`
+set -e
 
-install_berrynet_repository() {
-    sudo cp apt/berrynet.list /etc/apt/sources.list.d
-}
+LOG="$PWD/berrynet.log"
+DISTRIBUTIONID=`lsb_release -i -s`
+INSTALL_CAFFE2="N"
+INSTALL_DARKFLOW="N"
+INSTALL_DARKNET="Y"
+INSTALL_TENSORFLOW="N"
 
 install_system_dependencies() {
     sudo apt-get update
-    sudo apt-get install -y python-dev python-pip python-opencv mongodb libkrb5-dev libzmq3-dev libyaml-dev imagemagick curl fswebcam wget git libopencv-dev
-    sudo apt-get install -y lsb-release
+    sudo apt-get install -y \
+        curl \
+        dirmngr \
+        fswebcam \
+        git \
+        imagemagick \
+        libkrb5-dev \
+        libopencv-dev \
+        libyaml-dev \
+        libzmq3-dev \
+        lsb-release \
+        mongodb \
+        mosquitto-clients \
+        python-dev \
+        python-pip \
+        wget
     sudo service mongodb start
-    sudo -H pip install watchdog cython
+    sudo -H pip install \
+        cython \
+        watchdog
 }
 
-install_optional_dependencies() {
-    sudo apt-get install -y mosquitto-clients
+install_berrynet_repository() {
+    sudo cp apt/berrynet.list /etc/apt/sources.list.d
+    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv D7ACFE23
+    sudo apt update
 }
 
 install_nodejs() {
@@ -176,8 +196,17 @@ install_gateway() {
     local working_dir="/usr/local/berrynet"
     sudo mkdir -p $working_dir
     sudo cp -a \
-        broker.js camera.js config.js dashboard data_collector.js \
-        inference journal.js localimg.js mail.js line.js package.json \
+        broker.js \
+        camera.js \
+        config.js \
+        dashboard \
+        data_collector.js \
+        inference \
+        journal.js \
+        localimg.js \
+        mail.js \
+        line.js \
+        package.json \
         $working_dir
     sudo cp berrynet-manager /usr/local/bin
     # install npm dependencies
@@ -198,19 +227,39 @@ download_classifier_model_caffe2() {
     sh ./utils/install-caffe2-models.sh
 }
 
-install_berrynet_repository 2>&1 | tee -a $LOG
 install_system_dependencies 2>&1 | tee -a $LOG
-install_optional_dependencies 2>&1 | tee -a $LOG
+install_berrynet_repository 2>&1 | tee -a $LOG
 install_nodejs 2>&1 | tee -a $LOG
-install_tensorflow 2>&1 | tee -a $LOG
-download_classifier_model 2>&1 | tee -a $LOG
-install_darkflow 2>&1 | tee -a $LOG
 install_darknet 2>&1 | tee -a $LOG
 download_detector_model 2>&1 | tee -a $LOG
 install_dashboard 2>&1 | tee -a $LOG
 install_systemd_configs 2>&1 | tee -a $LOG
 install_gateway 2>&1 | tee -a $LOG
-install_caffe2 2>&1 | tee -a $LOG
-download_classifier_model_caffe2 2>&1 | tee -a $LOG
 
-echo "Installation is completed successfully!" | tee -a $LOG
+if [ "$INSTALL_TENSORFLOW" = "Y" ]; then
+    install_tensorflow 2>&1 | tee -a $LOG
+    download_classifier_model 2>&1 | tee -a $LOG
+else
+    echo "Not install TensorFlow" >> $LOG
+fi
+
+if [ "$INSTALL_DARKFLOW" = "Y" ]; then
+    install_darkflow 2>&1 | tee -a $LOG
+else
+    echo "Not install Darkflow" >> $LOG
+fi
+
+if [ "$INSTALL_CAFFE2" = "Y" ]; then
+    install_caffe2 2>&1 | tee -a $LOG
+    download_classifier_model_caffe2 2>&1 | tee -a $LOG
+else
+    echo "Not install Caffe2" >> $LOG
+fi
+
+{
+    echo "Installation is completed successfully!"
+    echo ""
+    echo "Please send $LOG and /usr/local/berrynet/npm-debug.log"
+    echo "to https://groups.google.com/a/dt42.io/d/forum/berrynet"
+    echo "if there is any issue."
+} | tee -a $LOG
