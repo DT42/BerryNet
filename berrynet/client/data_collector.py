@@ -96,6 +96,12 @@ def parse_args():
         help='MQTT broker IP.'
     )
     ap.add_argument(
+        '--broker-port',
+        default=1883,
+        type=int,
+        help='MQTT broker port.'
+    )
+    ap.add_argument(
         '--topic-config',
         default=None,
         help='Path of the MQTT topic subscription JSON.'
@@ -115,7 +121,7 @@ def main():
         'subscribe': topic_config,
         'broker': {
             'address': args['broker_ip'],
-            'port': 1883
+            'port': args['broker_port']
         }
     }
     dc_service = DataCollectorService(comm_config,
