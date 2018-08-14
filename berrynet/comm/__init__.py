@@ -41,3 +41,6 @@ class Communicator(object):
         #logger.debug('Message payload {}'.format(payload))
         publish.single(topic, payload,
                        hostname=self.client.comm_config['broker']['address'])
+
+    def disconnect(self):
+        self.client.disconnect()
