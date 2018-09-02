@@ -44,7 +44,8 @@ class FBDashboardService(object):
         for topic, functor in self.comm_config['subscribe'].items():
             self.comm_config['subscribe'][topic] = eval(functor)
         self.comm_config['subscribe']['berrynet/engine/tensorflow/result'] = self.update
-        self.comm_config['subscribe']['berrynet/data/rgbimage'] = self.update
+        self.comm_config['subscribe']['berrynet/engine/pipeline/result'] = self.update
+        #self.comm_config['subscribe']['berrynet/data/rgbimage'] = self.update
         self.comm = Communicator(self.comm_config, debug=True)
         self.data_dirpath = data_dirpath
         self.frame = None
@@ -192,7 +193,11 @@ def draw_box(image, annotations):
         # draw label
         label_background_color = box_color
         label_text_color = (255, 255, 255)
-        label_text = '{} ({} %)'.format(anno['label'],
+        if 'track_id' in anno.keys():
+            label = '{} {}'.format(anno['track_id'], anno['label'])
+        else:
+            label = anno['label']
+        label_text = '{} ({} %)'.format(label,
                                         int(anno['confidence'] * 100))
         label_size = cv2.getTextSize(label_text,
                                      cv2.FONT_HERSHEY_SIMPLEX,
@@ -271,7 +276,7 @@ def main():
     glutInitWindowPosition(0, 0)
     glutInit(sys.argv)
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE)
-    glutCreateWindow("Framebuffer I/O demo, q to quit")
+    glutCreateWindow("BerryNet Result Dashboard, q to quit")
     glutDisplayFunc(fbd_service.update_fb)
     glutKeyboardFunc(keyboard)
     init()
