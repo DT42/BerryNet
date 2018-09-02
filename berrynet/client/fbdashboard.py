@@ -194,7 +194,7 @@ def draw_box(image, annotations):
         label_background_color = box_color
         label_text_color = (255, 255, 255)
         if 'track_id' in anno.keys():
-            label = '{} {}'.format(anno['track_id'], anno['label'])
+            label = 'ID:{} {}'.format(anno['track_id'], anno['label'])
         else:
             label = anno['label']
         label_text = '{} ({} %)'.format(label,
