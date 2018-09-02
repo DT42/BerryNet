@@ -36,6 +36,16 @@ class Communicator(object):
             60)
         self.client.loop_forever()
 
+    def start_nb(self):
+        self.client.connect(
+            self.client.comm_config['broker']['address'],
+            self.client.comm_config['broker']['port'],
+            60)
+        self.client.loop_start()
+
+    def stop_nb(self):
+        self.client.loop_stop()
+
     def send(self, topic, payload):
         logger.debug('Send message to topic {}'.format(topic))
         #logger.debug('Message payload {}'.format(payload))

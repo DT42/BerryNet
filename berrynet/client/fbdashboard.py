@@ -1,37 +1,101 @@
+# Copyright 2018 DT42
+#
+# This file is part of BerryNet.
+#
+# BerryNet is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# BerryNet is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with BerryNet.  If not, see <http://www.gnu.org/licenses/>.
+
+"""Framebuffer dashboard.
+"""
+
+import argparse
+import json
+import os
 import random
 import sys
 import time
 
-from queue import Queue
-from threading import Lock
-from threading import Thread
-from time import sleep
+from datetime import datetime
+from os.path import join as pjoin
 
 import cv2
 
+from berrynet import logger
+from berrynet.comm import Communicator
+from berrynet.comm import payload
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
 
 
-cam = cv2.VideoCapture(0)
-#cam = cv2.VideoCapture('/home/pi/codes/MobileNet-SSD/peoplecar_video_input_01.mp4')
-#cam = cv2.VideoCapture('/home/pi/codes/MobileNet-SSD/20180411_01.mp4')
+class FBDashboardService(object):
+    def __init__(self, comm_config, data_dirpath):
+        self.comm_config = comm_config
+        for topic, functor in self.comm_config['subscribe'].items():
+            self.comm_config['subscribe'][topic] = eval(functor)
+        self.comm_config['subscribe']['berrynet/engine/tensorflow/result'] = self.update
+        self.comm_config['subscribe']['berrynet/data/rgbimage'] = self.update
+        self.comm = Communicator(self.comm_config, debug=True)
+        self.data_dirpath = data_dirpath
+        self.frame = None
 
-if cam.isOpened() != True:
-    print("Camera/Movie Open Error!!!")
-    quit()
+    def update(self, pl):
+        if not os.path.exists(self.data_dirpath):
+            try:
+                os.mkdir(self.data_dirpath)
+            except Exception as e:
+                logger.warn('Failed to create {}'.format(self.data_dirpath))
+                raise(e)
 
-windowWidth = 320
-windowHeight = 240
-cam.set(cv2.CAP_PROP_FRAME_WIDTH, windowWidth)
-cam.set(cv2.CAP_PROP_FRAME_HEIGHT, windowHeight)
+        payload_json = payload.deserialize_payload(pl.decode('utf-8'))
+        if 'bytes' in payload_json.keys():
+            img_k = 'bytes'
+        elif 'image_blob' in payload_json.keys():
+            img_k = 'image_blob'
+        else:
+            raise Exception('No image data in MQTT payload')
+        jpg_bytes = payload.destringify_jpg(payload_json[img_k])
+        payload_json.pop(img_k)
+        logger.debug('inference text result: {}'.format(payload_json))
 
-lock = Lock()
-frameBuffer = []
-results = Queue()
-lastresults = None
-devices = 1
+        img = payload.jpg2rgb(jpg_bytes)
+        try:
+            res = payload_json['annotations']
+        except KeyError:
+            res = [
+                {
+                    'label': 'hello',
+                    'confidence': 0.42,
+                    'left': random.randint(50, 60),
+                    'top': random.randint(50, 60),
+                    'right': random.randint(300, 400),
+                    'bottom': random.randint(300, 400)
+                }
+            ]
+        self.frame = overlay_on_image(img, res)
+
+        #timestamp = datetime.now().isoformat()
+        #with open(pjoin(self.data_dirpath, timestamp + '.jpg'), 'wb') as f:
+        #    f.write(jpg_bytes)
+        #with open(pjoin(self.data_dirpath, timestamp + '.json'), 'w') as f:
+        #    f.write(json.dumps(payload_json, indent=4))
+
+    def update_fb(self):
+        gl_draw_fbimage(self.frame)
+
+    def run(self, args):
+        """Infinite loop serving inference requests"""
+        self.comm.start_nb()
 
 
 def gl_draw_fbimage(rgbimg):
@@ -68,81 +132,39 @@ def idle():
 def keyboard(key, x, y):
     key = key.decode('utf-8')
     if key == 'q':
-        lock.acquire()
-        while len(frameBuffer) > 0:
-            frameBuffer.pop()
-        lock.release()
         print("\n\nFinished\n\n")
         sys.exit()
 
 
-def camThread():
-    """Draw last updated result on image.
-    """
-    global lastresults
+def opencv_frame(src, w=None, h=None, fps=30):
+    vidcap = cv2.VideoCapture(src)
+    if not vidcap.isOpened():
+        print('opened failed')
+        sys.exit(errno.ENOENT)
 
-    s, img = cam.read()
-    if not s:
-        print("Could not get frame")
-        return 0
+    # set frame w/h if indicated
+    if w and h:
+        vidcap.set(cv2.CAP_PROP_FRAME_WIDTH, w)
+        vidcap.set(cv2.CAP_PROP_FRAME_HEIGHT, h)
 
-    lock.acquire()
-    if len(frameBuffer)>10:
-        for i in range(10):
-            del frameBuffer[0]
-    frameBuffer.append(img)
-    print('camThread appends fb')
-    lock.release()
-    res = None
+    # set FPS
+    rate = int(vidcap.get(cv2.CAP_PROP_FPS))
+    if rate > fps or rate < 1:
+        print('Illegal data rate {} (1-30)'.format(rate))
+        rate = fps
+    print('fps: {}'.format(rate))
 
-    if not results.empty():
-        print('results is not empty')
-        res = results.get(False)
-        img = overlay_on_image(img, res)
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        gl_draw_fbimage(img)
-        lastresults = res
-    else:
-        print('results is empty')
-        imdraw = overlay_on_image(img, lastresults)
-        imdraw = cv2.cvtColor(imdraw, cv2.COLOR_BGR2RGB)
-        gl_draw_fbimage(imdraw)
-
-
-def inferencer(results, lock, frameBuffer):
-    print('inferencer is created')
-
-    failure = 0
-    #sleep(3)
-    #while failure < 100:
+    # frame generator
     while True:
-        lock.acquire()
-        if len(frameBuffer) == 0:
-            lock.release()
-            failure += 1
-            print('empty framebuffer')
-            continue
+        success, image = vidcap.read()
+        if not success:
+            print('Failed to read frame')
+            break
+        yield image
 
-        img = frameBuffer[-1].copy()
-        del frameBuffer[-1]
-        print('inferencer pops fb')
-        failure = 0
-        lock.release()
 
-        now = time.time()
-        out = [
-            {
-                'label': 'hello',
-                'confidence': 0.42,
-                'left': random.randint(50, 60),
-                'top': random.randint(50, 60),
-                'right': random.randint(300, 400),
-                'bottom': random.randint(300, 400)
-            }
-        ]
-        results.put(out)
-        print("elapsedtime = ", time.time() - now)
-    print('Too many failures, inferencer is terminated')
+#Vcap = opencv_frame(0, w=320, h=240)
+Vcap = opencv_frame(0)
 
 
 def draw_box(image, annotations):
@@ -207,23 +229,53 @@ def overlay_on_image(display_image, object_info):
     return draw_box(display_image, object_info)
 
 
+def parse_args():
+    ap = argparse.ArgumentParser()
+    ap.add_argument(
+        '--data-dirpath',
+        default='/tmp/berrynet-data',
+        help='Dirpath where to store collected data.'
+    )
+    ap.add_argument(
+        '--broker-ip',
+        default='localhost',
+        help='MQTT broker IP.'
+    )
+    ap.add_argument(
+        '--topic-config',
+        default=None,
+        help='Path of the MQTT topic subscription JSON.'
+    )
+    return vars(ap.parse_args())
+
+
 def main():
+    args = parse_args()
+
+    if args['topic_config']:
+        with open(args['topic_config']) as f:
+            topic_config = json.load(f)
+    else:
+        topic_config = {}
+    comm_config = {
+        'subscribe': topic_config,
+        'broker': {
+            'address': args['broker_ip'],
+            'port': 1883
+        }
+    }
+    fbd_service = FBDashboardService(comm_config,
+                                      args['data_dirpath'])
+    fbd_service.run(args)
+
     glutInitWindowPosition(0, 0)
     glutInit(sys.argv)
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE)
     glutCreateWindow("Framebuffer I/O demo, q to quit")
-    #glutFullScreen()
-    glutDisplayFunc(camThread)
+    glutDisplayFunc(fbd_service.update_fb)
     glutKeyboardFunc(keyboard)
     init()
     glutIdleFunc(idle)
-
-    threads = []
-    for devnum in range(devices):
-        t = Thread(target=inferencer, args=(results, lock, frameBuffer))
-        t.start()
-        threads.append(t)
-
     glutMainLoop()
 
 
