@@ -1,0 +1,73 @@
+# Official language image. Look for the different tagged releases at:
+# https://hub.docker.com/r/library/python/tags/
+image: gitlab-ci:base
+
+# Change pip's cache directory to be inside the project directory since we can
+# only cache local items.
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache"
+
+# Pip's cache doesn't store the python packages
+# https://pip.pypa.io/en/stable/reference/pip_install/#caching
+#
+# If you want to also cache the installed packages, you have to install
+# them in a virtualenv and cache it as well.
+cache:
+  paths:
+    - .cache/pip
+
+stages:
+  - build
+  - test
+  - deploy
+
+before_script:
+  - python3 -V               # Print out python version for debugging
+  - eval $(ssh-agent -s)
+  - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+  - mkdir -p ~/.ssh && chmod 700 ~/.ssh
+  - echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts && chmod 644 ~/.ssh/known_hosts
+
+build-wheel:
+  stage: build
+  script:
+  - pip3 wheel --wheel-dir=./dist .
+  artifacts:
+    paths:
+    - dist/
+
+unit-test:
+  stage: test
+  dependencies:
+  - build-wheel
+  script:
+  - pip3 install dist/*.whl tensorflow
+  - apt update && apt install -y libsm6 libxrender-dev
+  - python3 setup.py test
+  allow_failure: true
+
+pep8-codestyle:
+  stage: test
+  script:
+  - pycodestyle .
+  allow_failure: true
+
+pylint-codestyle:
+  stage: test
+  script:
+  - pylint berrynet
+  allow_failure: true
+
+deploy-pypi:
+  stage: deploy
+  dependencies:
+  - build-wheel
+  script:
+  - git clone git@gitlab.com:DT42/infrastructure42/dt42pypi.git 
+  - cp dist/berrynet*.whl dt42pypi/ && cd dt42pypi
+  - dir2pi -n .
+  - git add . && git commit -m "Add $CI_PROJECT_NAME $CI_COMMIT_TAG wheel. This is an auto-commit by GitLab-CI Runner."
+  - git pull && git push
+  only:
+  - tags
+
