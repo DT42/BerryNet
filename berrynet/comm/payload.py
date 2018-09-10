@@ -36,6 +36,30 @@ def jpg2rgb(jpg_bytes):
     return cv2.cvtColor(jpg2bgr(jpg_bytes), cv2.COLOR_BGR2RGB)
 
 
+def bgr2rgb(bgr_nparray):
+    """Convert image nparray from BGR to RGB.
+
+    Args:
+        bgr_nparray: Image nparray in BGR color model.
+
+    Returns:
+        Image nparray in RGB color model.
+    """
+    return cv2.cvtColor(bgr_nparray, cv2.COLOR_BGR2RGB)
+
+
+def rgb2bgr(rgb_nparray):
+    """Convert image nparray from RGB to BGR.
+
+    Args:
+        rgb_nparray: Image nparray in RGB color model.
+
+    Returns:
+        Image nparray in BGR color model.
+    """
+    return cv2.cvtColor(rgb_nparray, cv2.COLOR_RGB2BGR)
+
+
 def serialize_payload(json_object):
     return json.dumps(json_object)
 

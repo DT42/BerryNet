@@ -21,10 +21,13 @@
 import argparse
 import logging
 
+from datetime import datetime
+
 from berrynet import logger
 from berrynet.comm import payload
 from berrynet.dlmodelmgr import DLModelManager
 from berrynet.engine.movidius_classification_engine import MovidiusEngine
+from berrynet.engine.movidius_classification_engine import MovidiusMobileNetSSDEngine
 from berrynet.service import EngineService
 
 
@@ -40,6 +43,41 @@ class MovidiusClassificationService(EngineService):
                        payload.serialize_payload(generalized_result))
 
 
+class MovidiusMobileNetSSDService(EngineService):
+    def __init__(self, service_name, engine, comm_config):
+        super(MovidiusMobileNetSSDService, self).__init__(service_name,
+                                                          engine,
+                                                          comm_config)
+
+    def inference(self, pl):
+        duration = lambda t: (datetime.now() - t).microseconds / 1000
+
+        t = datetime.now()
+        logger.debug('payload size: {}'.format(len(pl)))
+        logger.debug('payload type: {}'.format(type(pl)))
+        jpg_json = payload.deserialize_payload(pl.decode('utf-8'))
+        jpg_bytes = payload.destringify_jpg(jpg_json['bytes'])
+        logger.debug('destringify_jpg: {} ms'.format(duration(t)))
+
+        t = datetime.now()
+        bgr_array = payload.jpg2bgr(jpg_bytes)
+        logger.debug('jpg2bgr: {} ms'.format(duration(t)))
+
+        t = datetime.now()
+        image_data = self.engine.process_input(bgr_array)
+        output = self.engine.inference(image_data)
+        model_outputs = self.engine.process_output(output)
+        logger.debug('Result: {}'.format(model_outputs))
+        logger.debug('Detection takes {} ms'.format(duration(t)))
+
+        self.result_hook(self.generalize_result(jpg_json, model_outputs))
+
+    def result_hook(self, generalized_result):
+        logger.debug('result_hook, annotations: {}'.format(generalized_result['annotations']))
+        self.comm.send('berrynet/engine/mvmobilenetssd/result',
+                       payload.serialize_payload(generalized_result))
+
+
 def parse_args():
     ap = argparse.ArgumentParser()
     ap.add_argument('--model',
@@ -50,7 +88,7 @@ def parse_args():
                     default='',
                     help='Model package name')
     ap.add_argument('--service_name', required=True,
-                    help='Engine service name used as PID filename')
+                    help='Valid value: Classification, MobileNetSSD')
     ap.add_argument('--num_top_predictions', default=5,
                     help='Display this many predictions')
     ap.add_argument('--debug',
@@ -74,7 +112,6 @@ def main():
     logger.debug('model filepath: ' + args['model'])
     logger.debug('label filepath: ' + args['label'])
 
-    mvng = MovidiusEngine(args['model'], args['label'])
     comm_config = {
         'subscribe': {},
         'broker': {
@@ -82,9 +119,17 @@ def main():
             'port': 1883
         }
     }
-    engine_service = MovidiusClassificationService(args['service_name'],
-                                                   mvng,
-                                                   comm_config)
+    if args['service_name'] == 'Classification':
+        mvng = MovidiusEngine(args['model'], args['label'])
+        service_functor = MovidiusClassificationService
+    elif args['service_name'] == 'MobileNetSSD':
+        mvng = MovidiusMobileNetSSDEngine(args['model'], args['label'])
+        service_functor = MovidiusMobileNetSSDService
+    else:
+        logger.critical('Legal service names are Classification, MobileNetSSD')
+    engine_service = service_functor(args['service_name'],
+                                     mvng,
+                                     comm_config)
     engine_service.run(args)
 
 

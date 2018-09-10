@@ -44,3 +44,24 @@ class MovidiusEngine(DLEngine):
         with open(self.cache['model_output_filepath'], 'w') as f:
             for i in self.cache['model_output']:
                 print("%s (score = %.5f)" % (i[0], i[1]), file=f)
+
+
+class MovidiusMobileNetSSDEngine(DLEngine):
+    def __init__(self, model, label):
+        super(MovidiusMobileNetSSDEngine, self).__init__()
+        self.mvng = mv.MovidiusNeuralGraph(model, label)
+
+    def process_input(self, tensor):
+        self.img_w = tensor.shape[1]
+        self.img_h = tensor.shape[0]
+        return mv.process_mobilenetssd_input(tensor)
+
+    def inference(self, tensor):
+        return self.mvng.inference(tensor)
+
+    def process_output(self, output):
+        return mv.process_mobilenetssd_output(
+                   output,
+                   self.img_w,
+                   self.img_h,
+                   self.mvng.get_labels())

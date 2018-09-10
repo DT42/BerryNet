@@ -107,6 +107,75 @@ def print_inceptionv3_output(output, labels):
         print(top_inds[i], labels[top_inds[i]], output[top_inds[i]])
 
 
+def process_mobilenetssd_input(bgr_nparray):
+    """Normalize MobileNet SSD input image.
+
+    Args:
+        img: Image nparray in BGR color model.
+
+    Returns:
+        Pre-processed image nparray in BGR color model.
+    """
+    img = cv2.resize(bgr_nparray, (300, 300))
+    img = img - 127.5
+    img = img * 0.007843
+    return img
+
+
+def process_mobilenetssd_output(output, img_w, img_h, labels, threshold=0.1):
+    """
+    More details about inference result format:
+    https://github.com/movidius/ncappzoo/blob/master/caffe/SSD_MobileNet/run.py
+
+    Args:
+        output: Inference result returned by Graph.GetResult().
+        img_w: Width of input image.
+        img_h: Height of input image.
+        labels:
+        threshold:
+
+    Returns:
+        Annotations as dictionary, key is "annotations" and
+        value a list of parsed results.
+
+        Example:
+
+            'annotations': [
+                {
+                    "label": "car",
+                    "confidence": 0.93,
+                    "left": 100,
+                    "top": 100,
+                    "right": 200,
+                    "bottom": 200
+                },
+                ...
+            ]
+    """
+    boxnum_index = 0
+    result_index = 7
+    result_size = 7
+    num_valid_boxes = int(output[boxnum_index])
+    annotations = []
+
+    for i in range(num_valid_boxes):
+        base_index = result_index + result_size * i
+        result_objinfo = output[base_index:(base_index + result_size)]
+
+        anno = {}
+        anno['label'] = labels[int(result_objinfo[1])]
+        anno['confidence'] = float(result_objinfo[2])
+        anno['left'] = int(result_objinfo[3] * img_w)
+        anno['top'] = int(result_objinfo[4] * img_h)
+        anno['right'] = int(result_objinfo[5] * img_w)
+        anno['bottom'] = int(result_objinfo[6] * img_h)
+
+        if anno['confidence'] >= threshold:
+            annotations.append(anno)
+
+    return {'annotations': annotations}
+
+
 if __name__ == '__main__':
     graph_filepath = ''  # model filepath
     label_filepath = ''  # label filepath
