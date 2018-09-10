@@ -26,8 +26,8 @@ from datetime import datetime
 from berrynet import logger
 from berrynet.comm import payload
 from berrynet.dlmodelmgr import DLModelManager
-from berrynet.engine.movidius_classification_engine import MovidiusEngine
-from berrynet.engine.movidius_classification_engine import MovidiusMobileNetSSDEngine
+from berrynet.engine.movidius_engine import MovidiusEngine
+from berrynet.engine.movidius_engine import MovidiusMobileNetSSDEngine
 from berrynet.service import EngineService
 
 
