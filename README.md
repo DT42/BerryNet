@@ -1,27 +1,30 @@
-# BerryNet: Deep Learning Gateway on Raspberry Pi
+# BerryNet: Deep Learning Gateway on Raspberry Pi And Other Edge Devices
 
-This project turns Raspberry Pi 3 into an intelligent gateway with deep learning running on it. No internet connection is required, everything is done locally on the Raspberry Pi 3 itself. At DT42, we believe that bringing deep learning to edge devices is the trend towards the future. It not only saves costs of data transmission and storage but also makes devices able to respond according to the events shown in the images or videos without connecting to the cloud.
+This project turns edge devices such as Raspberry Pi 3 into an intelligent gateway with deep learning running on it. No internet connection is required, everything is done locally on the edge device itself. Further, multiple edge devices can create a distributed AIoT network.
 
-![Figure 1](https://cloud.githubusercontent.com/assets/292790/25498295/0ab85618-2bba-11e7-90f3-45a792c79b3d.jpg)
+At DT42, we believe that bringing deep learning to edge devices is the trend towards the future. It not only saves costs of data transmission and storage but also makes devices able to respond according to the events shown in the images or videos without connecting to the cloud.
 
-Figure 1 shows the software architecture of the project, we use Node.js, MQTT and an AI engine to analyze images or video frames with deep learning. So far, there are two supported AI engines, the classification engine and the object detection engine. Figure 2 shows the differences between classification and object detection.
+![Figure 1](https://user-images.githubusercontent.com/292790/45943626-a3d28b80-c019-11e8-829c-5eb6afd3faa4.png)
+
+<p align="center">Figure 1: BerryNet architecture</p>
+
+Figure 1 shows the software architecture of the project, we use Node.js/Python, MQTT and an AI engine to analyze images or video frames with deep learning. So far, there are two default types of AI engines, the classification engine (with Inception v3 [[1]](https://arxiv.org/pdf/1512.00567.pdf) model) and the object detection engine (with TinyYOLO [[2]](https://pjreddie.com/media/files/papers/YOLO9000.pdf) model or MobileNet SSD [[3]](https://arxiv.org/pdf/1704.04861.pdf) model). Figure 2 shows the differences between classification and object detection.
 
 ![Figure 2](https://cloud.githubusercontent.com/assets/292790/25520013/d9497738-2c2c-11e7-9693-3840647f2e1e.jpg)
+
+<p align="center">Figure 2: Classification vs detection</p>
 
 One of the application of this intelligent gateway is to use the camera to monitor the place you care about. For example, Figure 3 shows the analyzed results from the camera hosted in the DT42 office. The frames were captured by the IP camera and they were submitted into the AI engine. The output from the AI engine will be shown in the dashboard. We are working on the Email and IM notification so you can get a notification when there is a dog coming into the meeting area with the next release.
 
 ![Figure 3](https://cloud.githubusercontent.com/assets/292790/25498294/0ab79976-2bba-11e7-9114-46e328d15a18.gif)
 
-# AI Engines
+<p align="center">Figure 3: Object detection result example</p>
 
-The current supported AI Engines leverage work from the following projects:
+To bring easy and flexible edge AI experience to user, we keep expending support of the AI engines and the reference HWs.
 
-* [TensorFlow](https://www.tensorflow.org/)
-* [TensorFlow on RPi3](https://github.com/samjabrahams/tensorflow-on-raspberry-pi) (Sam is looking for donation)
-* [Darknet](https://pjreddie.com/darknet/)
-* [Darkflow](https://github.com/thtrieu/darkflow)
+![Figure 4](https://user-images.githubusercontent.com/292790/45943641-b6e55b80-c019-11e8-9c90-28c96074c577.png)
 
-The current supported classification model is Inception v3 [[1]](https://arxiv.org/pdf/1512.00567.pdf) and the detection model is TinyYOLO [[2]](https://pjreddie.com/media/files/papers/YOLO9000.pdf)
+<p align="center">Figure 4: Reference hardwares</p>
 
 
 # Installation
@@ -32,6 +35,7 @@ $ cd BerryNet
 $ ./configure
 ```
 
+
 # Start and Stop BerryNet
 
 BerryNet is managed by [systemd](https://freedesktop.org/wiki/Software/systemd/). You can manage BerryNet via `berrynet-manager`:
@@ -39,6 +43,7 @@ BerryNet is managed by [systemd](https://freedesktop.org/wiki/Software/systemd/)
 ```
 $ berrynet-manager [start | stop | status | log]
 ```
+
 
 # Configuration
 
