@@ -29,6 +29,12 @@ To bring easy and flexible edge AI experience to user, we keep expending support
 
 # Installation
 
+You can install BerryNet by using pre-built image or from source. Please refer to the [Wiki page](https://github.com/DT42/BerryNet/wiki/Installation) for the details. 
+
+We are pushing BerryNet into Debian repository, so you will be able to install by only typing one command in the future.
+
+Here is the quick steps to install from source:
+
 ```
 $ git clone https://github.com/DT42/BerryNet.git
 $ cd BerryNet
