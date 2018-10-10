@@ -112,13 +112,34 @@ predict_image.restype = POINTER(c_float)
 network_detect = lib.network_detect
 network_detect.argtypes = [c_void_p, IMAGE, c_float, c_float, c_float, POINTER(BOX), POINTER(POINTER(c_float))]
 
-libnp = CDLL("/usr/lib/libdarknet_numpy.so", RTLD_GLOBAL)
-ndarray_image = libnp.ndarray_to_image
-ndarray_image.argtypes = [POINTER(c_ubyte), POINTER(c_long), POINTER(c_long)]
-ndarray_image.restype = IMAGE
+
+def c_array(ctype, values):
+    arr = (ctype*len(values))()
+    arr[:] = values
+    return arr
 
 
-def detect_np(net, meta, np_img, thresh=.5, hier_thresh=.5, nms=.45):
+def nparray_to_image(arr):
+    """Convert nparray to Darknet image struct.
+    Args:
+        arr: nparray containing source image in BGR color model.
+
+    Returns:
+        Darknet image struct, whose data is a C array
+        containing flatten image in BGR color model.
+    """
+    arr = arr.transpose(2,0,1)
+    c = arr.shape[0]
+    h = arr.shape[1]
+    w = arr.shape[2]
+    arr = (arr/255.0).flatten()
+    data = c_array(c_float, arr)
+    im = IMAGE(w, h, c, data)
+    rgbgr_image(im)
+    return im
+
+
+def detect_np(net, meta, np_img, thresh=.3, hier_thresh=.5, nms=.45):
     im = nparray_to_image(np_img)
     boxes = make_boxes(net)
     probs = make_probs(net)
@@ -136,22 +157,15 @@ def detect_np(net, meta, np_img, thresh=.5, hier_thresh=.5, nms=.45):
                         'type': 'detection',
                         'label': meta.names[i].decode('utf-8'),
                         'confidence': probs[j][i],
-                        'left': boxes[j].x,
-                        'top': boxes[j].y,
-                        'right': boxes[j].x + boxes[j].w,
-                        'bottom': boxes[j].y + boxes[j].h,
+                        'left': boxes[j].x - (boxes[j].w / 2),
+                        'top': boxes[j].y - (boxes[j].h / 2),
+                        'right': boxes[j].x + (boxes[j].w / 2),
+                        'bottom': boxes[j].y + (boxes[j].h / 2),
                         'id': -1
                     }
                 )
-    free_image(im)
     free_ptrs(cast(probs, POINTER(c_void_p)), num)
     return res
-
-
-def nparray_to_image(img):
-    data = img.ctypes.data_as(POINTER(c_ubyte))
-    image = ndarray_image(data, img.ctypes.shape, img.ctypes.strides)
-    return image
 
 
 class DarknetEngine(DLEngine):
@@ -161,6 +175,9 @@ class DarknetEngine(DLEngine):
 
         self.net = load_net(config, model, 0)
         self.meta = load_meta(meta)
+        self.classes = self.meta.classes
+        self.labels = [self.meta.names[i].decode('utf-8')
+                       for i in range(self.classes)]
 
         # Warmup
         zero_image = np.zeros(shape=(416, 416, 3), dtype=np.uint8)
