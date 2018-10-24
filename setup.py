@@ -6,7 +6,7 @@ from setuptools import find_packages
 
 setup(
     name='berrynet',
-    version='v3.2.0',
+    version='v3.2.1',
     description='BerryNet',
     long_description=
         'TBD',
@@ -29,15 +29,16 @@ setup(
     packages=find_packages(exclude=['tests']),
     install_requires=[
         'logzero',
-        'opencv-python',
         'paho-mqtt'
     ],
     # Without TF: pip3 install berrynet
     # TF CPU mode: pip3 install berrynet[tf]
     # TF GPU mode: pip3 install berrynet[tf_gpu]
+    # TF GPU mode and Wheel-version OpenCV: pip3 install berrynet[tf_gpu, opencv]
     extra_require={
         'tf': ['tensorflow>=1.2.1'],
-        'tf_gpu': ['tensorflow-gpu>=1.2.1']
+        'tf_gpu': ['tensorflow-gpu>=1.2.1'],
+        'opencv': ['opencv-python']
     },
     python_requires='>=3',  # recognized by pip >= 9.0.0
     # The "Including Data Files" session
