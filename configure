@@ -52,11 +52,12 @@ install_system_dependencies() {
 }
 
 install_berrynet_repository() {
-    sudo apt update
+    sudo apt-get update
     sudo apt-get install -y dirmngr
     sudo cp apt/berrynet.list /etc/apt/sources.list.d
-    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv D7ACFE23
-    sudo apt update
+    # TODO: Make BerryNet repo more secure and trustable with signature
+    #sudo apt-key adv --keyserver keyserver.ubuntu.com --recv D7ACFE23
+    sudo apt-get update
 }
 
 install_nodejs() {
