@@ -61,8 +61,8 @@ install_berrynet_repository() {
 }
 
 install_nodejs() {
-    # v6.x is LTS, if you want the latest feature, change to "setup_7.x".
-    curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
+    # v8.x is LTS, if you want the latest feature, change to "setup_11.x".
+    curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
     sudo apt-get install -y nodejs
 }
 
