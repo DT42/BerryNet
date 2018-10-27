@@ -1,1 +1,4 @@
-deb [arch=armhf] https://raw.githubusercontent.com/DT42/BerryNet-repo/master stretch main
+# For details, please refer to https://github.com/DT42/BerryNet-repo
+
+deb https://raw.githubusercontent.com/DT42/BerryNet-repo/master stretch/
+deb-src https://raw.githubusercontent.com/DT42/BerryNet-repo/master stretch/
