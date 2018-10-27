@@ -97,6 +97,12 @@ install_darkflow() {
     popd > /dev/null
 }
 
+install_darknet_nnpack() {
+    # To understand how these packages are built, please refer to
+    # https://github.com/DT42/BerryNet/blob/master/doc/darknet-nnpack.md
+    sudo apt install -y darknet libdarknet
+}
+
 install_darknet() {
     local peachpy_version="0.0.1"
     local confu_version="cc90068"
@@ -234,7 +240,8 @@ download_classifier_model_caffe2() {
 install_system_dependencies 2>&1 | tee -a $LOG
 install_berrynet_repository 2>&1 | tee -a $LOG
 install_nodejs 2>&1 | tee -a $LOG
-install_darknet 2>&1 | tee -a $LOG
+#install_darknet 2>&1 | tee -a $LOG
+install_darknet_nnpack 2>&1 | tee -a $LOG
 download_detector_model 2>&1 | tee -a $LOG
 install_dashboard 2>&1 | tee -a $LOG
 install_systemd_configs 2>&1 | tee -a $LOG
