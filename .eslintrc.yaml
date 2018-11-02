@@ -1,0 +1,8 @@
+env:
+  node: true
+  es6: true
+
+extends: google
+
+rules:
+    comma-dangle: [2, only-multiline]

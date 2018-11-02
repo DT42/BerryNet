@@ -1,0 +1,3 @@
+[submodule "inference/darkflow"]
+	path = inference/darkflow
+	url = https://github.com/thtrieu/darkflow.git
