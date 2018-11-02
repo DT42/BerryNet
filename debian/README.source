@@ -1,7 +1,24 @@
 berrynet for Debian
 ------------------
 
-Some source needed to be downloaded from the internet. This have to be fixed.
+## Using gbp
+
+We can use gbp to build packages from this repo.
+
+Please clone the debian package by the following command:
+```
+gbp clone --debian-branch=debian/sid https://github.com/DT42/BerryNet.git
+```
+
+To build the package, run
+```
+gbp buildpackage
+```
+
+## 3rd party source.
+
+Some source needed to be downloaded from the internet.
+This have to be fixed later.
 
 
  -- Ying-Chun Liu (PaulLiu) <paulliu@debian.org>  Wed, 20 Jun 2018 14:57:55 +0800
