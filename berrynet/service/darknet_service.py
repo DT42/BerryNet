@@ -29,67 +29,8 @@ from berrynet.comm import payload
 from berrynet.dlmodelmgr import DLModelManager
 from berrynet.engine.darknet_engine import DarknetEngine
 from berrynet.service import EngineService
-
-
-def generate_class_color(class_num=20):
-    """Generate a RGB color set based on given class number.
-
-    Args:
-        class_num: Default is VOC dataset class number.
-
-    Returns:
-        A tuple containing RGB colors.
-    """
-    colors = [(1, 0, 1), (0, 0, 1), (0, 1, 1),
-              (0, 1, 0), (1, 1, 0), (1, 0, 0)]
-    const = 1234567  # only for offset calculation
-
-    colorset = []
-    for cls_i in range(class_num):
-        offset = cls_i * const % class_num
-
-        ratio = (float(offset) / class_num) * (len(colors) - 1)
-        i = math.floor(ratio)
-        j = math.ceil(ratio)
-        ratio -= i
-
-        rgb = []
-        for ch_i in range(3):
-            r = (1 - ratio) * colors[i][ch_i] + ratio * colors[j][ch_i]
-            rgb.append(math.ceil(r * 255))
-        colorset.append(tuple(rgb[::-1]))
-    return tuple(colorset)
-
-
-def draw_bb(bgr_nparr, infres, class_colors, labels):
-    """Draw bounding boxes on an image.
-
-    Args:
-        bgr_nparr: image data in numpy array format
-        infres: Darkflow inference results
-        class_colors: Bounding box color candidates, list of RGB tuples.
-
-    Returens:
-        Generalized result whose image data is drew w/ bounding boxes.
-    """
-    for res in infres['annotations']:
-        left = int(res['left'])
-        top = int(res['top'])
-        right = int(res['right'])
-        bottom = int(res['bottom'])
-        label = res['label']
-        color = class_colors[labels.index(label)]
-        confidence = res['confidence']
-        imgHeight, imgWidth, _ = bgr_nparr.shape
-        thick = int((imgHeight + imgWidth) // 300)
-
-        cv2.rectangle(bgr_nparr,(left, top), (right, bottom), color, thick)
-        cv2.putText(bgr_nparr, label, (left, top - 12), 0, 1e-3 * imgHeight,
-            color, thick//3)
-    #cv2.imwrite('prediction.jpg', bgr_nparr)
-    infres['bytes'] = payload.stringify_jpg(
-                                    cv2.imencode('.jpg', bgr_nparr)[1])
-    return infres
+from berrynet.utils import generate_class_color
+from berrynet.utils import draw_bb
 
 
 class DarknetService(EngineService):
