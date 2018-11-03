@@ -31,7 +31,7 @@ from berrynet import logger
 
 class DLModelManager(object):
     def __init__(self):
-        self.basedir = '/var/lib/dlmodels'
+        self.basedir = '/usr/share/dlmodels'
 
     def get_model_names(self):
         return os.listdir(self.basedir)

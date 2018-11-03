@@ -50,6 +50,8 @@ class MovidiusMobileNetSSDEngine(DLEngine):
     def __init__(self, model, label):
         super(MovidiusMobileNetSSDEngine, self).__init__()
         self.mvng = mv.MovidiusNeuralGraph(model, label)
+        self.labels = self.mvng.get_labels()
+        self.classes = len(self.labels)
 
     def process_input(self, tensor):
         self.img_w = tensor.shape[1]
