@@ -136,7 +136,8 @@ def parse_args():
     ap.add_argument('--model_package',
                     default='',
                     help='Model package name')
-    ap.add_argument('--service_name', required=True,
+    ap.add_argument('--service_name',
+                    default='darknet',
                     help='Engine service name used as PID filename')
     ap.add_argument('--num_top_predictions', default=5,
                     help='Display this many predictions')
