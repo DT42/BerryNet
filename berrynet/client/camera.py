@@ -35,6 +35,12 @@ def parse_args():
         default='localhost',
         help='MQTT broker IP.'
     )
+    ap.add_argument(
+        '--broker-port',
+        default=1883,
+        type=int,
+        help='MQTT broker port.'
+    )
     return vars(ap.parse_args())
 
 
@@ -45,7 +51,7 @@ def main():
         'subscribe': {},
         'broker': {
             'address': args['broker_ip'],
-            'port': 1883
+            'port': args['broker_port']
         }
     }
     comm = Communicator(comm_config, debug=True)
