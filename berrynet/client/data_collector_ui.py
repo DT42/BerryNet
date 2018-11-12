@@ -128,8 +128,9 @@ class UI(object):
                                text='TBD',
                                font=('Courier New', 10),
                                justify=tk.LEFT)
-        #self.result.pack(fill='x', expand=True)
-        self.result.pack(fill='x', side=tk.RIGHT)
+        #self.result.pack(expand=True, side=tk.LEFT)
+        self.result.grid(row=0, column=0, padx=10)
+        #self.result.columnconfigure(1, weight=2)
 
         # Add canvas: inference result image
         #self.canvas = tk.Canvas(self.window, width=1920, height=1080)
@@ -139,13 +140,15 @@ class UI(object):
                              np.zeros((self.canvas_h, self.canvas_w, 3), dtype=np.uint8)))
         self.image_id = self.canvas.create_image(
                             0, 0, image=self.photo, anchor=tk.NW)
-        self.canvas.pack(fill='both', expand=True)
+        #self.canvas.pack(side=tk.LEFT)
+        self.canvas.grid(row=0, column=1, rowspan=2, sticky='nesw')
 
         # Add button: snapshot trigger
         self.snapshot_button = tk.Button(self.window,
                                          text='Query',
                                          command=self.snapshot)
-        self.snapshot_button.pack(fill='x', expand=True)
+        #self.snapshot_button.pack(expand=True)
+        self.snapshot_button.grid(row=1, column=0)
 
         # Create data collector thread
         t = threading.Thread(name='Data Collector',
@@ -197,7 +200,7 @@ class UI(object):
                 #logger.info('label = {}'.format(k))
             msg = '{} persons at the corner\n\n'.format(count)
             if count > crowd_factor:
-                msg += 'Too crowded and suggest to go straight'
+                msg += 'Too crowded and \nsuggest to go straight'
             else:
                 msg += 'You can turn right safely'
             return msg
