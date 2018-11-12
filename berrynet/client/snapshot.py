@@ -40,8 +40,6 @@ class SnapshotService(object):
         self.comm_config['subscribe']['berrynet/trigger/controller/snapshot'] = self.snapshot
         self.comm = Communicator(self.comm_config, debug=True)
 
-        self.capture = cv2.VideoCapture(0)
-
     def snapshot(self, pl):
         '''Send camera snapshot.
 
@@ -50,6 +48,12 @@ class SnapshotService(object):
         The difference is that snapshot client retrieves image from camera
         instead of given filepath.
         '''
+        duration = lambda t: (datetime.now() - t).microseconds / 1000
+
+        # WORKAROUND: Prevent VideoCapture from buffering frames.
+        #     VideoCapture will buffer frames automatically, and we need
+        #     to find a way to disable it.
+        self.capture = cv2.VideoCapture(0)
         status, im = self.capture.read()
         if (status is False):
             logger.warn('ERROR: Failure happened when reading frame')
@@ -59,6 +63,7 @@ class SnapshotService(object):
         mqtt_payload = payload.serialize_jpg(jpg_bytes)
         self.comm.send('berrynet/data/rgbimage', mqtt_payload)
         logger.debug('send: {} ms'.format(duration(t)))
+        self.capture.release()
 
     def run(self, args):
         """Infinite loop serving inference requests"""
