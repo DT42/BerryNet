@@ -98,6 +98,12 @@ class DataCollectorService(object):
             with open(pjoin(self.data_dirpath, timestamp + '.json'), 'w') as f:
                 f.write(json.dumps(payload_json, indent=4))
 
+    def send_snapshot_trigger(self):
+        payload = {}
+        payload['timestamp'] = datetime.now().isoformat()
+        mqtt_payload = json.dumps(payload)
+        self.comm.send('berrynet/trigger/controller/snapshot', mqtt_payload)
+
     def run(self, args):
         """Infinite loop serving inference requests"""
         self.comm.run()
@@ -112,29 +118,41 @@ class UI(object):
 
         # Create UI attributes
         self.window = tk.Tk()
-        self.window.title('AIBox Inference Result')
+        self.window.title('BerryNet Inference Dashboard')
         self.window.protocol('WM_DELETE_WINDOW', self.on_closing)
+        self.canvas_w = dc_kwargs['image_width']
+        self.canvas_h = dc_kwargs['image_height']
 
+        # Add label: inference result text
         self.result = tk.Label(self.window,
                                text='TBD',
                                font=('Courier New', 10),
                                justify=tk.LEFT)
         self.result.pack(fill='x', expand=True)
 
+        # Add canvas: inference result image
         #self.canvas = tk.Canvas(self.window, width=1920, height=1080)
         self.canvas = tk.Canvas(self.window)
         self.photo = ImageTk.PhotoImage(
                          image=Image.fromarray(
-                             np.zeros((300, 300, 3), dtype=np.uint8)))
+                             np.zeros((self.canvas_h, self.canvas_w, 3), dtype=np.uint8)))
         self.image_id = self.canvas.create_image(
                             0, 0, image=self.photo, anchor=tk.NW)
         self.canvas.pack(fill='both', expand=True)
 
+        # Add button: snapshot trigger
+        self.snapshot_button = tk.Button(self.window,
+                                         text='Query',
+                                         command=self.snapshot)
+        self.snapshot_button.pack(fill='both', expand=False)
+
+        # Create data collector thread
         t = threading.Thread(name='Data Collector',
                              target=self.dc_service.run,
                              args=(self.dc_kwargs,))
         t.start()
 
+        # Start the main UI program
         self.window.mainloop()
 
     def update(self, data, imgkey='bytes'):
@@ -146,7 +164,8 @@ class UI(object):
         jpg_bytes = payload.destringify_jpg(data[imgkey])
         img = payload.jpg2rgb(jpg_bytes)
 
-        self.photo = ImageTk.PhotoImage(image=Image.fromarray(img))
+        resized_img = Image.fromarray(img).resize((self.canvas_h, self.canvas_w))
+        self.photo = ImageTk.PhotoImage(image=resized_img)
         self.window.geometry('{}x{}'.format(
             self.photo.width(),
             self.photo.height() + self.result.winfo_height()))
@@ -155,6 +174,9 @@ class UI(object):
         # update text area
         data.pop(imgkey)
         self.result.config(text=json.dumps(data, indent=4))
+
+    def snapshot(self):
+        self.dc_service.send_snapshot_trigger()
 
     def on_closing(self):
         self.dc_service.comm.disconnect()
@@ -183,6 +205,18 @@ def parse_args():
         '--topic-config',
         default=None,
         help='Path of the MQTT topic subscription JSON.'
+    )
+    ap.add_argument(
+        '--image-width',
+        type=int,
+        default=300,
+        help='Image display width in pixel.'
+    )
+    ap.add_argument(
+        '--image-height',
+        type=int,
+        default=300,
+        help='Image display height in pixel.'
     )
     return vars(ap.parse_args())
 
