@@ -128,7 +128,8 @@ class UI(object):
                                text='TBD',
                                font=('Courier New', 10),
                                justify=tk.LEFT)
-        self.result.pack(fill='x', expand=True)
+        #self.result.pack(fill='x', expand=True)
+        self.result.pack(fill='x', side=tk.RIGHT)
 
         # Add canvas: inference result image
         #self.canvas = tk.Canvas(self.window, width=1920, height=1080)
@@ -144,7 +145,7 @@ class UI(object):
         self.snapshot_button = tk.Button(self.window,
                                          text='Query',
                                          command=self.snapshot)
-        self.snapshot_button.pack(fill='both', expand=False)
+        self.snapshot_button.pack(fill='x', expand=True)
 
         # Create data collector thread
         t = threading.Thread(name='Data Collector',
@@ -160,23 +161,48 @@ class UI(object):
         Args:
             data: Inference result loaded from JSON object
         '''
-        # update image area
+        # Retrieve result image
         jpg_bytes = payload.destringify_jpg(data[imgkey])
         img = payload.jpg2rgb(jpg_bytes)
 
+        # Retrieve result text, and update text area
+        data.pop(imgkey)
+        self.result.config(text=self.process_output(data))
+
+        # update image area
         resized_img = Image.fromarray(img).resize((self.canvas_h, self.canvas_w))
         self.photo = ImageTk.PhotoImage(image=resized_img)
-        self.window.geometry('{}x{}'.format(
-            self.photo.width(),
-            self.photo.height() + self.result.winfo_height()))
+        win_w = self.photo.width() + self.result.winfo_width()
+        win_h = self.photo.height() + self.snapshot_button.winfo_height()
+        self.window.geometry('{}x{}'.format(win_w, win_h))
         self.canvas.itemconfig(self.image_id, image=self.photo)
-
-        # update text area
-        data.pop(imgkey)
-        self.result.config(text=json.dumps(data, indent=4))
 
     def snapshot(self):
         self.dc_service.send_snapshot_trigger()
+
+    def process_output(self, output):
+        '''
+        Args:
+            output: Inference result, JSON object
+
+        Returns:
+            Stringified JSON data.
+        '''
+        if 'annotations' in output.keys():
+            count = 0
+            crowd_factor = 3
+            for obj in output['annotations']:
+                if obj['label'] == 'person':
+                    count += 1
+                #logger.info('label = {}'.format(k))
+            msg = '{} persons at the corner\n\n'.format(count)
+            if count > crowd_factor:
+                msg += 'Too crowded and suggest to go straight'
+            else:
+                msg += 'You can turn right safely'
+            return msg
+        else:
+            return json.dumps(output, indent=4)
 
     def on_closing(self):
         self.dc_service.comm.disconnect()
