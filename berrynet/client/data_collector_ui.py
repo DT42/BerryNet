@@ -125,12 +125,10 @@ class UI(object):
         self.crowd_factor = 3
 
         # Add label: inference result text
-        self.result = tk.Text(self.window,
-                              font=('Courier New', 20),
-                              width=25,
-                              height=5)
-        self.result.insert(tk.INSERT, 'TBD')
-        # format: line.column, line starts from 1, column starts from 0
+        self.result = tk.Label(self.window,
+                               text='TBD',
+                               font=('Courier New', 10),
+                               justify=tk.LEFT)
         #self.result.pack(expand=True, side=tk.LEFT)
         self.result.grid(row=0, column=0, padx=10)
         #self.result.columnconfigure(1, weight=2)
@@ -144,7 +142,7 @@ class UI(object):
         self.image_id = self.canvas.create_image(
                             0, 0, image=self.photo, anchor=tk.NW)
         #self.canvas.pack(side=tk.LEFT)
-        self.canvas.grid(row=0, column=1, columnspan=4, sticky='nesw')
+        self.canvas.grid(row=0, column=1, rowspan=2, columnspan=4, sticky='nesw')
 
         # Add button: snapshot trigger
         self.snapshot_button = tk.Button(self.window,
@@ -190,14 +188,12 @@ class UI(object):
 
         # Retrieve result text, and update text area
         data.pop(imgkey)
-        self.result.delete('0.0', tk.END)
         result_text = self.process_output(data)
-        self.result.tag_add('counter', '1.0', '1.1')
         if 'safely' in result_text:
-            self.result.tag_config('counter', foreground='blue')
+            text_color = 'blue'
         else:
-            self.result.tag_config('counter', foreground='red')
-        self.result.insert(tk.INSERT, result_text, 'counter')
+            text_color = 'red'
+        self.result.config(text=result_text, fg=text_color)
 
         # update image area
         resized_img = Image.fromarray(img).resize((self.canvas_h, self.canvas_w))
