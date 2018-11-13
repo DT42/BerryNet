@@ -122,11 +122,12 @@ class UI(object):
         self.window.protocol('WM_DELETE_WINDOW', self.on_closing)
         self.canvas_w = dc_kwargs['image_width']
         self.canvas_h = dc_kwargs['image_height']
+        self.crowd_factor = 3
 
         # Add label: inference result text
         self.result = tk.Label(self.window,
                                text='TBD',
-                               font=('Courier New', 10),
+                               font=('Courier New', 12),
                                justify=tk.LEFT)
         #self.result.pack(expand=True, side=tk.LEFT)
         self.result.grid(row=0, column=0, padx=10)
@@ -141,7 +142,7 @@ class UI(object):
         self.image_id = self.canvas.create_image(
                             0, 0, image=self.photo, anchor=tk.NW)
         #self.canvas.pack(side=tk.LEFT)
-        self.canvas.grid(row=0, column=1, rowspan=2, sticky='nesw')
+        self.canvas.grid(row=0, column=1, columnspan=4, sticky='nesw')
 
         # Add button: snapshot trigger
         self.snapshot_button = tk.Button(self.window,
@@ -149,6 +150,23 @@ class UI(object):
                                          command=self.snapshot)
         #self.snapshot_button.pack(expand=True)
         self.snapshot_button.grid(row=1, column=0)
+
+        # Add button and label: threshold controller
+        self.threshold = tk.Label(self.window,
+                               text=self.crowd_factor,
+                               font=('Courier New', 10),
+                               justify=tk.LEFT)
+        self.threshold.grid(row=1, column=1)
+
+        self.snapshot_button = tk.Button(self.window,
+                                         text='+',
+                                         command=self.increase_threshold)
+        self.snapshot_button.grid(row=1, column=2)
+
+        self.snapshot_button = tk.Button(self.window,
+                                         text='-',
+                                         command=self.decrease_threshold)
+        self.snapshot_button.grid(row=1, column=3)
 
         # Create data collector thread
         t = threading.Thread(name='Data Collector',
@@ -183,6 +201,14 @@ class UI(object):
     def snapshot(self):
         self.dc_service.send_snapshot_trigger()
 
+    def increase_threshold(self):
+        self.crowd_factor += 1
+        self.threshold.config(text=self.crowd_factor)
+
+    def decrease_threshold(self):
+        self.crowd_factor -= 1
+        self.threshold.config(text=self.crowd_factor)
+
     def process_output(self, output):
         '''
         Args:
@@ -193,14 +219,13 @@ class UI(object):
         '''
         if 'annotations' in output.keys():
             count = 0
-            crowd_factor = 3
             for obj in output['annotations']:
                 if obj['label'] == 'person':
                     count += 1
                 #logger.info('label = {}'.format(k))
             msg = '{} persons at the corner\n\n'.format(count)
-            if count > crowd_factor:
-                msg += 'Too crowded and \nsuggest to go straight'
+            if count > self.crowd_factor:
+                msg += 'Too crowded,\nsuggest to go straight'
             else:
                 msg += 'You can turn right safely'
             return msg
