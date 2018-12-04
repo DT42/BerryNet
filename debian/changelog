@@ -1,3 +1,9 @@
+berrynet (3.2.0-2) unstable; urgency=low
+
+  * debian/control: Change Architecture to all.
+
+ -- Ying-Chun Liu (PaulLiu) <paulliu@debian.org>  Tue, 04 Dec 2018 14:38:36 +0800
+
 berrynet (3.2.0-1) unstable; urgency=low
 
   * Initial release (Closes: #898152)
