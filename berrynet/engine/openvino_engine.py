@@ -137,9 +137,9 @@ class OpenVINOClassifierEngine(DLEngine):
                 annotations.append({
                     'type': 'classification',
                     'label': det_label,
-                    'confidence': probs[id]
+                    'confidence': float(probs[id])
                 })
-        return annotations
+        return {'annotations': annotations}
 
 
 def get_distribution_info():
