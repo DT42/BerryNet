@@ -1,0 +1,25 @@
+/* BerryNet Style Guideline v1.0
+ *
+ * https://github.com/DT42/BerryNet/files/2651722/Berrynet_color_palette_20181014.pdf
+ *
+ * Primary color palette
+ *
+ *     deep red:    #8c3837
+ *     pink red:    #c55754
+ *     white:       #ffffff
+ *
+ * Secondary color palette
+ *
+ *     deep blue:   #19242c
+ *     blue:        #23435e
+ *     light blue:  #aaaaaa
+ *     light white: #fafae5
+ */
+
+#admin-bar {
+        background-color: #f3f7f4;
+}
+
+#datasources h2 {
+        color: #0f254b;
+}
