@@ -185,8 +185,8 @@ def draw_box(image, annotations):
         box_color = (0, 0, 255)
         box_thickness = 1
         cv2.rectangle(img,
-                      (anno['left'], anno['top']),
-                      (anno['right'], anno['bottom']),
+                      (int(anno['left']), int(anno['top'])),
+                      (int(anno['right']), int(anno['bottom'])),
                       box_color,
                       box_thickness)
 
@@ -210,13 +210,13 @@ def draw_box(image, annotations):
         label_right = label_left + label_size[0]
         label_bottom = label_top + label_size[1]
         cv2.rectangle(img,
-                      (label_left - 1, label_top - 1),
-                      (label_right + 1, label_bottom + 1),
+                      (int(label_left - 1), int(label_top - 1)),
+                      (int(label_right + 1), int(label_bottom + 1)),
                       label_background_color,
                       -1)
         cv2.putText(img,
                     label_text,
-                    (label_left, label_bottom),
+                    (int(label_left), int(label_bottom)),
                     cv2.FONT_HERSHEY_SIMPLEX,
                     0.5,
                     label_text_color,
