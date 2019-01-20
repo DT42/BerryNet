@@ -38,7 +38,7 @@ def parse_args():
     )
     ap.add_argument(
         '--fps',
-        type=int,
+        type=float,
         default=1,
         help='Frame per second in streaming mode. (default: 1)'
     )
