@@ -142,11 +142,7 @@ install_darknet() {
 }
 
 download_detector_model() {
-    pushd inference/darkflow > /dev/null
-    mkdir bin
-    popd > /dev/null
-    wget -O /tmp/tinyyolo_20170816_all.deb https://s3.amazonaws.com/berrynet/models/tinyyolo/tinyyolo_20170816_all.deb
-    sudo dpkg -i /tmp/tinyyolo_20170816_all.deb
+    sudo apt install -y tinyyolovoc
 }
 
 install_tensorflow() {
