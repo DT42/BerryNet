@@ -69,8 +69,8 @@ install_nodejs() {
 }
 
 install_opencv() {
-    sudo add-apt-repository ppa:timsc/opencv-3.4
-    sudo apt-get update
+    sudo add-apt-repository -yu ppa:timsc/opencv-3.4
+    sudo apt install -y python3-opencv
 }
 
 # TODO: Retire Darkflow
