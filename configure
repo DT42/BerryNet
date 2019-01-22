@@ -39,7 +39,6 @@ install_system_dependencies() {
         git \
         imagemagick \
         libkrb5-dev \
-        libopencv-dev \
         libyaml-dev \
         libzmq3-dev \
         lsb-release \
@@ -67,6 +66,11 @@ install_nodejs() {
     # v10.x is LTS, if you want the latest feature, change to "setup_11.x".
     curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
     sudo apt-get install -y nodejs
+}
+
+install_opencv() {
+    sudo add-apt-repository ppa:timsc/opencv-3.4
+    sudo apt-get update
 }
 
 # TODO: Retire Darkflow
@@ -261,6 +265,7 @@ install_berrynet_js() {
 install_system_dependencies 2>&1 | tee -a $LOG
 install_berrynet_repository 2>&1 | tee -a $LOG
 install_nodejs 2>&1 | tee -a $LOG
+install_opencv 2>&1 | tee -a $LOG
 install_configs 2>&1 | tee -a $LOG
 install_berrynet_py 2>&1 | tee -a $LOG
 install_berrynet_js 2>&1 | tee -a $LOG
