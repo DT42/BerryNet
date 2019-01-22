@@ -204,6 +204,7 @@ install_openvino() {
         mobilenet-1.0-224-openvino
     sudo sed -i "s%<INSTALLDIR>%${OPENVINO_INSTALLDIR}%g" \
         $OPENVINO_INSTALLDIR/bin/setupvars.sh
+}
 
 install_configs() {
     # systemd
