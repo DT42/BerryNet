@@ -262,6 +262,10 @@ install_berrynet_js() {
     popd > /dev/null
 }
 
+update_system_service() {
+    sudo service mosquitto restart
+}
+
 install_system_dependencies 2>&1 | tee -a $LOG
 install_berrynet_repository 2>&1 | tee -a $LOG
 install_nodejs 2>&1 | tee -a $LOG
@@ -309,6 +313,8 @@ if [ "$INSTALL_OPENVINO" = "Y" ]; then
 else
     echo "Not install OpenVINO" >> $LOG
 fi
+
+update_system_service 2>&1 | tee -a $LOG
 
 {
     echo "Installation is completed successfully!"
