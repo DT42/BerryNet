@@ -45,12 +45,14 @@ install_system_dependencies() {
         mongodb \
         mosquitto \
         mosquitto-clients \
-        python-dev \
-        python-pip \
+        python3-dev \
+        python3-pip \
         wget
     sudo service mongodb start
     sudo -H pip install \
         cython \
+        logzero \
+        paho-mqtt \
         watchdog
 }
 
