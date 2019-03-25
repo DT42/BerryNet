@@ -348,6 +348,13 @@ def set_openvino_environment():
 def parse_argsr():
     parser = ArgumentParser()
     parser.add_argument(
+            "-e", "--engine",
+            help=("Classifier or Detector engine. "
+                  "classifier, or detector is acceptable. "
+                  "(classifier by default)"),
+            default="classifier",
+            type=str)
+    parser.add_argument(
             "-m", "--model",
             help="Path to an .xml file with a trained model.",
             required=True,
@@ -388,16 +395,20 @@ def main():
     else:
         logger.setLevel(logging.INFO)
 
-    #engine = OpenVINOClassifierEngine(
-    #             model = args.model,
-    #             device = 'CPU',
-    #             labels = args.labels,
-    #             top_k = args.number_top)
-
-    engine = OpenVINODetectorEngine(
-                 model = args.model,
-                 device = 'MYRIAD',
-                 labels = args.labels)
+    if args.engine == 'classifier':
+        engine = OpenVINOClassifierEngine(
+                     model = args.model,
+                     device = args.device,
+                     labels = args.labels,
+                     top_k = args.number_top)
+    elif args.engine == 'detector':
+        engine = OpenVINODetectorEngine(
+                     model = args.model,
+                     device = args.device,
+                     labels = args.labels)
+    else:
+        raise Exception('Illegal engine {}, it should be '
+                        'classifier or detector'.format(args.engine))
 
     #set_openvino_environment()
     #if args.debug:

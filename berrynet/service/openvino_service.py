@@ -130,6 +130,12 @@ class OpenVINODetectorService(EngineService):
 
 def parse_args():
     ap = argparse.ArgumentParser()
+    ap.add_argument('--service',
+                    help=('Classifier or Detector service. '
+                          'classifier, or detector is acceptable. '
+                          '(classifier by default)'),
+                    default='classifier',
+                    type=str)
     ap.add_argument('--model',
                     help='Model file path')
     ap.add_argument('--label',
@@ -178,17 +184,24 @@ def main():
             'port': 1883
         }
     }
-    #engine = OpenVINOClassifierEngine(
-    #             model = args['model'],
-    #             device = args['device'],
-    #             labels = args['label'],
-    #             top_k = args['num_top_predictions'])
-    #service_functor = OpenVINOClassifierService
-    engine = OpenVINODetectorEngine(
-                 model = args['model'],
-                 device = args['device'],
-                 labels = args['label'])
-    service_functor = OpenVINODetectorService
+
+    if args['service'] == 'classifier':
+        engine = OpenVINOClassifierEngine(
+                     model = args['model'],
+                     device = args['device'],
+                     labels = args['label'],
+                     top_k = args['num_top_predictions'])
+        service_functor = OpenVINOClassifierService
+    elif args['service'] == 'detector':
+        engine = OpenVINODetectorEngine(
+                     model = args['model'],
+                     device = args['device'],
+                     labels = args['label'])
+        service_functor = OpenVINODetectorService
+    else:
+        raise Exception('Illegal service {}, it should be '
+                        'classifier or detector'.format(args['service']))
+
     engine_service = service_functor(args['service_name'],
                                      engine,
                                      comm_config,
