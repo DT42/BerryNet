@@ -27,6 +27,7 @@ from berrynet import logger
 from berrynet.comm import payload
 from berrynet.dlmodelmgr import DLModelManager
 from berrynet.engine.openvino_engine import OpenVINOClassifierEngine
+from berrynet.engine.openvino_engine import OpenVINODetectorEngine
 from berrynet.service import EngineService
 from berrynet.utils import draw_bb
 from berrynet.utils import generate_class_color
@@ -80,6 +81,53 @@ class OpenVINOClassifierService(EngineService):
                        payload.serialize_payload(generalized_result))
 
 
+class OpenVINODetectorService(EngineService):
+    def __init__(self, service_name, engine, comm_config, draw=False):
+        super(OpenVINODetectorService, self).__init__(service_name,
+                                                      engine,
+                                                      comm_config)
+        self.draw = draw
+
+    def inference(self, pl):
+        duration = lambda t: (datetime.now() - t).microseconds / 1000
+
+        t = datetime.now()
+        logger.debug('payload size: {}'.format(len(pl)))
+        logger.debug('payload type: {}'.format(type(pl)))
+        jpg_json = payload.deserialize_payload(pl.decode('utf-8'))
+        jpg_bytes = payload.destringify_jpg(jpg_json['bytes'])
+        logger.debug('destringify_jpg: {} ms'.format(duration(t)))
+
+        t = datetime.now()
+        bgr_array = payload.jpg2bgr(jpg_bytes)
+        logger.debug('jpg2bgr: {} ms'.format(duration(t)))
+
+        t = datetime.now()
+        image_data = self.engine.process_input(bgr_array)
+        output = self.engine.inference(image_data)
+        model_outputs = self.engine.process_output(output)
+        logger.debug('Result: {}'.format(model_outputs))
+        logger.debug('Detection takes {} ms'.format(duration(t)))
+
+        classes = len(self.engine.labels_map)
+        labels = self.engine.labels_map
+
+        logger.debug('draw = {}'.format(self.draw))
+        if self.draw is False:
+            self.result_hook(self.generalize_result(jpg_json, model_outputs))
+        else:
+            self.result_hook(
+                draw_bb(bgr_array,
+                        self.generalize_result(jpg_json, model_outputs),
+                        generate_class_color(class_num=classes),
+                        labels))
+
+    def result_hook(self, generalized_result):
+        logger.debug('result_hook, annotations: {}'.format(generalized_result['annotations']))
+        self.comm.send('berrynet/engine/ovdetector/result',
+                       payload.serialize_payload(generalized_result))
+
+
 def parse_args():
     ap = argparse.ArgumentParser()
     ap.add_argument('--model',
@@ -130,12 +178,17 @@ def main():
             'port': 1883
         }
     }
-    engine = OpenVINOClassifierEngine(
+    #engine = OpenVINOClassifierEngine(
+    #             model = args['model'],
+    #             device = args['device'],
+    #             labels = args['label'],
+    #             top_k = args['num_top_predictions'])
+    #service_functor = OpenVINOClassifierService
+    engine = OpenVINODetectorEngine(
                  model = args['model'],
                  device = args['device'],
-                 labels = args['label'],
-                 top_k = args['num_top_predictions'])
-    service_functor = OpenVINOClassifierService
+                 labels = args['label'])
+    service_functor = OpenVINODetectorService
     engine_service = service_functor(args['service_name'],
                                      engine,
                                      comm_config,

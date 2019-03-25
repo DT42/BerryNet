@@ -208,6 +208,10 @@ class OpenVINODetectorEngine(DLEngine):
         frame = tensor
         next_frame = next_tensor
 
+        # original input shape will be used in process_output
+        self.img_w = tensor.shape[1]
+        self.img_h = tensor.shape[0]
+
         # Main sync point:
         # in the truly Async mode we start the NEXT infer request, while waiting for the CURRENT to complete
         # in the regular mode we start the CURRENT request and immediately wait for it's completion
@@ -257,15 +261,15 @@ class OpenVINODetectorEngine(DLEngine):
         for obj in output[0][0]:
             # Collect objects when probability more than specified threshold
             if obj[2] > self.threshold:
-                xmin = int(obj[3] * self.w)
-                ymin = int(obj[4] * self.h)
-                xmax = int(obj[5] * self.w)
-                ymax = int(obj[6] * self.h)
+                xmin = int(obj[3] * self.img_w)
+                ymin = int(obj[4] * self.img_h)
+                xmax = int(obj[5] * self.img_w)
+                ymax = int(obj[6] * self.img_h)
                 class_id = int(obj[1])
                 det_label = self.labels_map[class_id] if self.labels_map else str(class_id)
                 annotations.append({
                     'label': det_label,
-                    'confidence': obj[2],
+                    'confidence': float(obj[2]),
                     'left': xmin,
                     'top': ymin,
                     'right': xmax,
