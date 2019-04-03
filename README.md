@@ -153,4 +153,4 @@ If you use [LabelMe](http://labelme.csail.mit.edu/Release3.0/) to annotate data,
 
 # Discussion
 
-Please refer to the [Google Group](https://groups.google.com/a/dt42.io/d/forum/berrynet) for questions, suggestions, or any idea discussion.
+Please refer to the [Telegram Group](https://t.me/berrynetdev) or [Google Group](https://groups.google.com/a/dt42.io/d/forum/berrynet) for questions, suggestions, or any idea discussion.
