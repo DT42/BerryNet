@@ -46,7 +46,7 @@ $ ./configure
 
 BerryNet performs an AIoT application by connecting independent components together. Component types include but not limited to AI engine, I/O processor, data processor (algorithm), or data collector.
 
-We recommend to manage BerryNet componetns by by [supervisor](http://supervisord.org/), but you can also run BerryNet components manually. You can manage BerryNet via `supervisorctl`:
+We recommend to manage BerryNet componetns by [supervisor](http://supervisord.org/), but you can also run BerryNet components manually. You can manage BerryNet via `supervisorctl`:
 
 ```
 # Check status of BerryNet components
@@ -70,7 +70,7 @@ The default application has three components:
 * Object detection engine to find type and position of the detected objects in an image
 * Dashboard to display the detection results
 
-You will learn how to configure or change the components in the Configuration section.
+You will learn how to configure or change the components in the [Configuration](#configuration) section.
 
 
 # Dashboard: Freeboard
@@ -86,7 +86,12 @@ Freeboard is a web-based dashboard. Here are the steps to show the detection res
 
 ## Open Freeboard on another computer
 
-Assuming that BerryNet default application runs on device A with IP `192.168.1.42`, and you want to see the detection result on device B with IP `192.168.1.43`:
+Assuming that you have two devices:
+
+* Device A with IP `192.168.1.42`, BerryNet default application runs on it
+* Device B with IP `192.168.1.43`, you want to open Freeboard and see the detection result on it
+
+Here are the steps:
 
 * 1: Enter `http://192.168.1.42:8080` in browser's URL bar, and press enter
 * 2: [Download](https://raw.githubusercontent.com/DT42/BerryNet/master/config/dashboard-darknet.json) the Freeboard configuration for default application, `dashboard-darknet.json`
@@ -120,7 +125,7 @@ The inference result image and text will be saved into the indicated result dire
 
 # Configuration
 
-The default supervisor config is at `/etc/supervisor/conf.d/berrynet-darknet.conf`.
+The default supervisor config is at `/etc/supervisor/conf.d/berrynet-darknet.conf`. To write your own supervisor config, you can refer to [here](https://github.com/DT42/BerryNet/tree/master/config/supervisor/conf.d) for more example supervisor configs of BerryNet
 
 ## Camera Client
 
