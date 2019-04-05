@@ -21,7 +21,7 @@
 
 set -e
 
-LOG="$PWD/berrynet.log"
+LOG="$PWD/berrynet-install.log"
 DISTRIBUTIONID=`lsb_release -i -s`
 #INSTALL_DARKFLOW="N"
 INSTALL_DARKNET_NNPACK="Y"
@@ -47,6 +47,7 @@ install_system_dependencies() {
         mosquitto-clients \
         python3-dev \
         python3-pip \
+        supervisor \
         wget
     sudo service mongodb start
     sudo -H pip3 install \
@@ -216,6 +217,9 @@ install_configs() {
     # systemd
     sudo cp systemd/* /etc/systemd/system
 
+    # supervisor
+    sudo cp config/supervisor/conf.d/berrynet-darknet.conf /etc/supervisor/conf.d/
+
     # mosquitto
     sudo cp config/etc/mosquitto/conf.d/berrynet.conf /etc/mosquitto/conf.d
 
@@ -321,7 +325,14 @@ update_system_service 2>&1 | tee -a $LOG
 {
     echo "Installation is completed successfully!"
     echo ""
-    echo "Please send $LOG and /usr/local/berrynet/npm-debug.log"
-    echo "to https://groups.google.com/a/dt42.io/d/forum/berrynet"
-    echo "if there is any issue."
+    echo "If there is any issue, please open an issue on"
+    echo ""
+    echo "    https://github.com/DT42/BerryNet/issues"
+    echo ""
+    echo "and attach these logs:"
+    echo ""
+    echo "    $LOG"
+    echo "    /usr/local/berrynet/npm-debug.log"
+    echo ""
+    echo "We are happy to check and fix it, thank you!"
 } | tee -a $LOG
