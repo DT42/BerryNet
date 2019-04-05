@@ -46,11 +46,23 @@ $ ./configure
 
 BerryNet performs an AIoT application by connecting independent components together. Component types include but not limited to AI engine, I/O processor, data processor (algorithm), or data collector.
 
-We recommend to manage BerryNet componetns by by [supervisor](http://supervisord.org/), but you can also run BerryNet components manually. You can manage BerryNet via `berrynet-manager`:
+We recommend to manage BerryNet componetns by by [supervisor](http://supervisord.org/), but you can also run BerryNet components manually. You can manage BerryNet via `supervisorctl`:
 
 ```
-$ berrynet-manager [start | stop | status | log]
+# Check status of BerryNet components
+$ sudo supervisorctl status all
+
+# Stop Camera client
+$ sudo supervisorctl stop camera
+
+# Restart all components
+$ sudo supervisorctl restart all
+
+# Show last stderr logs of camera client
+$ sudo supervisorctl tail camera stderr
 ```
+
+For more possibilities of supervisorctl, please refer to the [official tutorial](http://supervisord.org/running.html#running-supervisorctl).
 
 The default application has three components:
 
