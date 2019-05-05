@@ -72,7 +72,12 @@ install_nodejs() {
 }
 
 install_opencv() {
-    sudo add-apt-repository -yu ppa:timsc/opencv-3.4
+    # OpenCV sources
+    #     x86 Ubuntu 16.04: PPA
+    #     Raspbian: BerryNet repo
+    if [ x"$DISTRIBUTIONID" = x"Ubuntu" ]; then
+        sudo add-apt-repository -yu ppa:timsc/opencv-3.4
+    fi
     sudo apt install -y python3-opencv
 }
 
