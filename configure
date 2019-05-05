@@ -275,6 +275,7 @@ install_berrynet_js() {
 
 update_system_service() {
     sudo service mosquitto restart
+    sudo supervisorctl reload
 }
 
 install_system_dependencies 2>&1 | tee -a $LOG
