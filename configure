@@ -50,11 +50,10 @@ install_system_dependencies() {
         supervisor \
         wget
     sudo service mongodb start
-    sudo -H pip3 install \
-        cython \
-        logzero \
-        paho-mqtt \
-        watchdog
+    sudo -H pip3 install --timeout 60 cython
+    sudo -H pip3 install --timeout 60 logzero
+    sudo -H pip3 install --timeout 60 paho-mqtt
+    sudo -H pip3 install --timeout 60 watchdog
 }
 
 install_berrynet_repository() {
