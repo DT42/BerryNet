@@ -8,10 +8,11 @@ import cv2
 import numpy as np
 import tensorflow as tf
 
+from berrynet.engine import DLEngine
 from berrynet import logger
 
 
-class TFLiteDetectorEngine(object):
+class TFLiteDetectorEngine(DLEngine):
     def __init__(self, model, labels):
         """
         Builds Tensorflow graph, load model and labels
