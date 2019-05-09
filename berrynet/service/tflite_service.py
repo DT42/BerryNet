@@ -60,8 +60,8 @@ class TFLiteDetectorService(EngineService):
         logger.debug('Result: {}'.format(model_outputs))
         logger.debug('Detection takes {} ms'.format(duration(t)))
 
-        classes = len(self.engine.labels_map)
-        labels = self.engine.labels_map
+        classes = self.engine.classes
+        labels = self.engine.labels
 
         logger.debug('draw = {}'.format(self.draw))
         if self.draw is False:

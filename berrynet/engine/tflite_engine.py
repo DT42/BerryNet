@@ -19,6 +19,7 @@ class TFLiteDetectorEngine(DLEngine):
         """
         # Load labels
         self.labels = self._load_label(labels)
+        self.classes = len(self.labels)
 
         # Define lite graph and Load Tensorflow Lite model into memory
         self.interpreter = tf.contrib.lite.Interpreter(
