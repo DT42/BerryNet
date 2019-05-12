@@ -21,7 +21,11 @@ export PYBUILD_NAME=berrynet
 
 override_dh_auto_build:
 	# dashboard
-	./debian/build_dashboard.sh
+	mkdir -p $(CURDIR)/dashboard
+	cp -f /usr/share/freeboard/index.html $(CURDIR)/dashboard
+	cd $(CURDIR)/dashboard; patch -p 3 < ../patch/ui-dt42-theme.patch; cd $(CURDIR)
+	sed -i 's@// [*][*][*] Load more plugins here [*][*][*]@"plugins/thirdparty/freeboard-mqtt-paho/paho.mqtt.plugin.js", // *** Load more plugins here ***@g'  $(CURDIR)/dashboard/index.html
+
 	dh_auto_build
 
 override_dh_auto_test:

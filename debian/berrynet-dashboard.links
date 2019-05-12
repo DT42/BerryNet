@@ -1,0 +1,14 @@
+/usr/share/freeboard/examples usr/lib/berrynet/dashboard/examples
+/usr/share/freeboard/js usr/lib/berrynet/dashboard/js
+/usr/share/freeboard/lib usr/lib/berrynet/dashboard/lib
+/usr/share/freeboard/Gruntfile.js usr/lib/berrynet/dashboard/Gruntfile.js
+/usr/share/freeboard/package.json usr/lib/berrynet/dashboard/package.json
+/usr/share/freeboard/css/freeboard.css usr/lib/berrynet/dashboard/css/freeboard.css
+/usr/share/freeboard/css/freeboard.min.css usr/lib/berrynet/dashboard/css/freeboard.min.css
+/usr/share/freeboard/img/dropdown-arrow.png usr/lib/berrynet/dashboard/img/dropdown-arrow.png
+/usr/share/freeboard/img/glyphicons-halflings.png usr/lib/berrynet/dashboard/img/glyphicons-halflings.png
+/usr/share/freeboard/img/glyphicons-halflings-white.png usr/lib/berrynet/dashboard/img/glyphicons-halflings-white.png
+/usr/share/freeboard/plugins/freeboard usr/lib/berrynet/dashboard/plugins/freeboard
+/usr/share/freeboard/plugins/thirdparty/jquery.sparkline.min.js usr/lib/berrynet/dashboard/plugins/thirdparty/jquery.sparkline.min.js
+/usr/share/freeboard/plugins/thirdparty/justgage.1.0.1.js usr/lib/berrynet/dashboard/plugins/thirdparty/justgage.1.0.1.js
+/usr/share/freeboard/plugins/thirdparty/raphael.2.1.0.min.js usr/lib/berrynet/dashboard/plugins/thirdparty/raphael.2.1.0.min.js
