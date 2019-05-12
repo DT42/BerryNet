@@ -15,6 +15,44 @@ To build the package, run
 gbp buildpackage
 ```
 
+### gbp development procedure.
+
+When there are new upstream release. We should use import-orig to import
+the upstream tarball
+```
+gbp import-orig berrynet_<version>.orig.tar.gz
+```
+
+Modify your package. And do git commit anytime.
+
+Build and test packages by
+```
+gbp buildpackge
+```
+
+Once you feel the package is great. Update the debian/changelog by
+```
+gbp dch --release
+```
+
+And commit.
+```
+git commit -a -s
+```
+
+Test again. And if it is ok. Do
+```
+gbp buildpackage --git-tag
+```
+
+To push the results to the git repo
+```
+git push --all
+git push --tags
+```
+
+
+
 ## 3rd party source.
 
 Some source needed to be downloaded from the internet.

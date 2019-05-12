@@ -1,8 +1,10 @@
 berrynet (3.4.1-1) unstable; urgency=low
 
+  [ Ying-Chun Liu (PaulLiu) ]
+  * dashboard: depends on freeboard Debian package.
   * New upstream version
 
- -- Ying-Chun Liu (PaulLiu) <paulliu@debian.org>  Sun, 12 May 2019 13:22:32 +0800
+ -- Ying-Chun Liu (PaulLiu) <paulliu@debian.org>  Sun, 12 May 2019 14:12:19 +0800
 
 berrynet (3.4.0-1) unstable; urgency=medium
 
