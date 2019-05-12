@@ -16,7 +16,7 @@
 export PYBUILD_NAME=berrynet
 
 %:
-	dh $@ --with python3 --buildsystem=pybuild
+	dh $@ --with python3,apache2 --buildsystem=pybuild
 
 
 override_dh_auto_build:
@@ -24,7 +24,7 @@ override_dh_auto_build:
 	mkdir -p $(CURDIR)/dashboard
 	cp -f /usr/share/freeboard/index.html $(CURDIR)/dashboard
 	cd $(CURDIR)/dashboard; patch -p 3 < ../patch/ui-dt42-theme.patch; cd $(CURDIR)
-	sed -i 's@// [*][*][*] Load more plugins here [*][*][*]@"plugins/thirdparty/freeboard-mqtt-paho/paho.mqtt.plugin.js", // *** Load more plugins here ***@g'  $(CURDIR)/dashboard/index.html
+	sed -i 's@// [*][*][*] Load more plugins here [*][*][*]@"plugins/thirdparty/paho.mqtt.plugin.js", // *** Load more plugins here ***@g'  $(CURDIR)/dashboard/index.html
 
 	dh_auto_build
 

@@ -1,5 +1,4 @@
-usr/lib/berrynet/dashboard
-usr/lib/berrynet/dashboard/css
-usr/lib/berrynet/dashboard/img
-usr/lib/berrynet/dashboard/plugins
-usr/lib/berrynet/dashboard/plugins/thirdparty
+usr/share/berrynet/dashboard
+usr/share/berrynet/dashboard/css
+usr/share/berrynet/dashboard/img
+usr/share/berrynet/dashboard/plugins

@@ -1,4 +1,4 @@
-patch/www/freeboard/img/*.png usr/lib/berrynet/dashboard/img/
-patch/www/freeboard/css/*.css usr/lib/berrynet/dashboard/css/
-patch/www/freeboard/plugins/thirdparty/*.js usr/lib/berrynet/dashboard/plugins/thirdparty/freeboard-mqtt-paho/
-dashboard/index.html usr/lib/berrynet/dashboard/
+dashboard/index.html usr/share/berrynet/dashboard/
+patch/www/freeboard/css/*.css usr/share/berrynet/dashboard/css/
+patch/www/freeboard/img/*.png usr/share/berrynet/dashboard/img/
+patch/www/freeboard/plugins/thirdparty/*.js usr/share/berrynet/dashboard/plugins/thirdparty/
