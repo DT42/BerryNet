@@ -44,104 +44,95 @@ $ ./configure
 
 # Start and Stop BerryNet
 
-BerryNet performs an AIoT application by connecting independent components together. Component types include but not limited to AI engine, I/O processor, data processor (algorithm), or data collector.
-
-We recommend to manage BerryNet componetns by [supervisor](http://supervisord.org/), but you can also run BerryNet components manually. You can manage BerryNet via `supervisorctl`:
+BerryNet is managed by [systemd](https://freedesktop.org/wiki/Software/systemd/). You can manage BerryNet via `berrynet-manager`:
 
 ```
-# Check status of BerryNet components
-$ sudo supervisorctl status all
-
-# Stop Camera client
-$ sudo supervisorctl stop camera
-
-# Restart all components
-$ sudo supervisorctl restart all
-
-# Show last stderr logs of camera client
-$ sudo supervisorctl tail camera stderr
+$ berrynet-manager [start | stop | status | log]
 ```
 
-For more possibilities of supervisorctl, please refer to the [official tutorial](http://supervisord.org/running.html#running-supervisorctl).
 
-The default application has three components:
+# Configuration
 
-* Camera client to provide input images
-* Object detection engine to find type and position of the detected objects in an image
-* Dashboard to display the detection results
+All the configurations are in `config.js`.
 
-You will learn how to configure or change the components in the [Configuration](#configuration) section.
+* Choose AI Engine.
+
+  * Two types of AI engines currently: object classifier and object detector.
+
+* Configure IP camera's snapshot access interface.
+
+  * Please refer to [IP camera setup](doc/ipcam.md) for more details.
+
+* MQTT topics.
 
 
-# Dashboard: Freeboard
+# Dashboard
 
-## Open Freeboard on RPi3 (with touch screen)
+## Open dashboard on RPi3 (with touch screen)
 
-Freeboard is a web-based dashboard. Here are the steps to show the detection result iamge and text on Freeboard:
+Open browser and enter the URL:
 
-* 1: Enter `http://127.0.0.1:8080` in browser's URL bar, and press enter
-* 2: [Download](https://raw.githubusercontent.com/DT42/BerryNet/master/config/dashboard-darknet.json) the Freeboard configuration for default application, `dashboard-darknet.json`
-* 2: Click `LOAD FREEBOARD`, and select the newly downloaded `dashboard-darknet.json`
-* 3: Wait for seconds, you should see the inference result image and text on Freeboard
+`http://localhost:8080/index.html#source=dashboard.json`
 
-## Open Freeboard on another computer
+The default dashboard configuration file will be loaded.
 
-Assuming that you have two devices:
+## Open dashboard on browser from any computer
 
-* Device A with IP `192.168.1.42`, BerryNet default application runs on it
-* Device B with IP `192.168.1.43`, you want to open Freeboard and see the detection result on it
+Open browser and enter the URL:
 
-Here are the steps:
+`http://<gateway-ip>:8080/index.html#source=dashboard.json`
 
-* 1: Enter `http://192.168.1.42:8080` in browser's URL bar, and press enter
-* 2: [Download](https://raw.githubusercontent.com/DT42/BerryNet/master/config/dashboard-darknet.json) the Freeboard configuration for default application, `dashboard-darknet.json`
-* 3: Replace all the `localhost` to `192.168.1.42` in `dashboard-darknet.json`
-* 2: Click `LOAD FREEBOARD`, and select the newly downloaded `dashboard-darknet.json`
-* 3: Wait for seconds, you should see the inference result image and text on Freeboard
+Click the data sources, and change MQTT broker's IP address to the gateway's IP.
 
-For more details about dashboard configuration (e.g. how to add widgets), please refer to [Freeboard project](https://github.com/Freeboard/freeboard).
+For more details about dashboard configuration (e.g. how to add widgets), please refer to [freeboard project](https://github.com/Freeboard/freeboard).
+
+
+# Provide Image Input
+
+To capture an image via configured IP camera
+
+```
+$ mosquitto_pub -h localhost -t berrynet/event/camera -m snapshot_ipcam
+```
+
+To capture an image via board-connected camera (RPi camera or USB webcam)
+
+```
+$ mosquitto_pub -h localhost -t berrynet/event/camera -m snapshot_boardcam
+```
+
+To provide a local image
+
+```
+$ mosquitto_pub -h localhost -t berrynet/event/localImage -m <image_path>
+```
+
+To start and stop streaming from board-connected camera
+
+```
+$ mosquitto_pub -h localhost -t berrynet/event/camera -m stream_boardcam_start
+$ mosquitto_pub -h localhost -t berrynet/event/camera -m stream_boardcam_stop
+```
+
+To start and stop streaming from Nest IP camera
+
+```
+$ mosquitto_pub -h localhost -t berrynet/event/camera -m stream_nest_ipcam_start
+$ mosquitto_pub -h localhost -t berrynet/event/camera -m stream_nest_ipcam_stop
+```
 
 
 # Enable Data Collector
 
 You might want to store the snapshot and inference results for data analysis.
 
-To run BerryNet data collector manually, you can run the command below:
+To enable data collector, you can set the storage directory path in config.js:
 
 ```
-$ bn_data_collector --topic-config <topic-config-filepath> --data-dirpath <result-dirpath>
+config.storageDirPath = '<data-storage-dirpath>';
 ```
 
-The topic config indicates what MQTT topic the data collector will listen, and what handler will be triggered. Here is a topic config exmaple:
-
-```
-{
-    "berrynet/engine/darknet/result": "self.update"
-}
-```
-
-The inference result image and text will be saved into the indicated result directory.
-
-
-# Configuration
-
-The default supervisor config is at `/etc/supervisor/conf.d/berrynet-darknet.conf`. To write your own supervisor config, you can refer to [here](https://github.com/DT42/BerryNet/tree/master/config/supervisor/conf.d) for more example supervisor configs of BerryNet
-
-## Camera Client
-
-BerryNet camera client can run in two modes: stream or file. In stream mode, local camera (e.g. USB camera and RPi camera) and IP camera can be supported, and input frame rate (FPS) can be changed on demand (default is 1). In file mode, user can indicate filepath as input source.
-
-To run camera client in stream mode:
-
-```
-$ bn_camera --fps 5
-```
-
-To run camera client in file mode:
-
-```
-$ bn_camera --mode file --filepath <image-filepath>
-```
+and restart BerryNet.
 
 
 # Use Your Data To Train
