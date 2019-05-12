@@ -1,3 +1,10 @@
+berrynet (3.4.1-2) unstable; urgency=low
+
+  [ Ying-Chun Liu (PaulLiu) ]
+  * Enable berrynet-dashboard by apache2
+
+ -- Ying-Chun Liu (PaulLiu) <paulliu@debian.org>  Sun, 12 May 2019 14:53:42 +0800
+
 berrynet (3.4.1-1) unstable; urgency=low
 
   [ Ying-Chun Liu (PaulLiu) ]
