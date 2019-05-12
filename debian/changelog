@@ -1,3 +1,9 @@
+berrynet (3.4.1-1) unstable; urgency=low
+
+  * New upstream version
+
+ -- Ying-Chun Liu (PaulLiu) <paulliu@debian.org>  Sun, 12 May 2019 13:22:32 +0800
+
 berrynet (3.4.0-1) unstable; urgency=medium
 
   * Upstream supports OpenVINO.
