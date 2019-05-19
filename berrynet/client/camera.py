@@ -18,6 +18,7 @@
 # along with BerryNet.  If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
+import logging
 import time
 
 from datetime import datetime
@@ -35,6 +36,13 @@ def parse_args():
         '--mode',
         default='stream',
         help='Camera creates frame(s) from stream or file. (default: stream)'
+    )
+    ap.add_argument(
+        '--stream-src',
+        default=0,
+        help=('Camera stream source. '
+              'It can be device node ID or RTSP URL. '
+              '(default: 0)')
     )
     ap.add_argument(
         '--fps',
@@ -58,11 +66,24 @@ def parse_args():
         type=int,
         help='MQTT broker port.'
     )
+    ap.add_argument('--display',
+        action='store_true',
+        help=('Open a window and display the sent out frames. '
+              'This argument is only effective in stream mode.')
+    )
+    ap.add_argument('--debug',
+        action='store_true',
+        help='Debug mode toggle'
+    )
     return vars(ap.parse_args())
 
 
 def main():
     args = parse_args()
+    if args['debug']:
+        logger.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.INFO)
 
     comm_config = {
         'subscribe': {},
@@ -77,19 +98,62 @@ def main():
 
     if args['mode'] == 'stream':
         counter = 0
-        capture = cv2.VideoCapture(0)
+        # Check input stream source
+        if args['stream_src'].isdigit():
+            # source is a physically connected camera
+            stream_source = '/dev/video{}'.format(int(args['stream_src']))
+            capture = cv2.VideoCapture(int(args['stream_src']))
+        else:
+            # source is an IP camera
+            stream_source = args['stream_src']
+            capture = cv2.VideoCapture(args['stream_src'])
+        cam_fps = capture.get(cv2.CAP_PROP_FPS)
+        if cam_fps > 30 or cam_fps < 1:
+            logger.warn('Camera FPS is {} (>30 or <1). Set it to 30.'.format(cam_fps))
+            cam_fps = 30
+        out_fps = args['fps']
+        interval = int(cam_fps / out_fps)
+
+        # warmup
+        #t_warmup_start = time.time()
+        #t_warmup_now = time.time()
+        #warmup_counter = 0
+        #while t_warmup_now - t_warmup_start < 1:
+        #    capture.read()
+        #    warmup_counter += 1
+        #    t_warmup_now = time.time()
+
+        logger.debug('===== VideoCapture Information =====')
+        logger.debug('Stream Source: {}'.format(stream_source))
+        logger.debug('Camera FPS: {}'.format(cam_fps))
+        logger.debug('Output FPS: {}'.format(out_fps))
+        logger.debug('Interval: {}'.format(interval))
+        #logger.debug('Warmup Counter: {}'.format(warmup_counter))
+        logger.debug('====================================')
+
         while True:
             status, im = capture.read()
             if (status is False):
                 logger.warn('ERROR: Failure happened when reading frame')
 
-            t = datetime.now()
-            retval, jpg_bytes = cv2.imencode('.jpg', im)
-            mqtt_payload = payload.serialize_jpg(jpg_bytes)
-            comm.send('berrynet/data/rgbimage', mqtt_payload)
-            logger.debug('send: {} ms'.format(duration(t)))
+            counter += 1
+            if counter == interval:
+                logger.debug('Drop frames: {}'.format(counter-1))
+                counter = 0
 
-            time.sleep(1.0 / args['fps'])
+                # Open a window and display the ready-to-send frame.
+                # This is useful for development and debugging.
+                if args['display']:
+                    cv2.imshow('Frame', im)
+                    cv2.waitKey(1)
+
+                t = datetime.now()
+                retval, jpg_bytes = cv2.imencode('.jpg', im)
+                mqtt_payload = payload.serialize_jpg(jpg_bytes)
+                comm.send('berrynet/data/rgbimage', mqtt_payload)
+                logger.debug('send: {} ms'.format(duration(t)))
+            else:
+                pass
     elif args['mode'] == 'file':
         # Prepare MQTT payload
         im = cv2.imread(args['filepath'])
