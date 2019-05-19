@@ -1,3 +1,11 @@
+berrynet (3.5.0-1) UNRELEASED; urgency=medium
+
+  [ Ying-Chun Liu (PaulLiu) ]
+  * New upstream version 3.4.1
+  * New upstream version 3.5.0
+
+ -- Ying-Chun Liu (PaulLiu) <paulliu@debian.org>  Sun, 19 May 2019 12:16:47 +0800
+
 berrynet (3.4.1-2) unstable; urgency=low
 
   [ Ying-Chun Liu (PaulLiu) ]
