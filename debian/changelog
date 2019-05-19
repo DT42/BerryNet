@@ -1,3 +1,10 @@
+berrynet (3.5.1-1) UNRELEASED; urgency=low
+
+  * Update README.source to use pristine-tar
+  * New upstream version 3.5.1
+
+ -- Ying-Chun Liu (PaulLiu) <paulliu@debian.org>  Sun, 19 May 2019 17:37:13 +0800
+
 berrynet (3.5.0-1) unstable; urgency=medium
 
   [ Ying-Chun Liu (PaulLiu) ]
