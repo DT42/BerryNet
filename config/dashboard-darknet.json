@@ -53,13 +53,13 @@
 	"datasources": [
 		{
 			"name": "Detection Result",
-			"type": "paho_mqtt_js",
+			"type": "paho_mqtt",
 			"settings": {
 				"server": "localhost",
 				"port": 3000,
 				"use_ssl": false,
 				"client_id": "freeboard_darknetres",
-				"topics": "berrynet/engine/darknet/result",
+				"topic": "berrynet/engine/darknet/result",
 				"json_data": true,
 				"username": "",
 				"password": "",
