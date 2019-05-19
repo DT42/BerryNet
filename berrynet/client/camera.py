@@ -39,7 +39,8 @@ def parse_args():
     )
     ap.add_argument(
         '--stream-src',
-        default=0,
+        type=str,
+        default='0',
         help=('Camera stream source. '
               'It can be device node ID or RTSP URL. '
               '(default: 0)')
