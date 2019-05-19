@@ -7,7 +7,7 @@ We can use gbp to build packages from this repo.
 
 Please clone the debian package by the following command:
 ```
-gbp clone --debian-branch=debian/sid https://github.com/DT42/BerryNet.git
+gbp clone --pristine-tar --debian-branch=debian/sid https://github.com/DT42/BerryNet.git
 ```
 
 To build the package, run
