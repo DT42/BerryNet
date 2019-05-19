@@ -2,7 +2,7 @@ Source: berrynet
 Section: misc
 Priority: optional
 Maintainer: Ying-Chun Liu (PaulLiu) <paulliu@debian.org>
-Build-Depends: debhelper (>= 11),
+Build-Depends: debhelper (>= 10),
                dh-apache2,
                dh-python,
                freeboard,

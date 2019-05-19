@@ -27,7 +27,7 @@ Modify your package. And do git commit anytime.
 
 Build and test packages by
 ```
-gbp buildpackge
+gbp buildpackage
 ```
 
 Once you feel the package is great. Update the debian/changelog by
