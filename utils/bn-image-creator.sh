@@ -18,7 +18,7 @@ CTIME_YY=`date '+%Y'`
 CTIME_MM=`date '+%m'`
 CTIME_DD=`date '+%d'`
 
-IMAGE_FILENAME=$CTIME_YY-$CTIME_MM-$CTIME_DD-raspbian-stretch-full-berrynet
+IMAGE_FILENAME=$CTIME_YY-$CTIME_MM-$CTIME_DD-raspbian-stretch-berrynet
 
 sudo dd if="$DEVICE" of="$IMAGE_FILENAME".img bs=512
 
