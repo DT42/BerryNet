@@ -41,7 +41,7 @@ CTIME_DD=`date '+%d'`
 IMAGE_FILENAME=$CTIME_YY-$CTIME_MM-$CTIME_DD-raspbian-stretch-berrynet
 
 echo "Creating image ${IMAGE_FILENAME}.img"
-sudo dd if="$DEVICE" of="$IMAGE_FILENAME".img bs=512
+sudo dd if="$DEVICE" of="$IMAGE_FILENAME".img bs=512 status=progress
 
 echo "Compressing image to ${IMAGE_FILENAME}.zip"
 zip "$IMAGE_FILENAME".zip "$IMAGE_FILENAME".img
