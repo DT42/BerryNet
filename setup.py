@@ -62,6 +62,7 @@ setup(
             'bn_camera=berrynet.client.camera:main',
             'bn_dashboard=berrynet.client.dashboard:main',
             'bn_data_collector=berrynet.client.data_collector:main',
+            'bn_gmail=berrynet.client.gmail:main'
         ]
     },
     #ext_modules=[
