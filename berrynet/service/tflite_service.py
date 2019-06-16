@@ -20,8 +20,7 @@
 
 import argparse
 import logging
-
-from datetime import datetime
+import time
 
 from berrynet import logger
 from berrynet.comm import payload
@@ -41,25 +40,26 @@ class TFLiteClassifierService(EngineService):
         self.draw = draw
 
     def inference(self, pl):
-        duration = lambda t: (datetime.now() - t).microseconds / 1000
-
-        t = datetime.now()
+        t0 = time.time()
         logger.debug('payload size: {}'.format(len(pl)))
         logger.debug('payload type: {}'.format(type(pl)))
         jpg_json = payload.deserialize_payload(pl.decode('utf-8'))
         jpg_bytes = payload.destringify_jpg(jpg_json['bytes'])
-        logger.debug('destringify_jpg: {} ms'.format(duration(t)))
+        logger.debug('destringify_jpg: {} ms'.format(time.time() - t0))
 
-        t = datetime.now()
+        t1 = time.time()
         bgr_array = payload.jpg2bgr(jpg_bytes)
-        logger.debug('jpg2bgr: {} ms'.format(duration(t)))
+        logger.debug('jpg2bgr: {} ms'.format(time.time() - t1))
 
-        t = datetime.now()
+        t2 = time.time()
         image_data = self.engine.process_input(bgr_array)
+        logger.debug('Input processing takes {} ms'.format(time.time() - t2))
+
+        t3 = time.time()
         output = self.engine.inference(image_data)
         model_outputs = self.engine.process_output(output)
         logger.debug('Result: {}'.format(model_outputs))
-        logger.debug('Detection takes {} ms'.format(duration(t)))
+        logger.debug('Classification takes {} ms'.format(time.time() - t3))
 
         classes = self.engine.classes
         labels = self.engine.labels
@@ -88,25 +88,23 @@ class TFLiteDetectorService(EngineService):
         self.draw = draw
 
     def inference(self, pl):
-        duration = lambda t: (datetime.now() - t).microseconds / 1000
-
-        t = datetime.now()
+        t0 = time.time()
         logger.debug('payload size: {}'.format(len(pl)))
         logger.debug('payload type: {}'.format(type(pl)))
         jpg_json = payload.deserialize_payload(pl.decode('utf-8'))
         jpg_bytes = payload.destringify_jpg(jpg_json['bytes'])
-        logger.debug('destringify_jpg: {} ms'.format(duration(t)))
+        logger.debug('destringify_jpg: {} ms'.format(time.time() - t0))
 
-        t = datetime.now()
+        t1 = time.time()
         bgr_array = payload.jpg2bgr(jpg_bytes)
-        logger.debug('jpg2bgr: {} ms'.format(duration(t)))
+        logger.debug('jpg2bgr: {} ms'.format(time.time() - t1))
 
-        t = datetime.now()
+        t2 = time.time()
         image_data = self.engine.process_input(bgr_array)
         output = self.engine.inference(image_data)
         model_outputs = self.engine.process_output(output)
         logger.debug('Result: {}'.format(model_outputs))
-        logger.debug('Detection takes {} ms'.format(duration(t)))
+        logger.debug('Detection takes {} ms'.format(time.time() - t2))
 
         classes = self.engine.classes
         labels = self.engine.labels
@@ -188,6 +186,7 @@ def main():
         engine = TFLiteClassifierEngine(
                      model = args['model'],
                      labels = args['label'],
+                     top_k = args['num_top_predictions'],
                      num_threads = args['num_threads'])
         service_functor = TFLiteClassifierService
     elif args['service'] == 'detector':
