@@ -166,25 +166,23 @@ def draw_label(bgr_nparr, infres, class_color, save_image_path=None):
     left = 0
     top = 0
     for res in infres['annotations']:
-        label = res['label']
-        confidence = res['confidence']
         imgHeight, imgWidth, _ = bgr_nparr.shape
         thick = int((imgHeight + imgWidth) // 300)
 
         # putText can not handle newline char yet,
         # so we have to put multiple texts manually.
         cv2.putText(bgr_nparr,
-                    label,
-                    (left, top),       # bottom-left corner of text in image
-                    0,                 # fontFace
-                    1e-3 * imgHeight,  # fontScale
+                    '{0}: {1}'.format(res['label'], res['confidence']),
+                    (left + 10, top + 20),  # bottom-left corner of text
+                    0,                      # fontFace
+                    1e-3 * imgHeight,       # fontScale
                     class_color,
                     thick // 3)
-        top += 10
+        top += 20
     infres['bytes'] = payload.stringify_jpg(
                                     cv2.imencode('.jpg', bgr_nparr)[1])
 
     if save_image_path:
-        cv2.imwrite('/tmp/classification_result.jpg', bgr_nparr)
+        cv2.imwrite(save_image_path, bgr_nparr)
 
     return infres
