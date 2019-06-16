@@ -150,3 +150,41 @@ def overlay_on_image(display_image, object_info):
         return display_image
 
     return draw_box(display_image, object_info)
+
+
+def draw_label(bgr_nparr, infres, class_color, save_image_path=None):
+    """Draw bounding boxes on an image.
+
+    Args:
+        bgr_nparr: image data in numpy array format
+        infres: Inference results followed generic format specification.
+        class_color: Label color, a RGB tuple.
+
+    Returens:
+        Generalized result whose image data is drew w/ labels.
+    """
+    left = 0
+    top = 0
+    for res in infres['annotations']:
+        label = res['label']
+        confidence = res['confidence']
+        imgHeight, imgWidth, _ = bgr_nparr.shape
+        thick = int((imgHeight + imgWidth) // 300)
+
+        # putText can not handle newline char yet,
+        # so we have to put multiple texts manually.
+        cv2.putText(bgr_nparr,
+                    label,
+                    (left, top),       # bottom-left corner of text in image
+                    0,                 # fontFace
+                    1e-3 * imgHeight,  # fontScale
+                    class_color,
+                    thick // 3)
+        top += 10
+    infres['bytes'] = payload.stringify_jpg(
+                                    cv2.imencode('.jpg', bgr_nparr)[1])
+
+    if save_image_path:
+        cv2.imwrite('/tmp/classification_result.jpg', bgr_nparr)
+
+    return infres

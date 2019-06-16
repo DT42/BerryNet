@@ -1,4 +1,4 @@
-# Copyright 2017 DT42
+# Copyright 2019 DT42
 #
 # This file is part of BerryNet.
 #
@@ -26,10 +26,58 @@ from datetime import datetime
 from berrynet import logger
 from berrynet.comm import payload
 from berrynet.dlmodelmgr import DLModelManager
+from berrynet.engine.tflite_engine import TFLiteClassifierEngine
 from berrynet.engine.tflite_engine import TFLiteDetectorEngine
 from berrynet.service import EngineService
 from berrynet.utils import draw_bb
 from berrynet.utils import generate_class_color
+
+
+class TFLiteClassifierService(EngineService):
+    def __init__(self, service_name, engine, comm_config, draw=False):
+        super(TFLiteClassifierService, self).__init__(service_name,
+                                                      engine,
+                                                      comm_config)
+        self.draw = draw
+
+    def inference(self, pl):
+        duration = lambda t: (datetime.now() - t).microseconds / 1000
+
+        t = datetime.now()
+        logger.debug('payload size: {}'.format(len(pl)))
+        logger.debug('payload type: {}'.format(type(pl)))
+        jpg_json = payload.deserialize_payload(pl.decode('utf-8'))
+        jpg_bytes = payload.destringify_jpg(jpg_json['bytes'])
+        logger.debug('destringify_jpg: {} ms'.format(duration(t)))
+
+        t = datetime.now()
+        bgr_array = payload.jpg2bgr(jpg_bytes)
+        logger.debug('jpg2bgr: {} ms'.format(duration(t)))
+
+        t = datetime.now()
+        image_data = self.engine.process_input(bgr_array)
+        output = self.engine.inference(image_data)
+        model_outputs = self.engine.process_output(output)
+        logger.debug('Result: {}'.format(model_outputs))
+        logger.debug('Detection takes {} ms'.format(duration(t)))
+
+        classes = self.engine.classes
+        labels = self.engine.labels
+
+        logger.debug('draw = {}'.format(self.draw))
+        if self.draw is False:
+            self.result_hook(self.generalize_result(jpg_json, model_outputs))
+        else:
+            self.result_hook(
+                draw_label(bgr_array,
+                           self.generalize_result(jpg_json, model_outputs),
+                           color,
+                           labels))
+
+    def result_hook(self, generalized_result):
+        logger.debug('result_hook, annotations: {}'.format(generalized_result['annotations']))
+        self.comm.send('berrynet/engine/tfliteclassifier/result',
+                       payload.serialize_payload(generalized_result))
 
 
 class TFLiteDetectorService(EngineService):
@@ -94,12 +142,12 @@ def parse_args():
     ap.add_argument('--model_package',
                     default='',
                     help='Model package name')
-    ap.add_argument('--service_name', required=True,
-                    help='Valid value: Classification, MobileNetSSD')
-    ap.add_argument('-d', '--device',
-                    help='Specify the target device to infer on; CPU, GPU, FPGA or MYRIAD is acceptable. Sample will look for a suitable plugin for device specified (CPU by default)',
-                    default='CPU',
-                    type=str)
+    ap.add_argument('--service_name',
+                    default='tflite_classifier',
+                    help='Human-readable service name to manage service easier.')
+    ap.add_argument('--num_threads',
+                    default=1,
+                    help="Number of threads for running inference.")
     ap.add_argument('--num_top_predictions',
                     help='Display this many predictions',
                     default=3,
@@ -137,7 +185,11 @@ def main():
     }
 
     if args['service'] == 'classifier':
-        pass
+        engine = TFLiteClassifierEngine(
+                     model = args['model'],
+                     labels = args['label'],
+                     num_threads = args['num_threads'])
+        service_functor = TFLiteClassifierService
     elif args['service'] == 'detector':
         engine = TFLiteDetectorEngine(
                      model = args['model'],
