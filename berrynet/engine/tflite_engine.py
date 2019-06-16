@@ -96,6 +96,7 @@ class TFLiteDetectorEngine(DLEngine):
             labels = list(map(str.strip, f.readlines()))
         return labels
 
+
 class TFLiteClassifierEngine(DLEngine):
     def __init__(self, model, labels, top_k=5, num_threads=1,
                  input_mean=127.5, input_std=127.5):
@@ -107,7 +108,7 @@ class TFLiteClassifierEngine(DLEngine):
         self.classes = len(self.labels)
 
         # Define lite graph and Load Tensorflow Lite model into memory
-        self.interpreter = tf.contrib.lite.python.interpreter.Interpreter(
+        self.interpreter = tf.contrib.lite.Interpreter(
             model_path=model)
         self.interpreter.allocate_tensors()
         self.input_details = self.interpreter.get_input_details()
@@ -132,17 +133,18 @@ class TFLiteClassifierEngine(DLEngine):
         self.img_h = tensor.shape[0]
 
         frame = cv2.cvtColor(tensor, cv2.COLOR_BGR2RGB)
-        frame = cv2.resize(frame, (self.input_details[0]['shape'][2], self.input_details[0]['shape'][1]))
+        frame = cv2.resize(frame, (self.input_details[0]['shape'][2],
+                                   self.input_details[0]['shape'][1]))
         frame = np.expand_dims(frame, axis=0)
-        frame = (2.0 / 255.0) * frame - 1.0
-        frame = frame.astype('float32')
+        if self.floating_model:
+            frame = (np.float32(frame) - self.input_mean) / self.input_std
         return frame
 
     def inference(self, tensor):
         self.interpreter.set_num_threads(int(self.num_threads));
         self.interpreter.set_tensor(self.input_details[0]['index'], tensor)
         self.interpreter.invoke()
-        output_data = self.interpreter.get_tensor(output_details[0]['index'])
+        output_data = self.interpreter.get_tensor(self.output_details[0]['index'])
         results = np.squeeze(output_data)
         return {
             'scores': results,
@@ -239,8 +241,6 @@ def main():
                      labels = args.labels,
                      top_k = args.number_top,
                      num_threads = args.number_threads)
-        import sys
-        sys.exit(0)
     elif args.engine == 'detector':
         engine = TFLiteDetectorEngine(
                      model = args.model,
@@ -269,15 +269,26 @@ def main():
         #         label: dog  conf: 0.869189441204071  (131, 218) (314, 539)
         #         label: car  conf: 0.40003547072410583  (698, 122) (724, 152)
         logger.debug('Inference takes {} s'.format(time.time() - t))
-    for r in model_outputs['annotations']:
-        logger.debug('label: {0}  conf: {1}  ({2}, {3}) ({4}, {5})'.format(
-            r['label'],
-            r['confidence'],
-            r['left'],
-            r['top'],
-            r['right'],
-            r['bottom']
-        ))
+
+    if args.engine == 'classifier':
+        for r in model_outputs['annotations']:
+            logger.debug('label: {0}  conf: {1}'.format(
+                r['label'],
+                r['confidence']
+            ))
+    elif args.engine == 'detector':
+        for r in model_outputs['annotations']:
+            logger.debug('label: {0}  conf: {1}  ({2}, {3}) ({4}, {5})'.format(
+                r['label'],
+                r['confidence'],
+                r['left'],
+                r['top'],
+                r['right'],
+                r['bottom']
+            ))
+    else:
+        raise Exception('Can not get result '
+                        'from illegal engine {}'.format(args.engine))
 
 
 if __name__ == '__main__':
