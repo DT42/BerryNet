@@ -70,7 +70,8 @@ class OpenVINOClassifierEngine(DLEngine):
         self.plugin = IEPlugin(device=device, plugin_dirs=None)
 
         # Read IR
-        logger.debug("Loading network files:\n\t{}\n\t{}".format(model_xml, model_bin))
+        logger.debug('Loading network files:'
+                     '\n\txml: {0}\n\tbin: {1}'.format(model_xml, model_bin))
         net = IENetwork.from_ir(model=model_xml, weights=model_bin)
 
         if self.plugin.device == "CPU":
@@ -164,7 +165,8 @@ class OpenVINODetectorEngine(DLEngine):
         self.plugin = IEPlugin(device=device, plugin_dirs=None)
 
         # Read IR
-        logger.debug("Loading network files:\n\t{}\n\t{}".format(model_xml, model_bin))
+        logger.debug('Loading network files:'
+                     '\n\txml: {0}\n\tbin: {1}'.format(model_xml, model_bin))
         net = IENetwork(model=model_xml, weights=model_bin)
 
         if self.plugin.device == "CPU":
