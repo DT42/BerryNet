@@ -40,7 +40,8 @@ from OpenGL.GLUT import *
 
 
 class FBDashboardService(object):
-    def __init__(self, comm_config, data_dirpath=None, no_decoration=False, debug=False):
+    def __init__(self, comm_config, data_dirpath=None, no_decoration=False,
+                 debug=False, save_frame=False):
         self.comm_config = comm_config
         for topic, functor in self.comm_config['subscribe'].items():
             self.comm_config['subscribe'][topic] = eval(functor)
@@ -51,6 +52,8 @@ class FBDashboardService(object):
         self.data_dirpath = data_dirpath
         self.no_decoration = no_decoration
         self.frame = None
+        self.debug = debug
+        self.save_frame = save_frame
 
     def update(self, pl):
         payload_json = payload.deserialize_payload(pl.decode('utf-8'))
@@ -85,13 +88,14 @@ class FBDashboardService(object):
             self.frame = overlay_on_image(img, res)
 
         # Save frames for analysis or debugging
-        if self.data_dirpath:
+        if self.debug and self.save_frame:
             if not os.path.exists(self.data_dirpath):
                 try:
                     os.mkdir(self.data_dirpath)
                 except Exception as e:
                     logger.warn('Failed to create {}'.format(self.data_dirpath))
                     raise(e)
+
             timestamp = datetime.now().isoformat()
             with open(pjoin(self.data_dirpath, timestamp + '.jpg'), 'wb') as f:
                 f.write(jpg_bytes)
@@ -273,6 +277,10 @@ def parse_args():
         action='store_true',
         help='Debug mode toggle'
     )
+    ap.add_argument('--debug-save-frame',
+        action='store_true',
+        help='Save frames for debugging. --debug also needs to be set.'
+    )
     return vars(ap.parse_args())
 
 
@@ -298,7 +306,8 @@ def main():
     fbd_service = FBDashboardService(comm_config,
                                      args['data_dirpath'],
                                      args['no_decoration'],
-                                     args['debug'])
+                                     args['debug'],
+                                     args['debug_save_frame'])
     fbd_service.run(args)
 
     glutInitWindowPosition(0, 0)
