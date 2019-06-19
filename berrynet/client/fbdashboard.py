@@ -20,6 +20,7 @@
 
 import argparse
 import json
+import logging
 import os
 import random
 import sys
@@ -39,7 +40,7 @@ from OpenGL.GLUT import *
 
 
 class FBDashboardService(object):
-    def __init__(self, comm_config, data_dirpath):
+    def __init__(self, comm_config, data_dirpath=None, no_decoration=False, debug=False):
         self.comm_config = comm_config
         for topic, functor in self.comm_config['subscribe'].items():
             self.comm_config['subscribe'][topic] = eval(functor)
@@ -48,16 +49,10 @@ class FBDashboardService(object):
         #self.comm_config['subscribe']['berrynet/data/rgbimage'] = self.update
         self.comm = Communicator(self.comm_config, debug=True)
         self.data_dirpath = data_dirpath
+        self.no_decoration = no_decoration
         self.frame = None
 
     def update(self, pl):
-        if not os.path.exists(self.data_dirpath):
-            try:
-                os.mkdir(self.data_dirpath)
-            except Exception as e:
-                logger.warn('Failed to create {}'.format(self.data_dirpath))
-                raise(e)
-
         payload_json = payload.deserialize_payload(pl.decode('utf-8'))
         if 'bytes' in payload_json.keys():
             img_k = 'bytes'
@@ -70,29 +65,42 @@ class FBDashboardService(object):
         logger.debug('inference text result: {}'.format(payload_json))
 
         img = payload.jpg2rgb(jpg_bytes)
-        try:
-            res = payload_json['annotations']
-        except KeyError:
-            res = [
-                {
-                    'label': 'hello',
-                    'confidence': 0.42,
-                    'left': random.randint(50, 60),
-                    'top': random.randint(50, 60),
-                    'right': random.randint(300, 400),
-                    'bottom': random.randint(300, 400)
-                }
-            ]
-        self.frame = overlay_on_image(img, res)
 
-        #timestamp = datetime.now().isoformat()
-        #with open(pjoin(self.data_dirpath, timestamp + '.jpg'), 'wb') as f:
-        #    f.write(jpg_bytes)
-        #with open(pjoin(self.data_dirpath, timestamp + '.json'), 'w') as f:
-        #    f.write(json.dumps(payload_json, indent=4))
+        if self.no_decoration:
+            self.frame = img
+        else:
+            try:
+                res = payload_json['annotations']
+            except KeyError:
+                res = [
+                    {
+                        'label': 'hello',
+                        'confidence': 0.42,
+                        'left': random.randint(50, 60),
+                        'top': random.randint(50, 60),
+                        'right': random.randint(300, 400),
+                        'bottom': random.randint(300, 400)
+                    }
+                ]
+            self.frame = overlay_on_image(img, res)
+
+        # Save frames for analysis or debugging
+        if self.data_dirpath:
+            if not os.path.exists(self.data_dirpath):
+                try:
+                    os.mkdir(self.data_dirpath)
+                except Exception as e:
+                    logger.warn('Failed to create {}'.format(self.data_dirpath))
+                    raise(e)
+            timestamp = datetime.now().isoformat()
+            with open(pjoin(self.data_dirpath, timestamp + '.jpg'), 'wb') as f:
+                f.write(jpg_bytes)
+            with open(pjoin(self.data_dirpath, timestamp + '.json'), 'w') as f:
+                f.write(json.dumps(payload_json, indent=4))
 
     def update_fb(self):
-        gl_draw_fbimage(self.frame)
+        if self.frame is not None:
+            gl_draw_fbimage(self.frame)
 
     def run(self, args):
         """Infinite loop serving inference requests"""
@@ -251,11 +259,29 @@ def parse_args():
         default=None,
         help='Path of the MQTT topic subscription JSON.'
     )
+    ap.add_argument(
+        '--no-decoration',
+        action='store_true',
+        help='Display image in payload without applying result information.'
+    )
+    ap.add_argument(
+        '--no-full-screen',
+        action='store_true',
+        help='Display fbdashboard in a window.'
+    )
+    ap.add_argument('--debug',
+        action='store_true',
+        help='Debug mode toggle'
+    )
     return vars(ap.parse_args())
 
 
 def main():
     args = parse_args()
+    if args['debug']:
+        logger.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.INFO)
 
     if args['topic_config']:
         with open(args['topic_config']) as f:
@@ -270,7 +296,9 @@ def main():
         }
     }
     fbd_service = FBDashboardService(comm_config,
-                                      args['data_dirpath'])
+                                     args['data_dirpath'],
+                                     args['no_decoration'],
+                                     args['debug'])
     fbd_service.run(args)
 
     glutInitWindowPosition(0, 0)
@@ -281,6 +309,10 @@ def main():
     glutKeyboardFunc(keyboard)
     init()
     glutIdleFunc(idle)
+    if args['no_full_screen']:
+        pass
+    else:
+        glutFullScreen()
     glutMainLoop()
 
 
