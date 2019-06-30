@@ -45,9 +45,6 @@ class FBDashboardService(object):
         self.comm_config = comm_config
         for topic, functor in self.comm_config['subscribe'].items():
             self.comm_config['subscribe'][topic] = eval(functor)
-        self.comm_config['subscribe']['berrynet/engine/tensorflow/result'] = self.update
-        self.comm_config['subscribe']['berrynet/engine/pipeline/result'] = self.update
-        #self.comm_config['subscribe']['berrynet/data/rgbimage'] = self.update
         self.comm = Communicator(self.comm_config, debug=True)
         self.data_dirpath = data_dirpath
         self.no_decoration = no_decoration
@@ -259,6 +256,17 @@ def parse_args():
         help='MQTT broker IP.'
     )
     ap.add_argument(
+        '--topic',
+        nargs='*',
+        default=['berrynet/engine/darknet/result'],
+        help='The topic to listen, and can be indicated multiple times.'
+    )
+    ap.add_argument(
+        '--topic-action',
+        default='self.update',
+        help='The action for the indicated topics.'
+    )
+    ap.add_argument(
         '--topic-config',
         default=None,
         help='Path of the MQTT topic subscription JSON.'
@@ -291,11 +299,15 @@ def main():
     else:
         logger.setLevel(logging.INFO)
 
+    # Topics and actions can come from two sources: CLI and config file.
+    # Setup topic_config by parsing values from the two sources.
     if args['topic_config']:
         with open(args['topic_config']) as f:
             topic_config = json.load(f)
     else:
         topic_config = {}
+    topic_config.update({t:args['topic_action'] for t in args['topic']})
+
     comm_config = {
         'subscribe': topic_config,
         'broker': {
