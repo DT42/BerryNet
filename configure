@@ -206,7 +206,11 @@ download_classifier_model_caffe2() {
 
 install_openvino() {
     # OpenVINO 2019R1.1
-    sudo apt-get install -y openvino
+    if [ x"$DISTRIBUTIONID" = x"Ubuntu" ]; then
+        sudo apt-get install -y openvino
+    elif [ x"$DISTRIBUTIONID" = x"Raspbian" ]; then
+        sudo apt-get install -y openvino-rpi
+    fi
 }
 
 install_configs() {
