@@ -6,7 +6,7 @@ from setuptools import find_packages
 
 setup(
     name='berrynet',
-    version='v3.5.1',
+    version='v3.6.0',
     description='BerryNet',
     long_description=
         'TBD',
@@ -60,7 +60,7 @@ setup(
     entry_points={
         'console_scripts': [
             'bn_camera=berrynet.client.camera:main',
-            'bn_dashboard=berrynet.client.dashboard:main',
+            'bn_dashboard=berrynet.client.fbdashboard:main',
             'bn_data_collector=berrynet.client.data_collector:main',
             'bn_gmail=berrynet.client.gmail:main'
         ]
