@@ -164,10 +164,12 @@ install_tensorflow() {
     if [ x"$DISTRIBUTIONID" = x"Ubuntu" ]; then
 	sudo -H pip3 install tensorflow
     elif [ x"$DISTRIBUTIONID" = x"Raspbian" ]; then
-	TENSORFLOW_PKGNAME="tensorflow-1.11.0-cp35-cp35m-linux_armv7l.whl"
+        # WORKAROUND: Rename Wheel from cp35 to cp37
+        #             before the Buster build is available.
+	TENSORFLOW_PKGNAME="tensorflow-1.14.0-cp37-cp37m-linux_armv7l.whl"
 	if [ ! -e "/tmp/$TENSORFLOW_PKGNAME" ]; then
             wget -O /tmp/$TENSORFLOW_PKGNAME \
-	        https://github.com/PINTO0309/Tensorflow-bin/raw/master/tensorflow-1.11.0-cp35-cp35m-linux_armv7l_jemalloc_multithread.whl
+                https://github.com/PINTO0309/Tensorflow-bin/raw/master/tensorflow-1.14.0-cp35-cp35m-linux_armv7l.whl
 	else
             echo "$TENSORFLOW_PKGNAME has existed, skip to download it."
 	fi
