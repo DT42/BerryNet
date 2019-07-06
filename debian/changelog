@@ -1,9 +1,10 @@
-berrynet (3.6.0-1) UNRELEASED; urgency=low
+berrynet (3.6.0-1) unstable; urgency=low
 
   [ Ying-Chun Liu (PaulLiu) ]
   * New upstream version 3.6.0
+  * Update README.source
 
- -- Ying-Chun Liu (PaulLiu) <paulliu@debian.org>  Sun, 07 Jul 2019 03:01:09 +0800
+ -- Ying-Chun Liu (PaulLiu) <paulliu@debian.org>  Sun, 07 Jul 2019 03:23:40 +0800
 
 berrynet (3.5.1-1) unstable; urgency=low
 
