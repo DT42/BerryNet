@@ -15,12 +15,19 @@ To build the package, run
 gbp buildpackage
 ```
 
+
 ### gbp development procedure.
 
 When there are new upstream release. We should use import-orig to import
 the upstream tarball
 ```
 gbp import-orig berrynet_<version>.orig.tar.gz
+```
+
+And then add a temporary dch entry for the latest upstream.
+```
+gbp dch
+git commit -a -s
 ```
 
 Modify your package. And do git commit anytime.
@@ -51,6 +58,28 @@ git push --all
 git push --tags
 ```
 
+
+## build package for Buster
+
+Create a Buster tarball only if you didn't do this before.
+```
+pbuilder-dist buster create --backports
+```
+
+Also for armhf, please use the following command.
+```
+pbuilder-dist buster armhf create --backports
+```
+
+Build package in Buster chroot.
+```
+pdebuild --buildresult .. -- --basetgz ~/pbuilder/buster-base.tgz
+```
+
+Or build package in Buster armhf chroot.
+```
+pdebuild --buildresult .. -- --basetgz ~/pbuilder/buster-armhf-base.tgz
+```
 
 
 ## 3rd party source.
