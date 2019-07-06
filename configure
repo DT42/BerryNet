@@ -205,20 +205,12 @@ download_classifier_model_caffe2() {
 }
 
 install_openvino() {
-    OPENVINO_VERSION="2018.5.445"
-    OPENVINO_INSTALLDIR="/opt/intel/computer_vision_sdk_$OPENVINO_VERSION"
-    sudo apt install -y \
-        intel-ie-samples-$OPENVINO_VERSION \
-        intel-inference-engine-cpu-$OPENVINO_VERSION \
-        intel-inference-engine-rt-$OPENVINO_VERSION \
-        intel-inference-engine-sdk-$OPENVINO_VERSION \
-        intel-inference-engine-vpu-$OPENVINO_VERSION \
-        intel-model-optimizer-$OPENVINO_VERSION \
-        intel-openvino-base-pset-$OPENVINO_VERSION \
-        intel-setupvars-$OPENVINO_VERSION \
-        mobilenet-1.0-224-openvino
-    sudo sed -i "s%<INSTALLDIR>%${OPENVINO_INSTALLDIR}%g" \
-        $OPENVINO_INSTALLDIR/bin/setupvars.sh
+    # OpenVINO 2019R1.1
+    if [ x"$DISTRIBUTIONID" = x"Ubuntu" ]; then
+        sudo apt-get install -y openvino
+    elif [ x"$DISTRIBUTIONID" = x"Raspbian" ]; then
+        sudo apt-get install -y openvino-rpi
+    fi
 }
 
 install_configs() {
