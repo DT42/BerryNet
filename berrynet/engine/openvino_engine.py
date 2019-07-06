@@ -70,7 +70,8 @@ class OpenVINOClassifierEngine(DLEngine):
         self.plugin = IEPlugin(device=device, plugin_dirs=None)
 
         # Read IR
-        logger.debug("Loading network files:\n\t{}\n\t{}".format(model_xml, model_bin))
+        logger.debug('Loading network files:'
+                     '\n\txml: {0}\n\tbin: {1}'.format(model_xml, model_bin))
         net = IENetwork.from_ir(model=model_xml, weights=model_bin)
 
         if self.plugin.device == "CPU":
@@ -161,19 +162,29 @@ class OpenVINODetectorEngine(DLEngine):
         #
         # Note: MKLDNN CPU-targeted custom layer support is not included
         #       because we do not use it yet.
-        self.plugin = IEPlugin(device=device, plugin_dirs=None)
+        if device == 'CPU':
+            plugin_dirs = '/opt/intel/openvino_2019.1.144/deployment_tools/inference_engine/lib/intel64'
+            self.plugin = IEPlugin(device=device, plugin_dirs=plugin_dirs)
+            self.plugin.add_cpu_extension(plugin_dirs + '/libcpu_extension_avx2.so')
+            self.plugin.add_cpu_extension(plugin_dirs + '/libcpu_extension_avx512.so')
+            self.plugin.add_cpu_extension(plugin_dirs + '/libcpu_extension_sse4.so')
+            logger.debug('plugin dirs: {}'.format(plugin_dirs))
+        else:
+            plugin_dirs = None
+            self.plugin = IEPlugin(device=device, plugin_dirs=plugin_dirs)
 
         # Read IR
-        logger.debug("Loading network files:\n\t{}\n\t{}".format(model_xml, model_bin))
+        logger.debug('Loading network files:'
+                     '\n\txml: {0}\n\tbin: {1}'.format(model_xml, model_bin))
         net = IENetwork(model=model_xml, weights=model_bin)
 
         if self.plugin.device == "CPU":
             supported_layers = self.plugin.get_supported_layers(net)
             not_supported_layers = [l for l in net.layers.keys() if l not in supported_layers]
             if len(not_supported_layers) != 0:
-                log.error("Following layers are not supported by the plugin for specified device {}:\n {}".
+                logger.error("Following layers are not supported by the plugin for specified device {}:\n {}".
                           format(self.plugin.device, ', '.join(not_supported_layers)))
-                log.error("Please try to specify cpu extensions library path in demo's command line parameters using -l "
+                logger.error("Please try to specify cpu extensions library path in demo's command line parameters using -l "
                           "or --cpu_extension command line argument")
                 sys.exit(1)
 

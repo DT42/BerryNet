@@ -20,6 +20,7 @@
 
 import argparse
 import json
+import logging
 import os
 import random
 import sys
@@ -39,25 +40,19 @@ from OpenGL.GLUT import *
 
 
 class FBDashboardService(object):
-    def __init__(self, comm_config, data_dirpath):
+    def __init__(self, comm_config, data_dirpath=None, no_decoration=False,
+                 debug=False, save_frame=False):
         self.comm_config = comm_config
         for topic, functor in self.comm_config['subscribe'].items():
             self.comm_config['subscribe'][topic] = eval(functor)
-        self.comm_config['subscribe']['berrynet/engine/tensorflow/result'] = self.update
-        self.comm_config['subscribe']['berrynet/engine/pipeline/result'] = self.update
-        #self.comm_config['subscribe']['berrynet/data/rgbimage'] = self.update
         self.comm = Communicator(self.comm_config, debug=True)
         self.data_dirpath = data_dirpath
+        self.no_decoration = no_decoration
         self.frame = None
+        self.debug = debug
+        self.save_frame = save_frame
 
     def update(self, pl):
-        if not os.path.exists(self.data_dirpath):
-            try:
-                os.mkdir(self.data_dirpath)
-            except Exception as e:
-                logger.warn('Failed to create {}'.format(self.data_dirpath))
-                raise(e)
-
         payload_json = payload.deserialize_payload(pl.decode('utf-8'))
         if 'bytes' in payload_json.keys():
             img_k = 'bytes'
@@ -70,29 +65,43 @@ class FBDashboardService(object):
         logger.debug('inference text result: {}'.format(payload_json))
 
         img = payload.jpg2rgb(jpg_bytes)
-        try:
-            res = payload_json['annotations']
-        except KeyError:
-            res = [
-                {
-                    'label': 'hello',
-                    'confidence': 0.42,
-                    'left': random.randint(50, 60),
-                    'top': random.randint(50, 60),
-                    'right': random.randint(300, 400),
-                    'bottom': random.randint(300, 400)
-                }
-            ]
-        self.frame = overlay_on_image(img, res)
 
-        #timestamp = datetime.now().isoformat()
-        #with open(pjoin(self.data_dirpath, timestamp + '.jpg'), 'wb') as f:
-        #    f.write(jpg_bytes)
-        #with open(pjoin(self.data_dirpath, timestamp + '.json'), 'w') as f:
-        #    f.write(json.dumps(payload_json, indent=4))
+        if self.no_decoration:
+            self.frame = img
+        else:
+            try:
+                res = payload_json['annotations']
+            except KeyError:
+                res = [
+                    {
+                        'label': 'hello',
+                        'confidence': 0.42,
+                        'left': random.randint(50, 60),
+                        'top': random.randint(50, 60),
+                        'right': random.randint(300, 400),
+                        'bottom': random.randint(300, 400)
+                    }
+                ]
+            self.frame = overlay_on_image(img, res)
+
+        # Save frames for analysis or debugging
+        if self.debug and self.save_frame:
+            if not os.path.exists(self.data_dirpath):
+                try:
+                    os.mkdir(self.data_dirpath)
+                except Exception as e:
+                    logger.warn('Failed to create {}'.format(self.data_dirpath))
+                    raise(e)
+
+            timestamp = datetime.now().isoformat()
+            with open(pjoin(self.data_dirpath, timestamp + '.jpg'), 'wb') as f:
+                f.write(jpg_bytes)
+            with open(pjoin(self.data_dirpath, timestamp + '.json'), 'w') as f:
+                f.write(json.dumps(payload_json, indent=4))
 
     def update_fb(self):
-        gl_draw_fbimage(self.frame)
+        if self.frame is not None:
+            gl_draw_fbimage(self.frame)
 
     def run(self, args):
         """Infinite loop serving inference requests"""
@@ -247,21 +256,58 @@ def parse_args():
         help='MQTT broker IP.'
     )
     ap.add_argument(
+        '--topic',
+        nargs='*',
+        default=['berrynet/engine/darknet/result'],
+        help='The topic to listen, and can be indicated multiple times.'
+    )
+    ap.add_argument(
+        '--topic-action',
+        default='self.update',
+        help='The action for the indicated topics.'
+    )
+    ap.add_argument(
         '--topic-config',
         default=None,
         help='Path of the MQTT topic subscription JSON.'
+    )
+    ap.add_argument(
+        '--no-decoration',
+        action='store_true',
+        help='Display image in payload without applying result information.'
+    )
+    ap.add_argument(
+        '--no-full-screen',
+        action='store_true',
+        help='Display fbdashboard in a window.'
+    )
+    ap.add_argument('--debug',
+        action='store_true',
+        help='Debug mode toggle'
+    )
+    ap.add_argument('--debug-save-frame',
+        action='store_true',
+        help='Save frames for debugging. --debug also needs to be set.'
     )
     return vars(ap.parse_args())
 
 
 def main():
     args = parse_args()
+    if args['debug']:
+        logger.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.INFO)
 
+    # Topics and actions can come from two sources: CLI and config file.
+    # Setup topic_config by parsing values from the two sources.
     if args['topic_config']:
         with open(args['topic_config']) as f:
             topic_config = json.load(f)
     else:
         topic_config = {}
+    topic_config.update({t:args['topic_action'] for t in args['topic']})
+
     comm_config = {
         'subscribe': topic_config,
         'broker': {
@@ -270,7 +316,10 @@ def main():
         }
     }
     fbd_service = FBDashboardService(comm_config,
-                                      args['data_dirpath'])
+                                     args['data_dirpath'],
+                                     args['no_decoration'],
+                                     args['debug'],
+                                     args['debug_save_frame'])
     fbd_service.run(args)
 
     glutInitWindowPosition(0, 0)
@@ -281,6 +330,10 @@ def main():
     glutKeyboardFunc(keyboard)
     init()
     glutIdleFunc(idle)
+    if args['no_full_screen']:
+        pass
+    else:
+        glutFullScreen()
     glutMainLoop()
 
 

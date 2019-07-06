@@ -21,7 +21,7 @@
 				{
 					"type": "html",
 					"settings": {
-						"html": "imgstr = datasources[\"Classifier Result\"][\"berrynet/engine/ovclassifier/result\"][\"bytes\"]\ns = \"<img src=\\\"data:image/jpeg;base64,\" + imgstr + \"\\\" width=100% height=100%>\"\nreturn s\n\n",
+						"html": "imgstr = datasources[\"Classifier Result\"][\"msg\"][\"bytes\"]\ns = \"<img src=\\\"data:image/jpeg;base64,\" + imgstr + \"\\\" width=100% height=100%>\"\nreturn s\n\n",
 						"height": 4
 					}
 				}
@@ -43,7 +43,7 @@
 				{
 					"type": "html",
 					"settings": {
-						"html": "s = datasources[\"Classifier Result\"][\"berrynet/engine/ovclassifier/result\"][\"annotations\"].map(function(r) {                      \n    return (r[\"label\"] + \": \" + r[\"confidence\"] + \"<br />\")\n}).join().replace(/,/g, \"\")\nconsole.log(s)\nreturn s",
+						"html": "s = datasources[\"Classifier Result\"][\"msg\"][\"annotations\"].map(function(r) {                      \n    return (r[\"label\"] + \": \" + r[\"confidence\"] + \"<br />\")\n}).join().replace(/,/g, \"\")\nconsole.log(s)\nreturn s",
 						"height": 4
 					}
 				}
@@ -53,12 +53,17 @@
 	"datasources": [
 		{
 			"name": "Classifier Result",
-			"type": "paho_mqtt_js",
+			"type": "paho_mqtt",
 			"settings": {
 				"server": "localhost",
 				"port": 3000,
+				"use_ssl": false,
 				"client_id": "freeboard_darknetres",
-				"topics": "berrynet/engine/ovclassifier/result"
+				"topic": "berrynet/engine/ovclassifier/result",
+				"json_data": true,
+				"username": "",
+				"password": "",
+				"name": "Classifier Result"
 			}
 		}
 	],
