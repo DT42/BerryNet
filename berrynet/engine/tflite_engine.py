@@ -13,7 +13,7 @@ from berrynet import logger
 
 
 class TFLiteDetectorEngine(DLEngine):
-    def __init__(self, model, labels):
+    def __init__(self, model, labels, num_threads=1, threshold=0.5):
         """
         Builds Tensorflow graph, load model and labels
         """
@@ -27,6 +27,9 @@ class TFLiteDetectorEngine(DLEngine):
         self.interpreter.allocate_tensors()
         self.input_details = self.interpreter.get_input_details()
         self.output_details = self.interpreter.get_output_details()
+        self.input_dtype = self.input_details[0]['dtype']
+        self.num_threads = num_threads
+        self.threshold = threshold
 
     def __delete__(self, instance):
         #tf.reset_default_graph()
@@ -42,11 +45,16 @@ class TFLiteDetectorEngine(DLEngine):
         frame = cv2.cvtColor(tensor, cv2.COLOR_BGR2RGB)
         frame = cv2.resize(frame, (300, 300))
         frame = np.expand_dims(frame, axis=0)
-        frame = (2.0 / 255.0) * frame - 1.0
-        frame = frame.astype('float32')
+        if self.input_dtype == np.float32:
+            frame = (2.0 / 255.0) * frame - 1.0
+            frame = frame.astype('float32')
+        else:
+            # default data type returned by cv2.imread is np.unit8
+            pass
         return frame
 
     def inference(self, tensor):
+        self.interpreter.set_num_threads(int(self.num_threads));
         self.interpreter.set_tensor(self.input_details[0]['index'], tensor)
         self.interpreter.invoke()
 
@@ -79,7 +87,7 @@ class TFLiteDetectorEngine(DLEngine):
             box = tuple(boxes[i].tolist())
             ymin, xmin, ymax, xmax = box
 
-            if scores[i] < 0:
+            if scores[i] < self.threshold:
                 continue
             annotations.append({
                 'label': self.labels[classes[i]],
@@ -197,10 +205,6 @@ def parse_argsr():
             help="Path to a folder with images or path to an image files",
             required=True,
             type=str)
-    parser.add_argument("-d", "--device",
-            help="Specify the target device to infer on; CPU, GPU, FPGA or MYRIAD is acceptable. Sample will look for a suitable plugin for device specified (CPU by default)",
-            default="CPU",
-            type=str)
     parser.add_argument(
             "--labels",
             help="Labels mapping file",
@@ -244,7 +248,8 @@ def main():
     elif args.engine == 'detector':
         engine = TFLiteDetectorEngine(
                      model = args.model,
-                     labels = args.labels)
+                     labels = args.labels,
+                     num_threads = args.number_threads)
     else:
         raise Exception('Illegal engine {}, it should be '
                         'classifier or detector'.format(args.engine))
