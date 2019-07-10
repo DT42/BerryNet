@@ -192,7 +192,8 @@ def main():
     elif args['service'] == 'detector':
         engine = TFLiteDetectorEngine(
                      model = args['model'],
-                     labels = args['label'])
+                     labels = args['label'],
+                     num_threads = args['num_threads'])
         service_functor = TFLiteDetectorService
     else:
         raise Exception('Illegal service {}, it should be '
