@@ -84,23 +84,6 @@ install_opencv() {
     sudo apt install -y python3-opencv
 }
 
-# TODO: Retire Darkflow
-#install_darkflow() {
-#    git submodule init
-#    git submodule update
-#
-#    # build cython-implemented library
-#    pushd inference/darkflow > /dev/null
-#    python setup.py build_ext --inplace
-#    # add color index in the inference result for drawing bounding boxes
-#    patch -p 1 < ../../patch/darkflow/darkflow-app-example.patch
-#    cp ../detection_server.py .
-#    # install darkflow system-wide
-#    sudo pip install .
-#
-#    popd > /dev/null
-#}
-
 install_darknet_nnpack() {
     # To understand how these packages are built, please refer to
     # https://github.com/DT42/BerryNet/blob/master/doc/darknet-nnpack.md
@@ -306,12 +289,6 @@ if [ "$INSTALL_TENSORFLOW" = "Y" ]; then
 else
     echo "Not install TensorFlow" >> $LOG
 fi
-
-#if [ "$INSTALL_DARKFLOW" = "Y" ]; then
-#    install_darkflow 2>&1 | tee -a $LOG
-#else
-#    echo "Not install Darkflow" >> $LOG
-#fi
 
 if [ "$INSTALL_CAFFE2" = "Y" ]; then
     install_caffe2 2>&1 | tee -a $LOG
