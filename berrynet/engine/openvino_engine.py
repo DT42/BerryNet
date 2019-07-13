@@ -49,8 +49,8 @@ class OpenVINOClassifierEngine(DLEngine):
         """
         super(OpenVINOClassifierEngine, self).__init__()
 
-        model_xml = model
-        model_bin = os.path.splitext(model_xml)[0] + ".bin"
+        model_bin = model
+        model_xml = os.path.splitext(model_bin)[0] + ".xml"
         if labels:
             with open(labels, 'r') as f:
                 # Allow label name with spaces. To use onlyh the 1st word,
@@ -148,8 +148,8 @@ class OpenVINODetectorEngine(DLEngine):
         super(OpenVINODetectorEngine, self).__init__()
 
         # Prepare model and labels
-        model_xml = model
-        model_bin = os.path.splitext(model_xml)[0] + ".bin"
+        model_bin = model
+        model_xml = os.path.splitext(model_bin)[0] + ".xml"
         if labels:
             with open(labels, 'r') as f:
                 self.labels_map = [x.strip() for x in f]
