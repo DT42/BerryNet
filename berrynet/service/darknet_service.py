@@ -71,6 +71,10 @@ class DarknetService(EngineService):
 def parse_args():
     ap = argparse.ArgumentParser()
     ap.add_argument(
+        '--service_name',
+        default='darknet',
+        help='Human-readable service name for service management.')
+    ap.add_argument(
         '-m', '--model',
         help='Model file path')
     ap.add_argument(
@@ -80,10 +84,6 @@ def parse_args():
         '-p', '--model_package',
         default='',
         help='Model package name. Find model and label file paths automatically.')
-    ap.add_argument(
-        '--service_name',
-        default='darknet',
-        help='Human-readable service name for service management.')
     ap.add_argument(
         '--draw',
         action='store_true',

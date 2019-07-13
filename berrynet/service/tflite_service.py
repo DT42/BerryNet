@@ -135,6 +135,10 @@ def parse_args():
         default='classifier',
         type=str)
     ap.add_argument(
+        '--service_name',
+        default='tflite_classifier',
+        help='Human-readable service name for service management.')
+    ap.add_argument(
         '-m', '--model',
         help='Model file path')
     ap.add_argument(
@@ -145,18 +149,14 @@ def parse_args():
         default='',
         help='Model package name. Find model and label file paths automatically.')
     ap.add_argument(
-        '--service_name',
-        default='tflite_classifier',
-        help='Human-readable service name for service management.')
-    ap.add_argument(
-        '--num_threads',
-        default=1,
-        help="Number of threads for running inference.")
-    ap.add_argument(
         '--top_k',
         help='Display top K classification results.',
         default=3,
         type=int)
+    ap.add_argument(
+        '--num_threads',
+        default=1,
+        help="Number of threads for running inference.")
     ap.add_argument(
         '--draw',
         action='store_true',

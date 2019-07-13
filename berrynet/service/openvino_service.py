@@ -138,6 +138,10 @@ def parse_args():
         default='classifier',
         type=str)
     ap.add_argument(
+        '--service_name',
+        default='openvino_classifier',
+        help='Human-readable service name for service management.')
+    ap.add_argument(
         '-m', '--model',
         help='Model file path')
     ap.add_argument(
@@ -148,19 +152,15 @@ def parse_args():
         default='',
         help='Model package name. Find model and label file paths automatically.')
     ap.add_argument(
-        '--service_name',
-        default='openvino_classifier',
-        help='Human-readable service name for service management.')
+        '--top_k',
+        help='Display top K classification results.',
+        default=3,
+        type=int)
     ap.add_argument(
         '-d', '--device',
         help='Specify the target device to infer on; CPU, GPU, FPGA or MYRIAD is acceptable. Sample will look for a suitable plugin for device specified (CPU by default)',
         default='CPU',
         type=str)
-    ap.add_argument(
-        '--top_k',
-        help='Display top K classification results.',
-        default=3,
-        type=int)
     ap.add_argument(
         '--draw',
         action='store_true',
