@@ -34,7 +34,7 @@ from openvino.inference_engine import IENetwork, IEPlugin
 
 
 class OpenVINOClassifierEngine(DLEngine):
-    def __init__(self, model, device='CPU', labels=None, top_k=3):
+    def __init__(self, model, labels=None, top_k=3, device='CPU'):
         """
         Args:
             model: Path to an .xml file with a trained model.
@@ -144,7 +144,7 @@ class OpenVINOClassifierEngine(DLEngine):
 
 
 class OpenVINODetectorEngine(DLEngine):
-    def __init__(self, model, device='CPU', labels=None, threshold=0.3):
+    def __init__(self, model, labels=None, threshold=0.3, device='CPU'):
         super(OpenVINODetectorEngine, self).__init__()
 
         # Prepare model and labels
@@ -359,41 +359,42 @@ def set_openvino_environment():
 def parse_argsr():
     parser = ArgumentParser()
     parser.add_argument(
-            "-e", "--engine",
-            help=("Classifier or Detector engine. "
-                  "classifier, or detector is acceptable. "
-                  "(classifier by default)"),
-            default="classifier",
-            type=str)
+        "-e", "--engine",
+        help=("Classifier or Detector engine. "
+              "classifier, or detector is acceptable. "
+              "(classifier by default)"),
+        default="classifier",
+        type=str)
     parser.add_argument(
-            "-m", "--model",
-            help="Path to an .xml file with a trained model.",
-            required=True,
-            type=str)
+        "-m", "--model",
+        help="Path to an .xml file with a trained model.",
+        required=True,
+        type=str)
     parser.add_argument(
-            "-i", "--input",
-            help="Path to a folder with images or path to an image files",
-            required=True,
-            type=str)
-    parser.add_argument("-d", "--device",
-            help="Specify the target device to infer on; CPU, GPU, FPGA or MYRIAD is acceptable. Sample will look for a suitable plugin for device specified (CPU by default)",
-            default="CPU",
-            type=str)
+        "-l", "--labels",
+        help="Labels mapping file",
+        default=None,
+        type=str)
     parser.add_argument(
-            "--labels",
-            help="Labels mapping file",
-            default=None,
-            type=str)
+        "--top_k",
+        help="Number of top results",
+        default=10,
+        type=int)
     parser.add_argument(
-            "-nt", "--number_top",
-            help="Number of top results",
-            default=10,
-            type=int)
+        "-d", "--device",
+        help="Specify the target device to infer on; CPU, GPU, FPGA or MYRIAD is acceptable. Sample will look for a suitable plugin for device specified (CPU by default)",
+        default="CPU",
+        type=str)
     parser.add_argument(
-            "--debug",
-            help="Debug mode toggle",
-            default=False,
-            action="store_true")
+        "-i", "--input",
+        help="Path to a folder with images or path to an image files",
+        required=True,
+        type=str)
+    parser.add_argument(
+        "--debug",
+        help="Debug mode toggle",
+        default=False,
+        action="store_true")
 
     return parser.parse_args()
 
@@ -411,7 +412,7 @@ def main():
                      model = args.model,
                      device = args.device,
                      labels = args.labels,
-                     top_k = args.number_top)
+                     top_k = args.top_k)
     elif args.engine == 'detector':
         engine = OpenVINODetectorEngine(
                      model = args.model,

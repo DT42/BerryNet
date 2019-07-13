@@ -13,7 +13,7 @@ from berrynet import logger
 
 
 class TFLiteDetectorEngine(DLEngine):
-    def __init__(self, model, labels, num_threads=1, threshold=0.5):
+    def __init__(self, model, labels, threshold=0.5, num_threads=1):
         """
         Builds Tensorflow graph, load model and labels
         """
@@ -106,7 +106,7 @@ class TFLiteDetectorEngine(DLEngine):
 
 
 class TFLiteClassifierEngine(DLEngine):
-    def __init__(self, model, labels, top_k=5, num_threads=1,
+    def __init__(self, model, labels, top_k=3, num_threads=1,
                  input_mean=127.5, input_std=127.5):
         """
         Builds Tensorflow graph, load model and labels
@@ -189,42 +189,42 @@ class TFLiteClassifierEngine(DLEngine):
 def parse_argsr():
     parser = ArgumentParser()
     parser.add_argument(
-            "-e", "--engine",
-            help=("Classifier or Detector engine. "
-                  "classifier, or detector is acceptable. "
-                  "(classifier by default)"),
-            default="classifier",
-            type=str)
+        "-e", "--engine",
+        help=("Classifier or Detector engine. "
+              "classifier, or detector is acceptable. "
+              "(classifier by default)"),
+        default="classifier",
+        type=str)
     parser.add_argument(
-            "-m", "--model",
-            help="Path to an .xml file with a trained model.",
-            required=True, 
-            type=str)
+        "-m", "--model",
+        help="Path to an .xml file with a trained model.",
+        required=True,
+        type=str)
     parser.add_argument(
-            "-i", "--input", 
-            help="Path to a folder with images or path to an image files",
-            required=True,
-            type=str)
+        "-l", "--labels",
+        help="Labels mapping file",
+        default=None,
+        type=str)
     parser.add_argument(
-            "--labels",
-            help="Labels mapping file",
-            default=None,
-            type=str)
+        "--top_k",
+        help="Number of top results",
+        default=3,
+        type=int)
     parser.add_argument(
-            "-nt", "--number_top",
-            help="Number of top results",
-            default=10,
-            type=int)
+        "--num_threads",
+        help="Number of threads",
+        default=1,
+        type=int)
     parser.add_argument(
-            "-nthreads", "--number_threads",
-            help="Number of threads",
-            default=1,
-            type=int)
+        "-i", "--input",
+        help="Path to a folder with images or path to an image files",
+        required=True,
+        type=str)
     parser.add_argument(
-            "--debug",
-            help="Debug mode toggle",
-            default=False,
-            action="store_true")
+        "--debug",
+        help="Debug mode toggle",
+        default=False,
+        action="store_true")
 
     return parser.parse_args()
 
@@ -233,23 +233,23 @@ def main():
     #     $ python3 tflite_engine.py -e detector \
     #           -m detect.tflite --labels labels.txt -i dog.jpg --debug
     args = parse_argsr()
-    
+
     if args.debug:
         logger.setLevel(logging.DEBUG)
     else:
         logger.setLevel(logging.INFO)
-    
+
     if args.engine == 'classifier':
         engine = TFLiteClassifierEngine(
                      model = args.model,
                      labels = args.labels,
-                     top_k = args.number_top,
-                     num_threads = args.number_threads)
+                     top_k = args.top_k,
+                     num_threads = args.num_threads)
     elif args.engine == 'detector':
         engine = TFLiteDetectorEngine(
                      model = args.model,
                      labels = args.labels,
-                     num_threads = args.number_threads)
+                     num_threads = args.num_threads)
     else:
         raise Exception('Illegal engine {}, it should be '
                         'classifier or detector'.format(args.engine))

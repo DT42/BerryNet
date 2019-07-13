@@ -70,26 +70,28 @@ class DarknetService(EngineService):
 
 def parse_args():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--model',
-                    help='Model file path')
-    ap.add_argument('--label',
-                    help='Label file path')
-    ap.add_argument('--model_package',
-                    default='',
-                    help='Model package name. Find model and label file paths automatically.')
-    ap.add_argument('--service_name',
-                    default='darknet',
-                    help='Human-readable service name for service management.')
-    ap.add_argument('--num_top_predictions',
-                    help='Display this many predictions',
-                    default=3,
-                    type=int)
-    ap.add_argument('--draw',
-                    action='store_true',
-                    help='Draw bounding boxes on image in result')
-    ap.add_argument('--debug',
-                    action='store_true',
-                    help='Debug mode toggle')
+    ap.add_argument(
+        '-m', '--model',
+        help='Model file path')
+    ap.add_argument(
+        '-l', '--label',
+        help='Label file path')
+    ap.add_argument(
+        '-p', '--model_package',
+        default='',
+        help='Model package name. Find model and label file paths automatically.')
+    ap.add_argument(
+        '--service_name',
+        default='darknet',
+        help='Human-readable service name for service management.')
+    ap.add_argument(
+        '--draw',
+        action='store_true',
+        help='Draw bounding boxes on image in result')
+    ap.add_argument(
+        '--debug',
+        action='store_true',
+        help='Debug mode toggle')
     return vars(ap.parse_args())
 
 
