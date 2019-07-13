@@ -153,6 +153,28 @@ install_tensorflow() {
     elif [ "$DISTRIBUTIONID" = "Raspbian" ]; then
         case $CODENAME in
         "buster")
+            # Unsatisfied dependencies in Buster, and wheels will be installed
+            #     python3-tensorboard             none
+            #     python3-wrapt                   1.10.11-1+b1
+            #     python3-gast                    none
+            #     python3-tensorflow-estimator    none
+            #     python3-astor                   0.5-1
+            #     python3-absl-py                 none
+            #     python3-google-pasta            none
+            #     python3-setuptools              40.8.0-1
+            sudo apt install -y \
+                python3-numpy \
+                python3-termcolor \
+                python3-six \
+                python3-keras-applications \
+                python3-protobuf \
+                python3-keras-preprocessing \
+                python3-wheel \
+                python3-grpcio \
+                python3-werkzeug \
+                python3-markdown \
+                python3-h5py
+
 	    TENSORFLOW_PKGNAME="tensorflow-1.14.0-cp37-cp37m-linux_armv7l.whl"
 	    if [ ! -e "/tmp/$TENSORFLOW_PKGNAME" ]; then
                 wget -O /tmp/$TENSORFLOW_PKGNAME \
