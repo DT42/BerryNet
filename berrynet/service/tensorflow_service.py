@@ -48,12 +48,14 @@ def parse_args():
                     help='Label file path')
     ap.add_argument('--model_package',
                     default='',
-                    help='Model package name')
+                    help='Model package name. Find model and label file paths automatically.')
     ap.add_argument('--service_name',
                     default='tensorflow',
-                    help='Engine service name used as PID filename')
-    ap.add_argument('--num_top_predictions', default=5,
-                    help='Display this many predictions')
+                    help='Human-readable service name for service management.')
+    ap.add_argument('--num_top_predictions',
+                    help='Display this many predictions',
+                    default=3,
+                    type=int)
     ap.add_argument('--debug',
                     action='store_true',
                     help='Debug mode toggle')

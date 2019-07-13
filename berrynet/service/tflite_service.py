@@ -139,10 +139,10 @@ def parse_args():
                     help='Label file path')
     ap.add_argument('--model_package',
                     default='',
-                    help='Model package name')
+                    help='Model package name. Find model and label file paths automatically.')
     ap.add_argument('--service_name',
                     default='tflite_classifier',
-                    help='Human-readable service name to manage service easier.')
+                    help='Human-readable service name for service management.')
     ap.add_argument('--num_threads',
                     default=1,
                     help="Number of threads for running inference.")

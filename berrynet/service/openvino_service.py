@@ -142,9 +142,10 @@ def parse_args():
                     help='Label file path')
     ap.add_argument('--model_package',
                     default='',
-                    help='Model package name')
-    ap.add_argument('--service_name', required=True,
-                    help='Valid value: Classification, MobileNetSSD')
+                    help='Model package name. Find model and label file paths automatically.')
+    ap.add_argument('--service_name',
+                    default='openvino_classifier',
+                    help='Human-readable service name for service management.')
     ap.add_argument('-d', '--device',
                     help='Specify the target device to infer on; CPU, GPU, FPGA or MYRIAD is acceptable. Sample will look for a suitable plugin for device specified (CPU by default)',
                     default='CPU',

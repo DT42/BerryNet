@@ -76,12 +76,14 @@ def parse_args():
                     help='Label file path')
     ap.add_argument('--model_package',
                     default='',
-                    help='Model package name')
+                    help='Model package name. Find model and label file paths automatically.')
     ap.add_argument('--service_name',
                     default='darknet',
-                    help='Engine service name used as PID filename')
-    ap.add_argument('--num_top_predictions', default=5,
-                    help='Display this many predictions')
+                    help='Human-readable service name for service management.')
+    ap.add_argument('--num_top_predictions',
+                    help='Display this many predictions',
+                    default=3,
+                    type=int)
     ap.add_argument('--draw',
                     action='store_true',
                     help='Draw bounding boxes on image in result')
@@ -97,13 +99,18 @@ def main():
         logger.setLevel(logging.DEBUG)
     else:
         logger.setLevel(logging.INFO)
-    #logger.debug('model filepath: ' + args['model'])
-    #logger.debug('label filepath: ' + args['label'])
+    if args['model_package'] != '':
+        dlmm = DLModelManager()
+        meta = dlmm.get_model_meta(args['model_package'])
+        args['model'] = meta['model']
+        args['label'] = meta['label']
+    logger.debug('model filepath: ' + args['model'])
+    logger.debug('label filepath: ' + args['label'])
 
     engine = DarknetEngine(
-        config=b'/usr/share/dlmodels/tinyyolovoc-20170816/tiny-yolo-voc.cfg',
-        model=b'/usr/share/dlmodels/tinyyolovoc-20170816/tiny-yolo-voc.weights',
-        meta=b'/usr/share/dlmodels/tinyyolovoc-20170816/voc.data'
+        config=meta['config']['config'].encode('utf-8'),
+        model=args['model'].encode('utf-8'),
+        meta=meta['config']['meta'].encode('utf-8')
     )
     comm_config = {
         'subscribe': {},
