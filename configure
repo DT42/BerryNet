@@ -280,8 +280,8 @@ update_system_service() {
 }
 
 install_system_dependencies 2>&1 | tee -a $LOG
-install_configs 2>&1 | tee -a $LOG
 install_berrynet_py 2>&1 | tee -a $LOG
+install_configs 2>&1 | tee -a $LOG
 # FIXME: Raspbian 20190408 breaks some dependencies of BerryNet JS.
 #        Disable temporaily before this issue is fixed.
 #install_berrynet_js 2>&1 | tee -a $LOG
