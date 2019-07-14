@@ -85,7 +85,7 @@ install_configs() {
 
     # supervisor
     sudo cp config/supervisor/conf.d/berrynet-tflite.conf /etc/supervisor/conf.d/
-    sudo mkdir /var/log/berrynet
+    sudo mkdir -p /var/log/berrynet
 
     # mosquitto
     sudo cp config/etc/mosquitto/conf.d/berrynet.conf /etc/mosquitto/conf.d
