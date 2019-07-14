@@ -23,184 +23,68 @@ set -e
 
 LOG="$PWD/berrynet-install.log"
 DISTRIBUTIONID=`lsb_release -i -s`
-#INSTALL_DARKFLOW="N"
-INSTALL_DARKNET_NNPACK="Y"
-INSTALL_DARKNET="N"
-INSTALL_TENSORFLOW="N"
-INSTALL_CAFFE2="N"
+CODENAME=`lsb_release -c -s`
+INSTALL_TENSORFLOW="Y"
 INSTALL_OPENVINO="N"
+INSTALL_DARKNET="N"
+INSTALL_CAFFE2="N"
 
-
-install_system_dependencies() {
-    sudo apt-get update
-    sudo apt-get install -y \
-        apache2 \
-        curl \
-        fswebcam \
-        git \
-        imagemagick \
-        libkrb5-dev \
-        libyaml-dev \
-        libzmq3-dev \
-        lsb-release \
-        mongodb \
-        mosquitto \
-        mosquitto-clients \
-        python3-dev \
-	python3-opengl \
-        python3-pip \
-        supervisor \
-        wget
-    sudo service mongodb start
-    sudo -H pip3 install --timeout 60 cython
-    sudo -H pip3 install --timeout 60 logzero
-    sudo -H pip3 install --timeout 60 paho-mqtt
-    sudo -H pip3 install --timeout 60 PyOpenGL
-    sudo -H pip3 install --timeout 60 PyOpenGL-accelerate
-    sudo -H pip3 install --timeout 60 watchdog
-}
-
-install_berrynet_repository() {
-    sudo apt-get update
-    sudo apt-get install -y dirmngr
-    sudo cp config/berrynet.list /etc/apt/sources.list.d
-    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv C0C4CC4C
-    sudo apt update
-}
-
-install_nodejs() {
-    # v10.x is LTS, if you want the latest feature, change to "setup_11.x".
-    curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
-    sudo apt-get install -y nodejs
-}
 
 install_opencv() {
     # OpenCV sources
     #     x86 Ubuntu 16.04: PPA
     #     Raspbian: BerryNet repo
-    if [ x"$DISTRIBUTIONID" = x"Ubuntu" ]; then
+    if [ "$DISTRIBUTIONID" = "Ubuntu" ]; then
         sudo add-apt-repository -yu ppa:timsc/opencv-3.4
     fi
     sudo apt install -y python3-opencv
 }
 
-install_darknet_nnpack() {
-    # To understand how these packages are built, please refer to
-    # https://github.com/DT42/BerryNet/blob/master/doc/darknet-nnpack.md
-    sudo apt install -y darknet libdarknet
-}
+install_system_dependencies() {
+    sudo apt update
+    if [ "$CODENAME" = "buster" ]; then
+        sudo apt install -y \
+            mosquitto \
+            python3-opengl \
+            supervisor
+    else
+        sudo apt install -y \
+            apache2 \
+            curl \
+            dirmngr \
+            fswebcam \
+            git \
+            imagemagick \
+            libkrb5-dev \
+            libyaml-dev \
+            libzmq3-dev \
+            lsb-release \
+            mosquitto \
+            mosquitto-clients \
+            python3-dev \
+            python3-opengl \
+            python3-pip \
+            supervisor \
+            wget
+        sudo -H pip3 install --timeout 60 cython
+        sudo -H pip3 install --timeout 60 logzero
+        sudo -H pip3 install --timeout 60 paho-mqtt
+        sudo -H pip3 install --timeout 60 PyOpenGL
+        sudo -H pip3 install --timeout 60 PyOpenGL-accelerate
+        sudo -H pip3 install --timeout 60 watchdog
 
-install_darknet() {
-    local peachpy_version="0.0.1"
-    local confu_version="cc90068"
-    local ninja_version="v1.8.2"
-    local nnpack_darknet_version="1ecda10"
-    local darknet_nnpack_version="fa5bddc"
-
-    # build dependencies
-    pip3 install --user PeachPy==$peachpy_version
-    pip3 install --user git+https://github.com/Maratyszcza/confu@$confu_version
-
-    pushd /tmp > /dev/null
-    git clone https://github.com/ninja-build/ninja.git
-    pushd ninja > /dev/null
-    git reset --hard $ninja_version
-    ./configure.py --bootstrap
-    popd > /dev/null
-    popd > /dev/null
-
-    sudo apt-get install -y clang
-
-    pushd /tmp > /dev/null
-    git clone https://github.com/thomaspark-pkj/NNPACK-darknet.git
-    pushd NNPACK-darknet > /dev/null
-    git reset --hard $nnpack_darknet_version
-    $HOME/.local/bin/confu setup
-    python ./configure.py --backend auto
-    /tmp/ninja/ninja
-    sudo cp lib/{libgoogletest-core.a,libnnpack.a,libpthreadpool.a} /usr/lib/
-    sudo cp include/nnpack.h /usr/include/
-    sudo cp deps/pthreadpool/include/pthreadpool.h /usr/include/
-    popd > /dev/null
-    popd > /dev/null
-
-    # build detection backend (darknet)
-    pushd inference > /dev/null
-    git clone https://github.com/thomaspark-pkj/darknet-nnpack.git darknet
-    pushd darknet > /dev/null
-    git reset --hard $darknet_nnpack_version
-    patch -p 1 < ../../patch/01-detection-backend.patch
-    make -j
-    popd > /dev/null
-    popd > /dev/null
-
-    cp utils/darknet/detectord.py inference/darknet
-    mkdir inference/darknet/utils
-    cp utils/darknet/utils/localrun.sh inference/darknet/utils
-}
-
-download_detector_model() {
-    sudo apt install -y tinyyolovoc
-}
-
-install_tensorflow() {
-    if [ x"$DISTRIBUTIONID" = x"Ubuntu" ]; then
-	sudo -H pip3 install tensorflow
-    elif [ x"$DISTRIBUTIONID" = x"Raspbian" ]; then
-        # WORKAROUND: Rename Wheel from cp35 to cp37
-        #             before the Buster build is available.
-	TENSORFLOW_PKGNAME="tensorflow-1.14.0-cp37-cp37m-linux_armv7l.whl"
-	if [ ! -e "/tmp/$TENSORFLOW_PKGNAME" ]; then
-            wget -O /tmp/$TENSORFLOW_PKGNAME \
-                https://github.com/PINTO0309/Tensorflow-bin/raw/master/tensorflow-1.14.0-cp35-cp35m-linux_armv7l.whl
-	else
-            echo "$TENSORFLOW_PKGNAME has existed, skip to download it."
-	fi
-	sudo -H pip3 install /tmp/$TENSORFLOW_PKGNAME
+        install_opencv
     fi
 }
 
-download_classifier_model() {
-    # Inception v3 is default classifier model
-    INCEPTION_PKGNAME=inception_dec_2015.zip
-    pushd inference > /dev/null
-    mkdir -p image
-    if [ ! -e model ]; then
-        mkdir model
-        pushd model > /dev/null
-        wget https://storage.googleapis.com/download.tensorflow.org/models/$INCEPTION_PKGNAME
-        unzip $INCEPTION_PKGNAME
-        mv imagenet_comp_graph_label_strings.txt output_labels.txt
-        mv tensorflow_inception_graph.pb output_graph.pb
-        popd > /dev/null
-    fi
-    popd > /dev/null
-}
-
-install_caffe2() {
-    if [ x"$DISTRIBUTIONID" = x"Ubuntu" ]; then
-	sh ./utils/install-caffe2-ubuntu.sh
-    elif [ x"$DISTRIBUTIONID" = x"Raspbian" ]; then
-	sh ./utils/install-caffe2-raspbian.sh
-    fi
-}
-
-download_classifier_model_caffe2() {
-    sh ./utils/install-caffe2-models.sh
-}
-
-install_openvino() {
-    # OpenVINO 2019R1.1
-    if [ x"$DISTRIBUTIONID" = x"Ubuntu" ]; then
-        sudo apt-get install -y openvino
-    elif [ x"$DISTRIBUTIONID" = x"Raspbian" ]; then
-        sudo apt-get install -y openvino-rpi
-    fi
+install_berrynet_repository() {
+    curl -sL https://raw.githubusercontent.com/DT42/BerryNet-repo/master/setup.sh | sudo -E bash -
+    sudo apt update
 }
 
 install_configs() {
-    # systemd
-    sudo cp systemd/* /etc/systemd/system
+    # repository
+    install_berrynet_repository
 
     # supervisor
     sudo cp config/supervisor/conf.d/berrynet-darknet.conf /etc/supervisor/conf.d/
@@ -209,27 +93,27 @@ install_configs() {
     # mosquitto
     sudo cp config/etc/mosquitto/conf.d/berrynet.conf /etc/mosquitto/conf.d
 
-    if [ x"$DISTRIBUTIONID" = x"Raspbian" ]; then
+    if [ "$DISTRIBUTIONID" = "Raspbian" ]; then
         # Make RPi camera to show at /dev/videoN
         sudo cp config/bcm2835-v4l2.conf /etc/modules-load.d
-
-        # Enable ramfs to speedup I/O
-        #
-        # NOTE: "IPC by file" was used in BerryNet v2 and
-        #       has been dropped in v3.
-        echo -e "tmpfs /var/ramfs tmpfs nodev,nosuid,size=50M 0 0" \
-            | sudo tee -a /etc/fstab
-        sudo mount -a
     fi
 }
 
 install_berrynet_py() {
     sudo apt install -y berrynet
     # FIXME: Freeboard dependency
-    sudo npm install -g mime
+    #sudo npm install -g mime
+}
+
+install_nodejs() {
+    # v10.x is LTS, if you want the latest feature, change to "setup_11.x".
+    curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
+    sudo apt install -y nodejs
 }
 
 install_berrynet_js() {
+    install_nodejs
+
     local working_dir="/usr/local/berrynet"
     sudo mkdir -p $working_dir
     sudo cp -a \
@@ -253,6 +137,145 @@ install_berrynet_js() {
     popd > /dev/null
 }
 
+install_model() {
+    local model_name="$1"
+    echo "Install model $model_name"
+    sudo apt install -y $model_name
+}
+
+download_classifier_model_caffe2() {
+    sh ./utils/install-caffe2-models.sh
+}
+
+install_tensorflow() {
+    if [ "$DISTRIBUTIONID" = "Ubuntu" ]; then
+	sudo -H pip3 install tensorflow
+    elif [ "$DISTRIBUTIONID" = "Raspbian" ]; then
+        case $CODENAME in
+        "buster")
+            # Unsatisfied dependencies in Buster, and wheels will be installed
+            #     python3-tensorboard             none
+            #     python3-wrapt                   1.10.11-1+b1
+            #     python3-gast                    none
+            #     python3-tensorflow-estimator    none
+            #     python3-astor                   0.5-1
+            #     python3-absl-py                 none
+            #     python3-google-pasta            none
+            #     python3-setuptools              40.8.0-1
+            sudo apt install -y \
+                python3-numpy \
+                python3-termcolor \
+                python3-six \
+                python3-keras-applications \
+                python3-protobuf \
+                python3-keras-preprocessing \
+                python3-wheel \
+                python3-grpcio \
+                python3-werkzeug \
+                python3-markdown \
+                python3-h5py
+
+	    TENSORFLOW_PKGNAME="tensorflow-1.14.0-cp37-cp37m-linux_armv7l.whl"
+	    if [ ! -e "/tmp/$TENSORFLOW_PKGNAME" ]; then
+                wget -O /tmp/$TENSORFLOW_PKGNAME \
+                    https://github.com/PINTO0309/Tensorflow-bin/raw/master/tensorflow-1.14.0-cp37-cp37m-linux_armv7l.whl
+	    else
+                echo "$TENSORFLOW_PKGNAME has existed, skip to download it."
+	    fi
+	    sudo -H pip3 install /tmp/$TENSORFLOW_PKGNAME
+            ;;
+        "stretch")
+	    TENSORFLOW_PKGNAME="tensorflow-1.14.0-cp35-cp35m-linux_armv7l.whl"
+	    if [ ! -e "/tmp/$TENSORFLOW_PKGNAME" ]; then
+                wget -O /tmp/$TENSORFLOW_PKGNAME \
+                    https://github.com/PINTO0309/Tensorflow-bin/raw/master/tensorflow-1.14.0-cp35-cp35m-linux_armv7l.whl
+	    else
+                echo "$TENSORFLOW_PKGNAME has existed, skip to download it."
+	    fi
+	    sudo -H pip3 install /tmp/$TENSORFLOW_PKGNAME
+            ;;
+        *)
+            echo "ERROR: Fail to install TensorFlow, unknown Raspbian codename $CODENAME"
+            exit 1
+        esac
+    fi
+}
+
+install_openvino() {
+    # OpenVINO 2019R1.1
+    if [ "$DISTRIBUTIONID" = "Ubuntu" ]; then
+        sudo apt install -y openvino
+    elif [ "$DISTRIBUTIONID" = "Raspbian" ]; then
+        sudo apt install -y openvino-rpi
+    fi
+}
+
+install_darknet () {
+    # For x86, we use pure Darknet.
+    # For Raspberry Pi, we use pure Darknet + NNPACK.
+    #
+    # To understand how Darknet NNPACK packages are built, please refer to
+    # https://github.com/DT42/BerryNet/blob/master/doc/darknet-nnpack.md
+    sudo apt install -y darknet libdarknet
+}
+
+#install_darknet() {
+#    local peachpy_version="0.0.1"
+#    local confu_version="cc90068"
+#    local ninja_version="v1.8.2"
+#    local nnpack_darknet_version="1ecda10"
+#    local darknet_nnpack_version="fa5bddc"
+#
+#    # build dependencies
+#    pip3 install --user PeachPy==$peachpy_version
+#    pip3 install --user git+https://github.com/Maratyszcza/confu@$confu_version
+#
+#    pushd /tmp > /dev/null
+#    git clone https://github.com/ninja-build/ninja.git
+#    pushd ninja > /dev/null
+#    git reset --hard $ninja_version
+#    ./configure.py --bootstrap
+#    popd > /dev/null
+#    popd > /dev/null
+#
+#    sudo apt install -y clang
+#
+#    pushd /tmp > /dev/null
+#    git clone https://github.com/thomaspark-pkj/NNPACK-darknet.git
+#    pushd NNPACK-darknet > /dev/null
+#    git reset --hard $nnpack_darknet_version
+#    $HOME/.local/bin/confu setup
+#    python ./configure.py --backend auto
+#    /tmp/ninja/ninja
+#    sudo cp lib/{libgoogletest-core.a,libnnpack.a,libpthreadpool.a} /usr/lib/
+#    sudo cp include/nnpack.h /usr/include/
+#    sudo cp deps/pthreadpool/include/pthreadpool.h /usr/include/
+#    popd > /dev/null
+#    popd > /dev/null
+#
+#    # build detection backend (darknet)
+#    pushd inference > /dev/null
+#    git clone https://github.com/thomaspark-pkj/darknet-nnpack.git darknet
+#    pushd darknet > /dev/null
+#    git reset --hard $darknet_nnpack_version
+#    patch -p 1 < ../../patch/01-detection-backend.patch
+#    make -j
+#    popd > /dev/null
+#    popd > /dev/null
+#
+#    cp utils/darknet/detectord.py inference/darknet
+#    mkdir inference/darknet/utils
+#    cp utils/darknet/utils/localrun.sh inference/darknet/utils
+#}
+
+install_caffe2() {
+    if [ "$DISTRIBUTIONID" = "Ubuntu" ]; then
+	sh ./utils/install-caffe2-ubuntu.sh
+    elif [ "$DISTRIBUTIONID" = "Raspbian" ]; then
+	sh ./utils/install-caffe2-raspbian.sh
+    fi
+}
+
 update_system_service() {
     sudo service mosquitto restart
     sudo supervisorctl reload
@@ -260,34 +283,34 @@ update_system_service() {
 }
 
 install_system_dependencies 2>&1 | tee -a $LOG
-install_berrynet_repository 2>&1 | tee -a $LOG
-install_nodejs 2>&1 | tee -a $LOG
-install_opencv 2>&1 | tee -a $LOG
 install_configs 2>&1 | tee -a $LOG
 install_berrynet_py 2>&1 | tee -a $LOG
 # FIXME: Raspbian 20190408 breaks some dependencies of BerryNet JS.
 #        Disable temporaily before this issue is fixed.
 #install_berrynet_js 2>&1 | tee -a $LOG
 
-if [ "$INSTALL_DARKNET_NNPACK" = "Y" ]; then
-    install_darknet_nnpack 2>&1 | tee -a $LOG
-    download_detector_model 2>&1 | tee -a $LOG
+if [ "$INSTALL_TENSORFLOW" = "Y" ]; then
+    install_tensorflow 2>&1 | tee -a $LOG
+    #install_model inception
+    install_model mobilenet-1.0-224-quantized-tflite 2>&1 | tee -a $LOG
+    install_model mobilenet-ssd-coco-tflite 2>&1 | tee -a $LOG
 else
-    echo "Not install Darknet NNPACK" >> $LOG
+    echo "Not install TensorFlow" >> $LOG
+fi
+
+if [ "$INSTALL_OPENVINO" = "Y" ]; then
+    install_openvino 2>&1 | tee -a $LOG
+    install_model mobilenet-1.0-224-fp16-openvino 2>&1 | tee -a $LOG
+    install_model mobilenet-ssd-openvino 2>&1 | tee -a $LOG
+else
+    echo "Not install OpenVINO" >> $LOG
 fi
 
 if [ "$INSTALL_DARKNET" = "Y" ]; then
     install_darknet 2>&1 | tee -a $LOG
-    download_detector_model 2>&1 | tee -a $LOG
+    install_model tinyyolovoc 2>&1 | tee -a $LOG
 else
-    echo "Not install Darknet" >> $LOG
-fi
-
-if [ "$INSTALL_TENSORFLOW" = "Y" ]; then
-    install_tensorflow 2>&1 | tee -a $LOG
-    download_classifier_model 2>&1 | tee -a $LOG
-else
-    echo "Not install TensorFlow" >> $LOG
+    echo "Not install Darknet NNPACK" >> $LOG
 fi
 
 if [ "$INSTALL_CAFFE2" = "Y" ]; then
@@ -295,12 +318,6 @@ if [ "$INSTALL_CAFFE2" = "Y" ]; then
     download_classifier_model_caffe2 2>&1 | tee -a $LOG
 else
     echo "Not install Caffe2" >> $LOG
-fi
-
-if [ "$INSTALL_OPENVINO" = "Y" ]; then
-    install_openvino 2>&1 | tee -a $LOG
-else
-    echo "Not install OpenVINO" >> $LOG
 fi
 
 update_system_service 2>&1 | tee -a $LOG
