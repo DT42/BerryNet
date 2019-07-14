@@ -44,8 +44,6 @@ install_system_dependencies() {
     sudo apt update
     if [ "$CODENAME" = "buster" ]; then
         sudo apt install -y \
-            mosquitto \
-            python3-opengl \
             supervisor
     else
         sudo apt install -y \
