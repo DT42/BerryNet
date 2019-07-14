@@ -130,35 +130,45 @@ class OpenVINODetectorService(EngineService):
 
 def parse_args():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--service',
-                    help=('Classifier or Detector service. '
-                          'classifier, or detector is acceptable. '
-                          '(classifier by default)'),
-                    default='classifier',
-                    type=str)
-    ap.add_argument('--model',
-                    help='Model file path')
-    ap.add_argument('--label',
-                    help='Label file path')
-    ap.add_argument('--model_package',
-                    default='',
-                    help='Model package name')
-    ap.add_argument('--service_name', required=True,
-                    help='Valid value: Classification, MobileNetSSD')
-    ap.add_argument('-d', '--device',
-                    help='Specify the target device to infer on; CPU, GPU, FPGA or MYRIAD is acceptable. Sample will look for a suitable plugin for device specified (CPU by default)',
-                    default='CPU',
-                    type=str)
-    ap.add_argument('--num_top_predictions',
-                    help='Display this many predictions',
-                    default=3,
-                    type=int)
-    ap.add_argument('--draw',
-                    action='store_true',
-                    help='Draw bounding boxes on image in result')
-    ap.add_argument('--debug',
-                    action='store_true',
-                    help='Debug mode toggle')
+    ap.add_argument(
+        '-s', '--service',
+        help=('Classifier or Detector service. '
+              'classifier, or detector is acceptable. '
+              '(classifier by default)'),
+        default='classifier',
+        type=str)
+    ap.add_argument(
+        '--service_name',
+        default='openvino_classifier',
+        help='Human-readable service name for service management.')
+    ap.add_argument(
+        '-m', '--model',
+        help='Model file path')
+    ap.add_argument(
+        '-l', '--label',
+        help='Label file path')
+    ap.add_argument(
+        '-p', '--model_package',
+        default='',
+        help='Model package name. Find model and label file paths automatically.')
+    ap.add_argument(
+        '--top_k',
+        help='Display top K classification results.',
+        default=3,
+        type=int)
+    ap.add_argument(
+        '-d', '--device',
+        help='Specify the target device to infer on; CPU, GPU, FPGA or MYRIAD is acceptable. Sample will look for a suitable plugin for device specified (CPU by default)',
+        default='CPU',
+        type=str)
+    ap.add_argument(
+        '--draw',
+        action='store_true',
+        help='Draw bounding boxes on image in result')
+    ap.add_argument(
+        '--debug',
+        action='store_true',
+        help='Debug mode toggle')
     return vars(ap.parse_args())
 
 
@@ -188,15 +198,15 @@ def main():
     if args['service'] == 'classifier':
         engine = OpenVINOClassifierEngine(
                      model = args['model'],
-                     device = args['device'],
                      labels = args['label'],
-                     top_k = args['num_top_predictions'])
+                     top_k = args['top_k'],
+                     device = args['device'])
         service_functor = OpenVINOClassifierService
     elif args['service'] == 'detector':
         engine = OpenVINODetectorEngine(
                      model = args['model'],
-                     device = args['device'],
-                     labels = args['label'])
+                     labels = args['label'],
+                     device = args['device'])
         service_functor = OpenVINODetectorService
     else:
         raise Exception('Illegal service {}, it should be '

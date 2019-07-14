@@ -13,7 +13,7 @@ from berrynet import logger
 
 
 class TFLiteDetectorEngine(DLEngine):
-    def __init__(self, model, labels):
+    def __init__(self, model, labels, threshold=0.5, num_threads=1):
         """
         Builds Tensorflow graph, load model and labels
         """
@@ -22,11 +22,14 @@ class TFLiteDetectorEngine(DLEngine):
         self.classes = len(self.labels)
 
         # Define lite graph and Load Tensorflow Lite model into memory
-        self.interpreter = tf.contrib.lite.Interpreter(
+        self.interpreter = tf.lite.Interpreter(
             model_path=model)
         self.interpreter.allocate_tensors()
         self.input_details = self.interpreter.get_input_details()
         self.output_details = self.interpreter.get_output_details()
+        self.input_dtype = self.input_details[0]['dtype']
+        self.num_threads = num_threads
+        self.threshold = threshold
 
     def __delete__(self, instance):
         #tf.reset_default_graph()
@@ -42,11 +45,16 @@ class TFLiteDetectorEngine(DLEngine):
         frame = cv2.cvtColor(tensor, cv2.COLOR_BGR2RGB)
         frame = cv2.resize(frame, (300, 300))
         frame = np.expand_dims(frame, axis=0)
-        frame = (2.0 / 255.0) * frame - 1.0
-        frame = frame.astype('float32')
+        if self.input_dtype == np.float32:
+            frame = (2.0 / 255.0) * frame - 1.0
+            frame = frame.astype('float32')
+        else:
+            # default data type returned by cv2.imread is np.unit8
+            pass
         return frame
 
     def inference(self, tensor):
+        self.interpreter.set_num_threads(int(self.num_threads));
         self.interpreter.set_tensor(self.input_details[0]['index'], tensor)
         self.interpreter.invoke()
 
@@ -79,7 +87,7 @@ class TFLiteDetectorEngine(DLEngine):
             box = tuple(boxes[i].tolist())
             ymin, xmin, ymax, xmax = box
 
-            if scores[i] < 0:
+            if scores[i] < self.threshold:
                 continue
             annotations.append({
                 'label': self.labels[classes[i]],
@@ -98,7 +106,7 @@ class TFLiteDetectorEngine(DLEngine):
 
 
 class TFLiteClassifierEngine(DLEngine):
-    def __init__(self, model, labels, top_k=5, num_threads=1,
+    def __init__(self, model, labels, top_k=3, num_threads=1,
                  input_mean=127.5, input_std=127.5):
         """
         Builds Tensorflow graph, load model and labels
@@ -108,7 +116,7 @@ class TFLiteClassifierEngine(DLEngine):
         self.classes = len(self.labels)
 
         # Define lite graph and Load Tensorflow Lite model into memory
-        self.interpreter = tf.contrib.lite.Interpreter(
+        self.interpreter = tf.lite.Interpreter(
             model_path=model)
         self.interpreter.allocate_tensors()
         self.input_details = self.interpreter.get_input_details()
@@ -181,46 +189,42 @@ class TFLiteClassifierEngine(DLEngine):
 def parse_argsr():
     parser = ArgumentParser()
     parser.add_argument(
-            "-e", "--engine",
-            help=("Classifier or Detector engine. "
-                  "classifier, or detector is acceptable. "
-                  "(classifier by default)"),
-            default="classifier",
-            type=str)
+        "-e", "--engine",
+        help=("Classifier or Detector engine. "
+              "classifier, or detector is acceptable. "
+              "(classifier by default)"),
+        default="classifier",
+        type=str)
     parser.add_argument(
-            "-m", "--model",
-            help="Path to an .xml file with a trained model.",
-            required=True, 
-            type=str)
+        "-m", "--model",
+        help="Path to an .xml file with a trained model.",
+        required=True,
+        type=str)
     parser.add_argument(
-            "-i", "--input", 
-            help="Path to a folder with images or path to an image files",
-            required=True,
-            type=str)
-    parser.add_argument("-d", "--device",
-            help="Specify the target device to infer on; CPU, GPU, FPGA or MYRIAD is acceptable. Sample will look for a suitable plugin for device specified (CPU by default)",
-            default="CPU",
-            type=str)
+        "-l", "--labels",
+        help="Labels mapping file",
+        default=None,
+        type=str)
     parser.add_argument(
-            "--labels",
-            help="Labels mapping file",
-            default=None,
-            type=str)
+        "--top_k",
+        help="Number of top results",
+        default=3,
+        type=int)
     parser.add_argument(
-            "-nt", "--number_top",
-            help="Number of top results",
-            default=10,
-            type=int)
+        "--num_threads",
+        help="Number of threads",
+        default=1,
+        type=int)
     parser.add_argument(
-            "-nthreads", "--number_threads",
-            help="Number of threads",
-            default=1,
-            type=int)
+        "-i", "--input",
+        help="Path to a folder with images or path to an image files",
+        required=True,
+        type=str)
     parser.add_argument(
-            "--debug",
-            help="Debug mode toggle",
-            default=False,
-            action="store_true")
+        "--debug",
+        help="Debug mode toggle",
+        default=False,
+        action="store_true")
 
     return parser.parse_args()
 
@@ -229,22 +233,23 @@ def main():
     #     $ python3 tflite_engine.py -e detector \
     #           -m detect.tflite --labels labels.txt -i dog.jpg --debug
     args = parse_argsr()
-    
+
     if args.debug:
         logger.setLevel(logging.DEBUG)
     else:
         logger.setLevel(logging.INFO)
-    
+
     if args.engine == 'classifier':
         engine = TFLiteClassifierEngine(
                      model = args.model,
                      labels = args.labels,
-                     top_k = args.number_top,
-                     num_threads = args.number_threads)
+                     top_k = args.top_k,
+                     num_threads = args.num_threads)
     elif args.engine == 'detector':
         engine = TFLiteDetectorEngine(
                      model = args.model,
-                     labels = args.labels)
+                     labels = args.labels,
+                     num_threads = args.num_threads)
     else:
         raise Exception('Illegal engine {}, it should be '
                         'classifier or detector'.format(args.engine))

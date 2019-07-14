@@ -6,7 +6,7 @@ from setuptools import find_packages
 
 setup(
     name='berrynet',
-    version='v3.6.0',
+    version='v3.7.0',
     description='BerryNet',
     long_description=
         'TBD',
@@ -62,7 +62,10 @@ setup(
             'bn_camera=berrynet.client.camera:main',
             'bn_dashboard=berrynet.client.fbdashboard:main',
             'bn_data_collector=berrynet.client.data_collector:main',
-            'bn_gmail=berrynet.client.gmail:main'
+            'bn_gmail=berrynet.client.gmail:main',
+            'bn_tflite=berrynet.service.tflite_service:main',
+            'bn_openvino=berrynet.service.openvino_service:main',
+            'bn_darknet=berrynet.service.darknet_service:main'
         ]
     },
     #ext_modules=[
