@@ -170,7 +170,7 @@ def detect_np(net, meta, np_img, thresh=.3, hier_thresh=.5, nms=.45):
 
 class DarknetEngine(DLEngine):
     # FIXME: Get model information by model manager
-    def __init__(self, config, model, meta='', top_k=5):
+    def __init__(self, config, model, meta=''):
         super(DarknetEngine, self).__init__()
 
         self.net = load_net(config, model, 0)

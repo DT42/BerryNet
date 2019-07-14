@@ -34,7 +34,7 @@ from berrynet.engine import DLEngine
 
 class TensorFlowEngine(DLEngine):
     # FIXME: Get model information by model manager
-    def __init__(self, model, label, input_layer, output_layer, top_k=5):
+    def __init__(self, model, label, input_layer, output_layer, top_k=3):
         super(TensorFlowEngine, self).__init__()
 
         # Load model
