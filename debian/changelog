@@ -1,3 +1,12 @@
+berrynet (3.7.0-1) unstable; urgency=low
+
+  [ Ying-Chun Liu (PaulLiu) ]
+  * Add more dependencies
+  * Update README.Debian
+  * New upstream version 3.7.0
+
+ -- Ying-Chun Liu (PaulLiu) <paulliu@debian.org>  Sun, 14 Jul 2019 11:08:46 +0800
+
 berrynet (3.6.0-1) unstable; urgency=low
 
   [ Ying-Chun Liu (PaulLiu) ]
