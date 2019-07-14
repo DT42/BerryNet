@@ -80,9 +80,6 @@ install_berrynet_repository() {
 }
 
 install_configs() {
-    # repository
-    install_berrynet_repository
-
     # supervisor
     sudo cp config/supervisor/conf.d/berrynet-tflite.conf /etc/supervisor/conf.d/
     sudo mkdir -p /var/log/berrynet
@@ -280,6 +277,7 @@ update_system_service() {
 }
 
 install_system_dependencies 2>&1 | tee -a $LOG
+install_berrynet_repository 2>&1 | tee -a $LOG
 install_berrynet_py 2>&1 | tee -a $LOG
 install_configs 2>&1 | tee -a $LOG
 # FIXME: Raspbian 20190408 breaks some dependencies of BerryNet JS.
