@@ -77,7 +77,6 @@ install_system_dependencies() {
 
 install_berrynet_repository() {
     curl -sL https://raw.githubusercontent.com/DT42/BerryNet-repo/master/setup.sh | sudo -E bash -
-    sudo apt update
 }
 
 install_configs() {
@@ -85,7 +84,7 @@ install_configs() {
     install_berrynet_repository
 
     # supervisor
-    sudo cp config/supervisor/conf.d/berrynet-darknet.conf /etc/supervisor/conf.d/
+    sudo cp config/supervisor/conf.d/berrynet-tflite.conf /etc/supervisor/conf.d/
     sudo mkdir /var/log/berrynet
 
     # mosquitto
