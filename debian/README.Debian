@@ -1,6 +1,25 @@
 berrynet for Debian
 ------------------
 
-This package is not ready for Debian
+## berrynet-dashboard (Freeboard)
+
+If using together with mosquitto, berrynet-dashboard is using websocket.
+But mosquitto default does not enable websocket. Thus we have to enable
+it manually.
+So we need to put a config file to /etc/mosquitto/conf.d
+
+```
+# run as root
+cat <<EOF >/etc/mosquitto/conf.d
+# Listen on port 1883 and websockets
+
+# default listener
+port 1883
+
+# extra listener
+listener 3000
+protocol websockets
+EOF
+```
 
  -- Ying-Chun Liu (PaulLiu) <paulliu@debian.org>  Wed, 20 Jun 2018 14:57:55 +0800
