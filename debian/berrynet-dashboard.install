@@ -1,5 +1,5 @@
+config/dashboard-darknet.json usr/share/berrynet/dashboard/
 dashboard/index.html usr/share/berrynet/dashboard/
 patch/www/freeboard/css/*.css usr/share/berrynet/dashboard/css/
 patch/www/freeboard/img/*.png usr/share/berrynet/dashboard/img/
 patch/www/freeboard/plugins/thirdparty/*.js usr/share/berrynet/dashboard/plugins/thirdparty/
-config/dashboard-darknet.json usr/share/berrynet/dashboard/

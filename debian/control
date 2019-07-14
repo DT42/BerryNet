@@ -34,7 +34,8 @@ Description: deep learning gateway - python3 modules
 
 Package: python3-berrynet
 Architecture: all
-Depends: python3-opencv, ${misc:Depends}, ${python3:Depends}
+Depends: python3-opencv, python3-opengl, ${misc:Depends}, ${python3:Depends}
+Recommends: mosquitto
 Description: deep learning gateway - python3 modules
  BerryNet turns devices into an intelligent gateway with deep learning
  running on it. No internet connection is required, everything is done
