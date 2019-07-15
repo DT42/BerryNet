@@ -38,13 +38,10 @@ CTIME_YY=`date '+%Y'`
 CTIME_MM=`date '+%m'`
 CTIME_DD=`date '+%d'`
 
-IMAGE_FILENAME=$CTIME_YY-$CTIME_MM-$CTIME_DD-raspbian-stretch-berrynet
+IMAGE_FILENAME=$CTIME_YY-$CTIME_MM-$CTIME_DD-raspbian-buster-berrynet
 
-echo "Creating image ${IMAGE_FILENAME}.img"
-sudo dd if="$DEVICE" of="$IMAGE_FILENAME".img bs=512 status=progress
-
-echo "Compressing image to ${IMAGE_FILENAME}.zip"
-zip "$IMAGE_FILENAME".zip "$IMAGE_FILENAME".img
+echo "Creating image ${IMAGE_FILENAME}.zip"
+sudo bash -c "dd if="$DEVICE" bs=512 status=progress | zip ${IMAGE_FILENAME}.zip -"
 
 echo "BerryNet release image has been created."
 echo "Now you can upload the image to the release repository."
