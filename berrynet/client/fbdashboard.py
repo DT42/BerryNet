@@ -258,7 +258,7 @@ def parse_args():
     ap.add_argument(
         '--topic',
         nargs='*',
-        default=['berrynet/engine/darknet/result'],
+        default=['berrynet/engine/tflitedetector/result'],
         help='The topic to listen, and can be indicated multiple times.'
     )
     ap.add_argument(
