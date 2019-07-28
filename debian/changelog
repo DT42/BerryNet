@@ -1,3 +1,10 @@
+berrynet (3.8.0-1) unstable; urgency=low
+
+  [ Bofu Chen (bafu) ]
+  * New upstream version 3.8.0
+
+ -- Bofu Chen (bafu) <bofu@dt42.io>  Sun, 28 Jul 2019 13:37:09 +0800
+
 berrynet (3.7.0-1) unstable; urgency=low
 
   [ Ying-Chun Liu (PaulLiu) ]
