@@ -1,4 +1,4 @@
-berrynet (3.8.0-2) UNRELEASED; urgency=medium
+berrynet (3.8.0-2) unstable; urgency=medium
 
   [ Bofu Chen (bafu) ]
   * Make berrynet meta package to depend on the latest release.
