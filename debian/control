@@ -14,7 +14,7 @@ Homepage: https://github.com/DT42/BerryNet
 
 Package: berrynet
 Architecture: all
-Depends: berrynet-dashboard, python3-berrynet, ${misc:Depends}
+Depends: berrynet-dashboard (>= 3.8.0), python3-berrynet (>= 3.8.0), ${misc:Depends}
 Description: deep learning gateway - meta package
  BerryNet turns devices into an intelligent gateway with deep learning
  running on it. No internet connection is required, everything is done

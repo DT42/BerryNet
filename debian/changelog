@@ -1,3 +1,10 @@
+berrynet (3.8.0-2) UNRELEASED; urgency=medium
+
+  [ Bofu Chen (bafu) ]
+  * Make berrynet meta package to depend on the latest release.
+
+ -- Bofu Chen (bafu) <bofu@dt42.io>  Tue, 30 Jul 2019 19:16:33 +0800
+
 berrynet (3.8.0-1) unstable; urgency=low
 
   [ Bofu Chen (bafu) ]
