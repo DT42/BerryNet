@@ -40,6 +40,12 @@ install_opencv() {
     sudo apt install -y python3-opencv
 }
 
+install_nodejs() {
+    # v10.x is LTS, if you want the latest feature, change to "setup_11.x".
+    curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
+    sudo apt install -y nodejs
+}
+
 install_system_dependencies() {
     sudo apt update
     if [ "$CODENAME" = "buster" ]; then
@@ -72,6 +78,7 @@ install_system_dependencies() {
         sudo -H pip3 install --timeout 60 watchdog
 
         install_opencv
+        install_nodejs
     fi
 }
 
@@ -99,15 +106,7 @@ install_berrynet_py() {
     #sudo npm install -g mime
 }
 
-install_nodejs() {
-    # v10.x is LTS, if you want the latest feature, change to "setup_11.x".
-    curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
-    sudo apt install -y nodejs
-}
-
 install_berrynet_js() {
-    install_nodejs
-
     local working_dir="/usr/local/berrynet"
     sudo mkdir -p $working_dir
     sudo cp -a \
