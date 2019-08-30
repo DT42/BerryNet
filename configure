@@ -194,10 +194,24 @@ install_tensorflow() {
     fi
 }
 
+install_openvino_repository() {
+    echo 'Adding the OpenVINO GPG key to your keyring...'
+    curl -sL https://apt.repos.intel.com/openvino/2019/GPG-PUB-KEY-INTEL-OPENVINO-2019 | sudo apt-key add -
+    sudo curl -sL -o /etc/apt/sources.list.d/intel-openvino-2019.list \
+        https://raw.githubusercontent.com/DT42/BerryNet/master/config/intel-openvino-2019.list
+    sudo apt update
+}
+
 install_openvino() {
-    # OpenVINO 2019R1.1
+    # OpenVINO 2019R2.1
     if [ "$DISTRIBUTIONID" = "Ubuntu" ]; then
-        sudo apt install -y openvino
+        if [ "$CODENAME" = "xenial" ]; then
+            sudo apt install intel-openvino-runtime-ubuntu16-2019.2.242
+        elif [ "$CODENAMe" = "bionic" ]; then
+            sudo apt install intel-openvino-runtime-ubuntu18-2019.2.242
+        else
+            echo "ERROR: OpenVINO on Ubuntu $CODENAME is not supported by Intel."
+        fi
     elif [ "$DISTRIBUTIONID" = "Raspbian" ]; then
         sudo apt install -y openvino-rpi
     fi
@@ -293,6 +307,7 @@ else
 fi
 
 if [ "$INSTALL_OPENVINO" = "Y" ]; then
+    install_openvino_repository 2>&1 | tee -a $LOG
     install_openvino 2>&1 | tee -a $LOG
     install_model mobilenet-1.0-224-fp16-openvino 2>&1 | tee -a $LOG
     install_model mobilenet-ssd-openvino 2>&1 | tee -a $LOG
