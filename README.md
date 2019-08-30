@@ -22,7 +22,7 @@ One of the application of this intelligent gateway is to use the camera to monit
 
 To bring easy and flexible edge AI experience to user, we keep expending support of the AI engines and the reference HWs.
 
-![Figure 4](https://user-images.githubusercontent.com/292790/45943641-b6e55b80-c019-11e8-9c90-28c96074c577.png)
+![Figure 4](https://user-images.githubusercontent.com/292790/64026655-c2b69780-cb71-11e9-90b9-6269319012f1.png)
 
 <p align="center">Figure 4: Reference hardwares</p>
 
