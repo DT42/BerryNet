@@ -20,7 +20,7 @@
     "request": "^2.79.0"
   },
   "devDependencies": {
-    "eslint": "^3.19.0",
+    "eslint": "^6.5.1",
     "eslint-config-google": "^0.7.1"
   }
 }
