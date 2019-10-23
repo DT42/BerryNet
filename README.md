@@ -1,5 +1,13 @@
 # BerryNet: Deep Learning Gateway on Raspberry Pi And Other Edge Devices
 
+[Why Donate](https://github.com/DT42/BerryNet/wiki/Donation)
+
+|Crypto|Wallet Address|
+|:--:|--|
+|![](https://github.com/atomiclabs/cryptocurrency-icons/raw/master/32/icon/btc.png)|`bc1qnynxdh8nlyvkgfvyw3fl22yfcvrkmqzscg2k6f`|
+|![](https://github.com/atomiclabs/cryptocurrency-icons/raw/master/32/icon/eth.png)|`0x88659538ABb056E106683F31F8FBc2f0F0aDa136`|
+|![](https://github.com/atomiclabs/cryptocurrency-icons/raw/master/32/icon/bnb.png)|`bnb1ewlh3gequz5w3ewy5urj952rs5l0kfzh5tphkj`|
+
 This project turns edge devices such as Raspberry Pi 3 into an intelligent gateway with deep learning running on it. No internet connection is required, everything is done locally on the edge device itself. Further, multiple edge devices can create a distributed AIoT network.
 
 At DT42, we believe that bringing deep learning to edge devices is the trend towards the future. It not only saves costs of data transmission and storage but also makes devices able to respond according to the events shown in the images or videos without connecting to the cloud.
