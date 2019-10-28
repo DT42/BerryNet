@@ -1,14 +1,14 @@
-# BerryNet: Deep Learning Gateway on Raspberry Pi And Other Edge Devices
+<p align="center"><a href="http://berrynet.org" target="_blank" rel="noopener noreferrer"><img width="50%" src="https://user-images.githubusercontent.com/292790/33802809-e4726cf8-dd45-11e7-8a64-fdc4c3ff9310.png" alt="BerryNet Logo"></a></p>
+<h2  align="center">Deep Learning Gateway on Raspberry Pi And Other Edge Devices</h2>
 
-[Why Donate](https://github.com/DT42/BerryNet/wiki/Donation)
+[Supporting BerryNet](https://github.com/DT42/BerryNet/wiki/Donation)
 
-|Crypto|Wallet Address|
-|:--:|--|
-|![](https://github.com/atomiclabs/cryptocurrency-icons/raw/master/32/icon/btc.png)|`bc1qnynxdh8nlyvkgfvyw3fl22yfcvrkmqzscg2k6f`|
-|![](https://github.com/atomiclabs/cryptocurrency-icons/raw/master/32/icon/eth.png)|`0x88659538ABb056E106683F31F8FBc2f0F0aDa136`|
-|![](https://github.com/atomiclabs/cryptocurrency-icons/raw/master/32/icon/bnb.png)|`bnb1ewlh3gequz5w3ewy5urj952rs5l0kfzh5tphkj`|
+* [Become a backer or sponsor on Open Collective](https://opencollective.com/berrynet).
+* [One-time donation via PayPal or crypto-currencies](https://github.com/DT42/BerryNet/wiki/Donation#one-time-donations).
 
-This project turns edge devices such as Raspberry Pi 3 into an intelligent gateway with deep learning running on it. No internet connection is required, everything is done locally on the edge device itself. Further, multiple edge devices can create a distributed AIoT network.
+# Introduction
+
+This project turns edge devices such as Raspberry Pi into an intelligent gateway with deep learning running on it. No internet connection is required, everything is done locally on the edge device itself. Further, multiple edge devices can create a distributed AIoT network.
 
 At DT42, we believe that bringing deep learning to edge devices is the trend towards the future. It not only saves costs of data transmission and storage but also makes devices able to respond according to the events shown in the images or videos without connecting to the cloud.
 
