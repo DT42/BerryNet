@@ -24,6 +24,7 @@ import base64
 import json
 import tempfile
 import os
+import io
 
 from berrynet import logger
 from berrynet.comm import Communicator
@@ -58,16 +59,13 @@ def on_message(client, userdata, msg):
     logging.info("MQTT message Topic: %s"%msg.topic)
     msg_json = payload.deserialize_payload(msg.payload);
     rawJPG = payload.destringify_jpg(msg_json["bytes"])
+    photo1 = io.BytesIO(rawJPG)
     
     for u in cameraHandlers:
         if updater is None:
             continue
         logging.info("Send photo to %s"%u)
-        tmpfile, tmpfilename = tempfile.mkstemp()
-        os.write(tmpfile, rawJPG)
-        os.sync()
-        updater.bot.send_photo(chat_id = u, photo=open(tmpfilename, "rb"))
-        os.close()
+        updater.bot.send_photo(chat_id = u, photo=photo1)
         pass
     
 # Setup logging format
