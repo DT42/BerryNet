@@ -17,75 +17,151 @@
 # You should have received a copy of the GNU General Public License
 # along with BerryNet.  If not, see <http://www.gnu.org/licenses/>.
 
-import telegram.ext
-import logging
-import paho.mqtt.client
-import base64
+import argparse
 import json
-import tempfile
-import os
 import io
+import logging
+import os
 
+import telegram.ext
 from berrynet import logger
 from berrynet.comm import Communicator
 from berrynet.comm import payload
 
 
-# fill telegram bot token here.
-telegramToken = "000000000:AABBCCDDEEFFAA-AABBAACCAADDAAEEFFFF"
+class TelegramBotService(object):
+    def __init__(self, comm_config, token, debug=False):
+        self.comm_config = comm_config
+        for topic, functor in self.comm_config['subscribe'].items():
+            self.comm_config['subscribe'][topic] = eval(functor)
+        self.comm = Communicator(self.comm_config, debug=True)
+        self.token = token
+        self.debug = debug
 
-if ("TELEGRAM_TOKEN" in os.environ):
-    telegramToken = os.environ["TELEGRAM_TOKEN"]
+        # Telegram Updater employs Telegram Dispatcher which dispatches
+        # updates to its registered handlers.
+        self.updater = telegram.ext.Updater(self.token,
+                                            use_context=True)
+        self.cameraHandlers = []
 
-updater = None
-cameraHandlers = []
+    def update(self, pl):
+        try:
+            payload_json = payload.deserialize_payload(pl.decode('utf-8'))
+            jpg_bytes = payload.destringify_jpg(payload_json["bytes"])
+            jpg_file_descriptor = io.BytesIO(jpg_bytes)
+
+            for u in self.cameraHandlers:
+                if self.updater is None:
+                    continue
+                logger.info("Send photo to %s" % u)
+                self.updater.bot.send_photo(chat_id = u, photo=jpg_file_descriptor)
+                pass
+        except Exception as e:
+            logger.info(e)
+
+    def run(self, args):
+        """Infinite loop serving inference requests"""
+        self.comm.start_nb()
+        self.connect_telegram()
+
+    def connect_telegram(self):
+        try:
+            self.updater.dispatcher.add_handler(
+                telegram.ext.CommandHandler('help', self.handler_help))
+            self.updater.dispatcher.add_handler(
+                telegram.ext.CommandHandler('hello', self.handler_hello))
+            self.updater.dispatcher.add_handler(
+                telegram.ext.CommandHandler('camera', self.handler_camera))
+            self.updater.start_polling()
+        except Exception as e:
+            logger.critical(e)
+
+    def handler_help(self, update, context):
+        logger.info("Received command `help`")
+        update.message.reply_text(
+            'I support these commands: help, hello, camera')
+
+    def handler_hello(self, update, context):
+        logger.info("Received command `hello`")
+        update.message.reply_text(
+            'Hello, {}'.format(update.message.from_user.first_name))
+
+    def handler_camera(self, update, context):
+        logger.info("Received command `camera`, chat id: %s" % update.message.chat_id)
+        # Register the chat-id for receiving images
+        if (update.message.chat_id not in self.cameraHandlers):
+            self.cameraHandlers.append (update.message.chat_id)
+        update.message.reply_text('Dear, I am ready to help send notification')
 
 
-def hello(update, context):
-    logger.info("Hello called")
-    update.message.reply_text(
-        'hello, {}'.format(update.message.from_user.first_name))
+def parse_args():
+    ap = argparse.ArgumentParser()
+    ap.add_argument(
+        '--token',
+        help='Telegram token got from BotFather.'
+    )
+    ap.add_argument(
+        '--broker-ip',
+        default='localhost',
+        help='MQTT broker IP.'
+    )
+    ap.add_argument(
+        '--broker-port',
+        default=1883,
+        type=int,
+        help='MQTT broker port.'
+    )
+    ap.add_argument(
+        '--topic',
+        nargs='*',
+        default=['berrynet/engine/tflitedetector/result'],
+        help='The topic to listen, and can be indicated multiple times.'
+    )
+    ap.add_argument(
+        '--topic-action',
+        default='self.update',
+        help='The action for the indicated topics.'
+    )
+    ap.add_argument(
+        '--topic-config',
+        default=None,
+        help='Path of the MQTT topic subscription JSON.'
+    )
+    ap.add_argument('--debug',
+        action='store_true',
+        help='Debug mode toggle'
+    )
+    return vars(ap.parse_args())
 
 
-def camera(update, context):
-    logger.info("camera called id: %s" % update.message.chat_id)
-    # Register the chat-id for receiving images
-    if (update.message.chat_id not in cameraHandlers):
-        cameraHandlers.append (update.message.chat_id)
+def main():
+    args = parse_args()
+    if args['debug']:
+        logger.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.INFO)
+
+    # Topics and actions can come from two sources: CLI and config file.
+    # Setup topic_config by parsing values from the two sources.
+    if args['topic_config']:
+        with open(args['topic_config']) as f:
+            topic_config = json.load(f)
+    else:
+        topic_config = {}
+    topic_config.update({t:args['topic_action'] for t in args['topic']})
+
+    comm_config = {
+        'subscribe': topic_config,
+        'broker': {
+            'address': args['broker_ip'],
+            'port': args['broker_port']
+        }
+    }
+    telbot_service = TelegramBotService(comm_config,
+                                        args['token'],
+                                        args['debug'])
+    telbot_service.run(args)
 
 
-def on_connect(client, userdata, rc, _):
-    # Subscribe bn_camera
-    client.subscribe("berrynet/engine/darknet/result")
-
-
-def on_message(client, userdata, msg):
-    logger.info("MQTT message Topic: %s"%msg.topic)
-    msg_json = payload.deserialize_payload(msg.payload);
-    rawJPG = payload.destringify_jpg(msg_json["bytes"])
-    photo1 = io.BytesIO(rawJPG)
-
-    for u in cameraHandlers:
-        if updater is None:
-            continue
-        logger.info("Send photo to %s"%u)
-        updater.bot.send_photo(chat_id = u, photo=photo1)
-        pass
-
-
-# Connect to MQTT broker
-mqttClient = paho.mqtt.client.Client()
-mqttClient.on_connect = on_connect
-mqttClient.on_message = on_message
-mqttClient.connect("localhost")
-
-mqttClient.loop_start()
-
-# Connect to telegram
-updater = telegram.ext.Updater(telegramToken,
-                               use_context=True)
-
-updater.dispatcher.add_handler(telegram.ext.CommandHandler('hello', hello))
-updater.dispatcher.add_handler(telegram.ext.CommandHandler('camera', camera))
-
-updater.start_polling()
+if __name__ == '__main__':
+    main()
