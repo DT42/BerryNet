@@ -1,4 +1,21 @@
 #!/usr/bin/env python3
+#
+# Copyright 2019 DT42
+#
+# This file is part of BerryNet.
+#
+# BerryNet is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# BerryNet is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with BerryNet.  If not, see <http://www.gnu.org/licenses/>.
 
 import telegram.ext
 import logging
@@ -7,6 +24,10 @@ import base64
 import json
 import tempfile
 import os
+
+from berrynet import logger
+from berrynet.comm import Communicator
+from berrynet.comm import payload
 
 # fill telegram bot token here.
 telegramToken = "000000000:AABBCCDDEEFFAA-AABBAACCAADDAAEEFFFF"
@@ -31,12 +52,13 @@ def camera(update, context):
     
 def on_connect(client, userdata, rc, _):
     # Subscribe bn_camera
-    client.subscribe("berrynet/data/rgbimage")
+    client.subscribe("berrynet/engine/darknet/result")
 
 def on_message(client, userdata, msg):
     logging.info("MQTT message Topic: %s"%msg.topic)
-    img = json.loads(msg.payload);
-    rawJPG = base64.b64decode(img["bytes"])
+    msg_json = payload.deserialize_payload(msg.payload);
+    rawJPG = payload.destringify_jpg(msg_json["bytes"])
+    
     for u in cameraHandlers:
         if updater is None:
             continue
@@ -47,7 +69,7 @@ def on_message(client, userdata, msg):
         updater.bot.send_photo(chat_id = u, photo=open(tmpfilename, "rb"))
         os.close()
         pass
-
+    
 # Setup logging format
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
