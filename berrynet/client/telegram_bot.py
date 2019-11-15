@@ -30,12 +30,13 @@ from berrynet.comm import payload
 
 
 class TelegramBotService(object):
-    def __init__(self, comm_config, token, debug=False):
+    def __init__(self, comm_config, token, target_label='', debug=False):
         self.comm_config = comm_config
         for topic, functor in self.comm_config['subscribe'].items():
             self.comm_config['subscribe'][topic] = eval(functor)
         self.comm = Communicator(self.comm_config, debug=True)
         self.token = token
+        self.target_label = target_label
         self.debug = debug
 
         # Telegram Updater employs Telegram Dispatcher which dispatches
@@ -43,6 +44,15 @@ class TelegramBotService(object):
         self.updater = telegram.ext.Updater(self.token,
                                             use_context=True)
         self.cameraHandlers = []
+
+    def match_target_label(self, target_label, bn_result):
+        labels = [r['label'] for r in bn_result['annotations']]
+        if target_label in labels:
+            logger.debug('Find {0} in inference result {1}'.format(target_label, labels))
+            return True
+        else:
+            logger.debug('Not find {0} in inference result {1}'.format(target_label, labels))
+            return False
 
     def update(self, pl):
         try:
@@ -53,9 +63,15 @@ class TelegramBotService(object):
             for u in self.cameraHandlers:
                 if self.updater is None:
                     continue
-                logger.info("Send photo to %s" % u)
-                self.updater.bot.send_photo(chat_id = u, photo=jpg_file_descriptor)
-                pass
+
+                if self.target_label == '':
+                    logger.info("Send photo to %s" % u)
+                    self.updater.bot.send_photo(chat_id = u, photo=jpg_file_descriptor)
+                elif self.match_target_label(self.target_label, payload_json):
+                    logger.info("Send notification photo with result to %s" % u)
+                    self.updater.bot.send_photo(chat_id = u, photo=jpg_file_descriptor)
+                else:
+                    pass
         except Exception as e:
             logger.info(e)
 
@@ -99,6 +115,11 @@ def parse_args():
     ap.add_argument(
         '--token',
         help='Telegram token got from BotFather.'
+    )
+    ap.add_argument(
+        '--target-label',
+        default='',
+        help='Send a notification if the target label is in the result.'
     )
     ap.add_argument(
         '--broker-ip',
@@ -159,6 +180,7 @@ def main():
     }
     telbot_service = TelegramBotService(comm_config,
                                         args['token'],
+                                        args['target_label'],
                                         args['debug'])
     telbot_service.run(args)
 
