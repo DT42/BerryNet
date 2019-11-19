@@ -45,20 +45,20 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
 -->
 
   <!-- Fill in your name for FIRSTNAME and SURNAME. -->
-  <!ENTITY dhfirstname "FIRSTNAME">
-  <!ENTITY dhsurname   "SURNAME">
+  <!ENTITY dhfirstname "Ying-Chun">
+  <!ENTITY dhsurname   "Liu">
   <!-- dhusername could also be set to "&dhfirstname; &dhsurname;". -->
   <!ENTITY dhusername  "Ying-Chun Liu (PaulLiu)">
   <!ENTITY dhemail     "paulliu@debian.org">
   <!-- SECTION should be 1-8, maybe w/ subsection other parameters are
        allowed: see man(7), man(1) and
        http://www.tldp.org/HOWTO/Man-Page/q2.html. -->
-  <!ENTITY dhsection   "SECTION">
+  <!ENTITY dhsection   "1">
   <!-- TITLE should be something like "User commands" or similar (see
        http://www.tldp.org/HOWTO/Man-Page/q2.html). -->
-  <!ENTITY dhtitle     "berrynet User Manual">
+  <!ENTITY dhtitle     "bn_camera User Manual">
   <!ENTITY dhucpackage "Berrynet">
-  <!ENTITY dhpackage   "berrynet">
+  <!ENTITY dhpackage   "bn_camera">
 ]>
 
 <refentry>
@@ -76,7 +76,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       </author>
     </authorgroup>
     <copyright>
-      <year>2007</year>
+      <year>2018</year>
       <holder>&dhusername;</holder>
     </copyright>
     <legalnotice>
@@ -84,11 +84,11 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
         (and may be used by others).</para>
       <para>Permission is granted to copy, distribute and/or modify this
         document under the terms of the GNU General Public License,
-        Version 2 or (at your option) any later version published by
+        Version 3 or (at your option) any later version published by
         the Free Software Foundation.</para>
       <para>On Debian systems, the complete text of the GNU General Public
         License can be found in
-        <filename>/usr/share/common-licenses/GPL</filename>.</para>
+        <filename>/usr/share/common-licenses/GPL-3</filename>.</para>
     </legalnotice>
   </refentryinfo>
   <refmeta>
@@ -97,31 +97,19 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
   </refmeta>
   <refnamediv>
     <refname>&dhpackage;</refname>
-    <refpurpose>program to do something</refpurpose>
+    <refpurpose>program to publish images from camera to MQTT</refpurpose>
   </refnamediv>
   <refsynopsisdiv>
     <cmdsynopsis>
       <command>&dhpackage;</command>
       <!-- These are several examples, how syntaxes could look -->
-      <arg choice="plain"><option>-e <replaceable>this</replaceable></option></arg>
-      <arg choice="opt"><option>--example=<parameter>that</parameter></option></arg>
-      <arg choice="opt">
-        <group choice="req">
-          <arg choice="plain"><option>-e</option></arg>
-          <arg choice="plain"><option>--example</option></arg>
-        </group>
-        <replaceable class="option">this</replaceable>
-      </arg>
-      <arg choice="opt">
-        <group choice="req">
-          <arg choice="plain"><option>-e</option></arg>
-          <arg choice="plain"><option>--example</option></arg>
-        </group>
-        <group choice="req">
-          <arg choice="plain"><replaceable>this</replaceable></arg>
-          <arg choice="plain"><replaceable>that</replaceable></arg>
-        </group>
-      </arg>
+      <arg choice="opt"><option>--mode <parameter>MODE</parameter></option></arg>
+      <arg choice="opt"><option>--stream-src <parameter>STREAM_SRC</parameter></option></arg>
+      <arg choice="opt"><option>--fps <parameter>FPS</parameter></option></arg>
+      <arg choice="opt"><option>--filepath <parameter>FILEPATH</parameter></option></arg>
+      <arg choice="opt"><option>--broker-ip <parameter>BROKER_IP</parameter></option></arg>
+      <arg choice="opt"><option>--broker-port <parameter>BROKER_PORT</parameter></option></arg>
+      <arg choice="opt"><option>--display</option></arg>
     </cmdsynopsis>
     <cmdsynopsis>
       <command>&dhpackage;</command>
@@ -136,8 +124,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
         </arg>
         <arg choice="plain">
           <group choice="req">
-            <arg choice="plain"><option>-v</option></arg>
-            <arg choice="plain"><option>--version</option></arg>
+            <arg choice="plain"><option>--debug</option></arg>
           </group>
         </arg>
       </group>
@@ -146,34 +133,70 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
   <refsect1 id="description">
     <title>DESCRIPTION</title>
     <para>This manual page documents briefly the
-      <command>&dhpackage;</command> and <command>bar</command>
-      commands.</para>
+      <command>&dhpackage;</command>
+      command.</para>
     <para>This manual page was written for the Debian distribution
       because the original program does not have a manual page.
-      Instead, it has documentation in the GNU <citerefentry>
-        <refentrytitle>info</refentrytitle>
-        <manvolnum>1</manvolnum>
-      </citerefentry> format; see below.</para>
-    <para><command>&dhpackage;</command> is a program that...</para>
+    </para>
+    <para><command>&dhpackage;</command> is a program that send images captured from camera to MQTT.</para>
   </refsect1>
   <refsect1 id="options">
     <title>OPTIONS</title>
     <para>The program follows the usual GNU command line syntax,
       with long options starting with two dashes (`-').  A summary of
-      options is included below.  For a complete description, see the
-      <citerefentry>
-        <refentrytitle>info</refentrytitle>
-        <manvolnum>1</manvolnum>
-      </citerefentry> files.</para>
+      options is included below.</para>
     <variablelist>
       <!-- Use the variablelist.term.separator and the
            variablelist.term.break.after parameters to
            control the term elements. -->
       <varlistentry>
-        <term><option>-e <replaceable>this</replaceable></option></term>
-        <term><option>--example=<replaceable>that</replaceable></option></term>
+        <term><option>--mode <replaceable>MODE</replaceable></option></term>
         <listitem>
-          <para>Does this and that.</para>
+          <para>Camera creates frame(s) from stream or file. (default: stream)
+	  </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--stream-src <replaceable>STREAM_SRC</replaceable></option></term>
+        <listitem>
+          <para>Camera stream source. It can be device node ID or RTSP URL. (default: 0)
+	  </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--fps <replaceable>FPS</replaceable></option></term>
+        <listitem>
+          <para>Frame per second in streaming mode. (default: 1)
+	  </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--filepath <replaceable>FILEPATH</replaceable></option></term>
+        <listitem>
+          <para>Input image path in file mode. (default: empty)
+	  </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--broker-ip <replaceable>BROKER_IP</replaceable></option></term>
+        <listitem>
+          <para>MQTT broker IP.
+	  </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--broker-port <replaceable>BROKER_PORT</replaceable></option></term>
+        <listitem>
+          <para>MQTT broker port.
+	  </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--display</option></term>
+        <listitem>
+          <para>Open a window and display the sent out frames.
+	        This argument is only effective in stream mode.
+	  </para>
         </listitem>
       </varlistentry>
       <varlistentry>
@@ -184,108 +207,32 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-v</option></term>
-        <term><option>--version</option></term>
+        <term><option>--debug</option></term>
         <listitem>
-          <para>Show version of program.</para>
+          <para>Debug mode toggle.</para>
         </listitem>
       </varlistentry>
     </variablelist>
-  </refsect1>
-  <refsect1 id="files">
-    <title>FILES</title>
-    <variablelist>
-      <varlistentry>
-        <term><filename>/etc/foo.conf</filename></term>
-        <listitem>
-          <para>The system-wide configuration file to control the
-            behaviour of <application>&dhpackage;</application>. See
-            <citerefentry>
-              <refentrytitle>foo.conf</refentrytitle>
-              <manvolnum>5</manvolnum>
-            </citerefentry> for further details.</para>
-        </listitem>
-      </varlistentry>
-      <varlistentry>
-        <term><filename>${HOME}/.foo.conf</filename></term>
-        <listitem>
-          <para>The per-user configuration file to control the
-             behaviour of <application>&dhpackage;</application>. See
-             <citerefentry>
-               <refentrytitle>foo.conf</refentrytitle>
-               <manvolnum>5</manvolnum>
-             </citerefentry> for further details.</para>
-        </listitem>
-      </varlistentry>
-    </variablelist>
-  </refsect1>
-  <refsect1 id="environment">
-    <title>ENVIRONMENT</title>
-    <variablelist>
-      <varlistentry>
-        <term><envar>FOO_CONF</envar></term>
-        <listitem>
-          <para>If used, the defined file is used as configuration
-            file (see also <xref linkend="files"/>).</para>
-        </listitem>
-      </varlistentry>
-    </variablelist>
-  </refsect1>
-  <refsect1 id="diagnostics">
-    <title>DIAGNOSTICS</title>
-    <para>The following diagnostics may be issued
-      on <filename class="devicefile">stderr</filename>:</para>
-    <variablelist>
-      <varlistentry>
-        <term><errortext>Bad configuration file. Exiting.</errortext></term>
-        <listitem>
-          <para>The configuration file seems to contain a broken configuration
-            line. Use the <option>--verbose</option> option, to get more info.
-          </para>
-        </listitem>
-      </varlistentry>
-    </variablelist>
-    <para><command>&dhpackage;</command> provides some return codes, that can
-      be used in scripts:</para>
-    <segmentedlist>
-      <segtitle>Code</segtitle>
-      <segtitle>Diagnostic</segtitle>
-      <seglistitem>
-        <seg><errorcode>0</errorcode></seg>
-        <seg>Program exited successfully.</seg>
-      </seglistitem>
-      <seglistitem>
-        <seg><errorcode>1</errorcode></seg>
-        <seg>The configuration file seems to be broken.</seg>
-      </seglistitem>
-    </segmentedlist>
   </refsect1>
   <refsect1 id="bugs">
     <!-- Or use this section to tell about upstream BTS. -->
     <title>BUGS</title>
-    <para>The program is currently limited to only work
-      with the <package>foobar</package> library.</para>
     <para>The upstreams <acronym>BTS</acronym> can be found
-      at <ulink url="http://bugzilla.foo.tld"/>.</para>
+      at <ulink url="https://github.com/DT42/BerryNet/issues"/>.</para>
   </refsect1>
   <refsect1 id="see_also">
     <title>SEE ALSO</title>
     <!-- In alpabetical order. -->
     <para><citerefentry>
-        <refentrytitle>bar</refentrytitle>
+        <refentrytitle>bn_darknet</refentrytitle>
         <manvolnum>1</manvolnum>
       </citerefentry>, <citerefentry>
-        <refentrytitle>baz</refentrytitle>
+        <refentrytitle>bn_dashboard</refentrytitle>
         <manvolnum>1</manvolnum>
       </citerefentry>, <citerefentry>
-        <refentrytitle>foo.conf</refentrytitle>
-        <manvolnum>5</manvolnum>
+        <refentrytitle>bn_data_collector</refentrytitle>
+        <manvolnum>1</manvolnum>
       </citerefentry></para>
-    <para>The programs are documented fully by <citetitle>The Rise and
-      Fall of a Fooish Bar</citetitle> available via the <citerefentry>
-        <refentrytitle>info</refentrytitle>
-        <manvolnum>1</manvolnum>
-      </citerefentry> system.</para>
   </refsect1>
 </refentry>
 
