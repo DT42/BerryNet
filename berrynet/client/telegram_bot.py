@@ -35,7 +35,10 @@ class TelegramBotService(object):
         for topic, functor in self.comm_config['subscribe'].items():
             self.comm_config['subscribe'][topic] = eval(functor)
         self.comm = Communicator(self.comm_config, debug=True)
-        self.token = token
+        if os.path.isfile(token):
+            self.token = self.get_token_from_config(token)
+        else:
+            self.token = token
         self.target_label = target_label
         self.debug = debug
 
@@ -44,6 +47,11 @@ class TelegramBotService(object):
         self.updater = telegram.ext.Updater(self.token,
                                             use_context=True)
         self.cameraHandlers = []
+
+    def get_token_from_config(self, config):
+        with open(config) as f:
+            cfg = json.load(f)
+        return cfg['token']
 
     def match_target_label(self, target_label, bn_result):
         labels = [r['label'] for r in bn_result['annotations']]
