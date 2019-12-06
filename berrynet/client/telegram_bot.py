@@ -122,7 +122,8 @@ def parse_args():
     ap = argparse.ArgumentParser()
     ap.add_argument(
         '--token',
-        help='Telegram token got from BotFather.'
+        help=('Telegram token got from BotFather, '
+              'or filepath of a JSON config file with token.')
     )
     ap.add_argument(
         '--target-label',
