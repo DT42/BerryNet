@@ -1,6 +1,37 @@
 berrynet for Debian
 ------------------
 
+## Simple HOWTO
+
+1. Install mosquitto
+```
+apt install mosquitto
+```
+
+2. Download model
+```
+cd /tmp
+wget https://pjreddie.com/media/files/yolov3-tiny.weights
+```
+
+3. Run bn_camera
+```
+bn_camera --debug
+```
+Now the program captures images from /dev/video0 and send it to your
+local mosquitto (MQTT broker).
+
+4. Run darknet
+```
+bn_darknet -l /usr/share/darknet/data/coco.names -m /tmp/yolov3-tiny.weights --debug
+```
+
+5. Run simple dashboard
+```
+bn_dashboard --debug --no-full-screen --topic berrynet/engine/darknet/result
+```
+You should see the results in a window.
+
 ## berrynet-dashboard (Freeboard)
 
 If using together with mosquitto, berrynet-dashboard is using websocket.
