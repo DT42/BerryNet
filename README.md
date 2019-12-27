@@ -171,3 +171,33 @@ If you use [LabelMe](http://labelme.csail.mit.edu/Release3.0/) to annotate data,
 # Discussion
 
 Please refer to the [Telegram Group](https://t.me/berrynetdev) or [Google Group](https://groups.google.com/a/dt42.io/d/forum/berrynet) for questions, suggestions, or any idea discussion.
+
+## Contributors
+
+### Code Contributors
+
+This project exists thanks to all the people who contribute. [[Contribute](CONTRIBUTING.md)].
+<a href="https://github.com/DT42/BerryNet/graphs/contributors"><img src="https://opencollective.com/BerryNet/contributors.svg?width=890&button=false" /></a>
+
+### Financial Contributors
+
+Become a financial contributor and help us sustain our community. [[Contribute](https://opencollective.com/BerryNet/contribute)]
+
+#### Individuals
+
+<a href="https://opencollective.com/BerryNet"><img src="https://opencollective.com/BerryNet/individuals.svg?width=890"></a>
+
+#### Organizations
+
+Support this project with your organization. Your logo will show up here with a link to your website. [[Contribute](https://opencollective.com/BerryNet/contribute)]
+
+<a href="https://opencollective.com/BerryNet/organization/0/website"><img src="https://opencollective.com/BerryNet/organization/0/avatar.svg"></a>
+<a href="https://opencollective.com/BerryNet/organization/1/website"><img src="https://opencollective.com/BerryNet/organization/1/avatar.svg"></a>
+<a href="https://opencollective.com/BerryNet/organization/2/website"><img src="https://opencollective.com/BerryNet/organization/2/avatar.svg"></a>
+<a href="https://opencollective.com/BerryNet/organization/3/website"><img src="https://opencollective.com/BerryNet/organization/3/avatar.svg"></a>
+<a href="https://opencollective.com/BerryNet/organization/4/website"><img src="https://opencollective.com/BerryNet/organization/4/avatar.svg"></a>
+<a href="https://opencollective.com/BerryNet/organization/5/website"><img src="https://opencollective.com/BerryNet/organization/5/avatar.svg"></a>
+<a href="https://opencollective.com/BerryNet/organization/6/website"><img src="https://opencollective.com/BerryNet/organization/6/avatar.svg"></a>
+<a href="https://opencollective.com/BerryNet/organization/7/website"><img src="https://opencollective.com/BerryNet/organization/7/avatar.svg"></a>
+<a href="https://opencollective.com/BerryNet/organization/8/website"><img src="https://opencollective.com/BerryNet/organization/8/avatar.svg"></a>
+<a href="https://opencollective.com/BerryNet/organization/9/website"><img src="https://opencollective.com/BerryNet/organization/9/avatar.svg"></a>
