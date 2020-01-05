@@ -96,6 +96,8 @@ class TelegramBotService(object):
                 telegram.ext.CommandHandler('hello', self.handler_hello))
             self.updater.dispatcher.add_handler(
                 telegram.ext.CommandHandler('camera', self.handler_camera))
+            self.updater.dispatcher.add_handler(
+                telegram.ext.CommandHandler('stop', self.handler_stop))
             self.updater.start_polling()
         except Exception as e:
             logger.critical(e)
@@ -117,6 +119,12 @@ class TelegramBotService(object):
             self.cameraHandlers.append (update.message.chat_id)
         update.message.reply_text('Dear, I am ready to help send notification')
 
+    def handler_stop(self, update, context):
+        logger.info("Received command `stop`, chat id: %s" % update.message.chat_id)
+        # Register the chat-id for receiving images
+        while (update.message.chat_id in self.cameraHandlers):
+            self.cameraHandlers.remove (update.message.chat_id)
+        update.message.reply_text('Bye')
 
 def parse_args():
     ap = argparse.ArgumentParser()
