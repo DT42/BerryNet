@@ -63,6 +63,7 @@ setup(
             'bn_dashboard=berrynet.client.fbdashboard:main',
             'bn_data_collector=berrynet.client.data_collector:main',
             'bn_gmail=berrynet.client.gmail:main',
+            'bn_telegram=berrynet.client.telegram_bot:main',
             'bn_tflite=berrynet.service.tflite_service:main',
             'bn_openvino=berrynet.service.openvino_service:main',
             'bn_darknet=berrynet.service.darknet_service:main'
