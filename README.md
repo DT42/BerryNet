@@ -1,6 +1,14 @@
-# BerryNet: Deep Learning Gateway on Raspberry Pi And Other Edge Devices
+<p align="center"><a href="http://berrynet.org" target="_blank" rel="noopener noreferrer"><img width="50%" src="https://user-images.githubusercontent.com/292790/33802809-e4726cf8-dd45-11e7-8a64-fdc4c3ff9310.png" alt="BerryNet Logo"></a></p>
+<h2  align="center">Deep Learning Gateway on Raspberry Pi And Other Edge Devices</h2>
 
-This project turns edge devices such as Raspberry Pi 3 into an intelligent gateway with deep learning running on it. No internet connection is required, everything is done locally on the edge device itself. Further, multiple edge devices can create a distributed AIoT network.
+[Supporting BerryNet](https://github.com/DT42/BerryNet/wiki/Donation)
+
+* [Become a backer or sponsor on Open Collective](https://opencollective.com/berrynet).
+* [One-time donation via PayPal or crypto-currencies](https://github.com/DT42/BerryNet/wiki/Donation#one-time-donations).
+
+# Introduction
+
+This project turns edge devices such as Raspberry Pi into an intelligent gateway with deep learning running on it. No internet connection is required, everything is done locally on the edge device itself. Further, multiple edge devices can create a distributed AIoT network.
 
 At DT42, we believe that bringing deep learning to edge devices is the trend towards the future. It not only saves costs of data transmission and storage but also makes devices able to respond according to the events shown in the images or videos without connecting to the cloud.
 
@@ -22,7 +30,7 @@ One of the application of this intelligent gateway is to use the camera to monit
 
 To bring easy and flexible edge AI experience to user, we keep expending support of the AI engines and the reference HWs.
 
-![Figure 4](https://user-images.githubusercontent.com/292790/45943641-b6e55b80-c019-11e8-9c90-28c96074c577.png)
+![Figure 4](https://user-images.githubusercontent.com/292790/64026655-c2b69780-cb71-11e9-90b9-6269319012f1.png)
 
 <p align="center">Figure 4: Reference hardwares</p>
 
@@ -80,8 +88,8 @@ You will learn how to configure or change the components in the [Configuration](
 Freeboard is a web-based dashboard. Here are the steps to show the detection result iamge and text on Freeboard:
 
 * 1: Enter `http://127.0.0.1:8080` in browser's URL bar, and press enter
-* 2: [Download](https://raw.githubusercontent.com/DT42/BerryNet/master/config/dashboard-darknet.json) the Freeboard configuration for default application, `dashboard-darknet.json`
-* 2: Click `LOAD FREEBOARD`, and select the newly downloaded `dashboard-darknet.json`
+* 2: [Download](https://raw.githubusercontent.com/DT42/BerryNet/master/config/dashboard-tflitedetector.json) the Freeboard configuration for default application, `dashboard-tflitedetector.json`
+* 2: Click `LOAD FREEBOARD`, and select the newly downloaded `dashboard-tflitedetector.json`
 * 3: Wait for seconds, you should see the inference result image and text on Freeboard
 
 ## Open Freeboard on another computer
@@ -94,9 +102,9 @@ Assuming that you have two devices:
 Here are the steps:
 
 * 1: Enter `http://192.168.1.42:8080` in browser's URL bar, and press enter
-* 2: [Download](https://raw.githubusercontent.com/DT42/BerryNet/master/config/dashboard-darknet.json) the Freeboard configuration for default application, `dashboard-darknet.json`
-* 3: Replace all the `localhost` to `192.168.1.42` in `dashboard-darknet.json`
-* 2: Click `LOAD FREEBOARD`, and select the newly downloaded `dashboard-darknet.json`
+* 2: [Download](https://raw.githubusercontent.com/DT42/BerryNet/master/config/dashboard-tflitedetector.json) the Freeboard configuration for default application, `dashboard-tflitedetector.json`
+* 3: Replace all the `localhost` to `192.168.1.42` in `dashboard-tflitedetector.json`
+* 2: Click `LOAD FREEBOARD`, and select the newly downloaded `dashboard-tflitedetector.json`
 * 3: Wait for seconds, you should see the inference result image and text on Freeboard
 
 For more details about dashboard configuration (e.g. how to add widgets), please refer to [Freeboard project](https://github.com/Freeboard/freeboard).
@@ -116,7 +124,7 @@ The topic config indicates what MQTT topic the data collector will listen, and w
 
 ```
 {
-    "berrynet/engine/darknet/result": "self.update"
+    "berrynet/engine/tflitedetector/result": "self.update"
 }
 ```
 
@@ -125,7 +133,7 @@ The inference result image and text will be saved into the indicated result dire
 
 # Configuration
 
-The default supervisor config is at `/etc/supervisor/conf.d/berrynet-darknet.conf`. To write your own supervisor config, you can refer to [here](https://github.com/DT42/BerryNet/tree/master/config/supervisor/conf.d) for more example supervisor configs of BerryNet
+The default supervisor config is at `/etc/supervisor/conf.d/berrynet-tflite.conf`. To write your own supervisor config, you can refer to [here](https://github.com/DT42/BerryNet/tree/master/config/supervisor/conf.d) for more example supervisor configs of BerryNet
 
 ## Camera Client
 

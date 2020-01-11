@@ -168,9 +168,9 @@ class TFLiteClassifierEngine(DLEngine):
         for i in top_k_results:
             human_string = self.labels[i]
             if self.floating_model:
-                score = scores[i]
+                score = float(scores[i])
             else:
-                score = scores[i]/255.0
+                score = float(scores[i])/255.0
             anno = {
                 'type': 'classification',
                 'label': human_string,
