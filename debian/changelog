@@ -1,3 +1,14 @@
+berrynet (3.9.0-1) UNRELEASED; urgency=medium
+
+  [ Ying-Chun Liu (PaulLiu) ]
+  * Create manpages.
+  * Sync with package in Debian.
+
+  [ Bofu Chen (bafu) ]
+  * Imported Upstream version 3.9.0
+
+ -- Bofu Chen (bafu) <bofu@dt42.io>  Sat, 11 Jan 2020 18:33:27 +0800
+
 berrynet (3.8.0-2) unstable; urgency=medium
 
   [ Bofu Chen (bafu) ]
