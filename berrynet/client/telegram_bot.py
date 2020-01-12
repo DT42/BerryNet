@@ -34,6 +34,7 @@ class TelegramBotService(object):
         self.comm_config = comm_config
         for topic, functor in self.comm_config['subscribe'].items():
             self.comm_config['subscribe'][topic] = eval(functor)
+        self.comm_config['subscribe']['berrynet/data/rgbimage'] = self.single_shot
         self.comm = Communicator(self.comm_config, debug=True)
         if os.path.isfile(token):
             self.token = self.get_token_from_config(token)
@@ -47,6 +48,9 @@ class TelegramBotService(object):
         self.updater = telegram.ext.Updater(self.token,
                                             use_context=True)
         self.cameraHandlers = []
+
+        self.shot = False
+        self.single_shot_chat_id = None
 
     def get_token_from_config(self, config):
         with open(config) as f:
@@ -83,6 +87,23 @@ class TelegramBotService(object):
         except Exception as e:
             logger.info(e)
 
+    def single_shot(self, pl):
+        if self.shot is True:
+            try:
+                payload_json = payload.deserialize_payload(pl.decode('utf-8'))
+                jpg_bytes = payload.destringify_jpg(payload_json["bytes"])
+                jpg_file_descriptor = io.BytesIO(jpg_bytes)
+
+                logger.info('Send single shot')
+                self.updater.bot.send_photo(chat_id=self.single_shot_chat_id,
+                                            photo=jpg_file_descriptor)
+            except Exception as e:
+                logger.info(e)
+
+            self.shot = False
+        else:
+            logger.debug('Single shot is disabled, do nothing.')
+
     def run(self, args):
         """Infinite loop serving inference requests"""
         self.comm.start_nb()
@@ -98,6 +119,8 @@ class TelegramBotService(object):
                 telegram.ext.CommandHandler('camera', self.handler_camera))
             self.updater.dispatcher.add_handler(
                 telegram.ext.CommandHandler('stop', self.handler_stop))
+            self.updater.dispatcher.add_handler(
+                telegram.ext.CommandHandler('shot', self.handler_shot))
             self.updater.start_polling()
         except Exception as e:
             logger.critical(e)
@@ -125,6 +148,14 @@ class TelegramBotService(object):
         while (update.message.chat_id in self.cameraHandlers):
             self.cameraHandlers.remove (update.message.chat_id)
         update.message.reply_text('Bye')
+
+    def handler_shot(self, update, context):
+        logger.info("Received command `shot`, chat id: %s" % update.message.chat_id)
+        # Register the chat-id for receiving images
+        self.shot = True
+        self.single_shot_chat_id = update.message.chat_id
+        logger.debug('Enable single shot.')
+
 
 def parse_args():
     ap = argparse.ArgumentParser()
