@@ -78,8 +78,11 @@ class TelegramBotService(object):
                     continue
 
                 if self.target_label == '':
-                    logger.info("Send photo to %s" % u)
-                    self.updater.bot.send_photo(chat_id = u, photo=jpg_file_descriptor)
+                    if len(payload_json['annotations']) > 0:
+                        logger.debug("Send photo to %s" % u)
+                        self.updater.bot.send_photo(chat_id = u, photo=jpg_file_descriptor)
+                    else:
+                        logger.debug("Does not detect any object, no action")
                 elif self.match_target_label(self.target_label, payload_json):
                     logger.info("Send notification photo with result to %s" % u)
                     self.updater.bot.send_photo(chat_id = u, photo=jpg_file_descriptor)
