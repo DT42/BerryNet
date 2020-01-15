@@ -34,6 +34,7 @@ class TelegramBotService(object):
         self.comm_config = comm_config
         for topic, functor in self.comm_config['subscribe'].items():
             self.comm_config['subscribe'][topic] = eval(functor)
+        # NOTE: Maybe change the hard-coding topic to parameter in the future.
         self.comm_config['subscribe']['berrynet/data/rgbimage'] = self.single_shot
         self.comm = Communicator(self.comm_config, debug=True)
         if os.path.isfile(token):
@@ -88,9 +89,21 @@ class TelegramBotService(object):
             logger.info(e)
 
     def single_shot(self, pl):
+        """Capture an image from camera client and send to the client.
+        """
         if self.shot is True:
             try:
                 payload_json = payload.deserialize_payload(pl.decode('utf-8'))
+                # WORKAROUND: Support customized camera client.
+                #
+                # Original camera client sends an `obj` in payload,
+                # Customized camera client sends an `[obj]` in payload.
+                #
+                # We are unifying the rules. Before that, checking the type
+                # as workaround.
+                if type(payload_json) is list:
+                    logger.debug('WORDAROUND: receive and unpack [obj]')
+                    payload_json = payload_json[0]
                 jpg_bytes = payload.destringify_jpg(payload_json["bytes"])
                 jpg_file_descriptor = io.BytesIO(jpg_bytes)
 
