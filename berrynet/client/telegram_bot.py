@@ -143,8 +143,13 @@ class TelegramBotService(object):
 
     def handler_help(self, update, context):
         logger.info("Received command `help`")
-        update.message.reply_text(
-            'I support these commands: help, hi, camera')
+        update.message.reply_text((
+            'I support these commands:\n\n'
+            'help - Display help message.\n'
+            'hi - Test Telegram client.\n'
+            'camera - Start camera.\n'
+            'stop - Stop camera.\n'
+            'shot - Take a shot from camera.'))
 
     def handler_hi(self, update, context):
         logger.info("Received command `hi`")
