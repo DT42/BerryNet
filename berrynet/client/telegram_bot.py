@@ -130,7 +130,7 @@ class TelegramBotService(object):
             self.updater.dispatcher.add_handler(
                 telegram.ext.CommandHandler('help', self.handler_help))
             self.updater.dispatcher.add_handler(
-                telegram.ext.CommandHandler('hello', self.handler_hello))
+                telegram.ext.CommandHandler('hi', self.handler_hi))
             self.updater.dispatcher.add_handler(
                 telegram.ext.CommandHandler('camera', self.handler_camera))
             self.updater.dispatcher.add_handler(
@@ -144,12 +144,12 @@ class TelegramBotService(object):
     def handler_help(self, update, context):
         logger.info("Received command `help`")
         update.message.reply_text(
-            'I support these commands: help, hello, camera')
+            'I support these commands: help, hi, camera')
 
-    def handler_hello(self, update, context):
-        logger.info("Received command `hello`")
+    def handler_hi(self, update, context):
+        logger.info("Received command `hi`")
         update.message.reply_text(
-            'Hello, {}'.format(update.message.from_user.first_name))
+            'Hi, {}'.format(update.message.from_user.first_name))
 
     def handler_camera(self, update, context):
         logger.info("Received command `camera`, chat id: %s" % update.message.chat_id)
