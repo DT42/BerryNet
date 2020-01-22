@@ -43,6 +43,7 @@ Architecture: all
 Depends: darknet,
          python3-opencv,
          python3-opengl,
+         python3-python-telegram-bot,
          ${misc:Depends},
          ${python3:Depends}
 Recommends: mosquitto

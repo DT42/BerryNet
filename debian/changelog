@@ -9,6 +9,18 @@ berrynet (3.9.0-1) unstable; urgency=medium
 
  -- Bofu Chen (bafu) <bofu@dt42.io>  Sat, 11 Jan 2020 18:43:06 +0800
 
+berrynet (3.8.0-4) unstable; urgency=low
+
+  * Bump Standards-Version to 4.4.1: Nothing needs to be changed.
+
+ -- Ying-Chun Liu (PaulLiu) <paulliu@debian.org>  Fri, 27 Dec 2019 14:29:13 +0800
+
+berrynet (3.8.0-3) unstable; urgency=low
+
+  * Add manpages
+
+ -- Ying-Chun Liu (PaulLiu) <paulliu@debian.org>  Wed, 20 Nov 2019 02:14:15 +0800
+
 berrynet (3.8.0-2) unstable; urgency=medium
 
   [ Bofu Chen (bafu) ]

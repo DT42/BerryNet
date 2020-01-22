@@ -18,7 +18,7 @@ export PYBUILD_NAME=berrynet
 	dh $@ --with python3,apache2 --buildsystem=pybuild
 
 
-override_dh_auto_build: bn_camera.1 bn_darknet.1 bn_dashboard.1 bn_data_collector.1 bn_gmail.1
+override_dh_auto_build: bn_camera.1 bn_darknet.1 bn_dashboard.1 bn_data_collector.1 bn_gmail.1 bn_telegram.1
 	# dashboard
 	mkdir -p $(CURDIR)/dashboard
 	cp -f /usr/share/freeboard/index.html $(CURDIR)/dashboard
@@ -26,6 +26,9 @@ override_dh_auto_build: bn_camera.1 bn_darknet.1 bn_dashboard.1 bn_data_collecto
 	sed -i 's@// [*][*][*] Load more plugins here [*][*][*]@"plugins/thirdparty/paho.mqtt.plugin.js", // *** Load more plugins here ***@g'  $(CURDIR)/dashboard/index.html
 
 	dh_auto_build
+
+override_dh_auto_install:
+	dh_auto_install
 
 override_dh_auto_test:
 	# don't run test. failed now.
@@ -51,4 +54,7 @@ bn_data_collector.1: debian/bn_data_collector.xml
 	$(XP) $(DB2MAN) $<
 
 bn_gmail.1: debian/bn_gmail.xml
+	$(XP) $(DB2MAN) $<
+
+bn_telegram.1: debian/bn_telegram.xml
 	$(XP) $(DB2MAN) $<
