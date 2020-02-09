@@ -22,6 +22,9 @@ import json
 import io
 import logging
 import os
+import tempfile
+import tarfile
+import time
 
 import telegram.ext
 from berrynet import logger
@@ -123,9 +126,9 @@ class TelegramBotService(object):
     def run(self, args):
         """Infinite loop serving inference requests"""
         self.comm.start_nb()
-        self.connect_telegram()
+        self.connect_telegram(args)
 
-    def connect_telegram(self):
+    def connect_telegram(self, args):
         try:
             self.updater.dispatcher.add_handler(
                 telegram.ext.CommandHandler('help', self.handler_help))
@@ -137,6 +140,9 @@ class TelegramBotService(object):
                 telegram.ext.CommandHandler('stop', self.handler_stop))
             self.updater.dispatcher.add_handler(
                 telegram.ext.CommandHandler('shot', self.handler_shot))
+            if (args["has_getlog"]):
+                self.updater.dispatcher.add_handler(
+                    telegram.ext.CommandHandler('getlog', self.handler_getlog))
             self.updater.start_polling()
         except Exception as e:
             logger.critical(e)
@@ -177,6 +183,28 @@ class TelegramBotService(object):
         self.single_shot_chat_id = update.message.chat_id
         logger.debug('Enable single shot.')
 
+    def handler_getlog(self, update, context):
+        logger.info("Received command `getlog`, chat id: %s" % update.message.chat_id)
+        # Create temporary tar.xz file
+        tmpTGZ1 = tempfile.NamedTemporaryFile(suffix=".tar.xz")
+        tmpTGZ = tarfile.open(fileobj=tmpTGZ1, mode="w:xz")
+        tmpTGZPath = tmpTGZ1.name
+
+        # Traverse /var/log
+        varlogDir = os.path.abspath(os.path.join(os.sep, "var", "log"))
+        for root, dirs, files in os.walk(varlogDir):
+            for file in files:
+                fullPath = os.path.join(root, file)
+                # Check if the file is a regular file
+                if not os.path.isfile(fullPath):
+                    continue
+                # Check if the file is accessable
+                if not os.access(fullPath, os.R_OK):
+                    continue
+                # Pack the file
+                tmpTGZ.add(name = fullPath, recursive=False)
+        tmpTGZ.close()
+        self.updater.bot.send_document(chat_id = update.message.chat_id, document = open(tmpTGZPath, 'rb'), filename=time.strftime('berrynet-varlog_%Y%m%d_%H%M%S.tar.xz'))
 
 def parse_args():
     ap = argparse.ArgumentParser()
@@ -220,6 +248,10 @@ def parse_args():
     ap.add_argument('--debug',
         action='store_true',
         help='Debug mode toggle'
+    )
+    ap.add_argument('--has-getlog',
+        action='store_true',
+        help='Enable getlog command'
     )
     return vars(ap.parse_args())
 
