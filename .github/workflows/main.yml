@@ -19,7 +19,10 @@ jobs:
         echo REF is $GITHUB_REF
         sudo apt-get -y install git-buildpackage
         sudo apt-get -y install build-essential devscripts
-        sudo apt-get -y install debhelper dh-apache2 dh-python freeboard git python3 python3-setuptools
+        sudo apt-get -y install lsb-release
+        sudo apt-get -y install debhelper dh-apache2 dh-python git python3 python3-setuptools
+        lsb_release -a
+        sudo apt-get -y install freeboard
         git remote add github1 https://github.com/grandpaul/BerryNet.git
         git remote update
         git branch -a
