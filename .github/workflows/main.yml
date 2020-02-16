@@ -15,5 +15,9 @@ jobs:
       run: |
         echo Add other actions to build,
         echo test, and deploy your project.
+        echo SHA is $GITHUB_SHA	
+        echo REF is $GITHUB_REF
         sudo apt install git-buildpackage
-        gbp --help
+        gbp clone --debian-branch=debian/sid https://github.com/grandpaul/BerryNet.git
+        cd BerryNet
+        ls
