@@ -17,6 +17,7 @@ jobs:
         echo test, and deploy your project.
         echo SHA is $GITHUB_SHA	
         echo REF is $GITHUB_REF
+        sudo apt-get -y update
         sudo apt-get -y install git-buildpackage
         sudo apt-get -y install build-essential devscripts
         sudo apt-get -y install lsb-release
