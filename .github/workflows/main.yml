@@ -17,7 +17,9 @@ jobs:
         echo test, and deploy your project.
         echo SHA is $GITHUB_SHA	
         echo REF is $GITHUB_REF
-        sudo apt install git-buildpackage
+        sudo apt-get -y install git-buildpackage
+        sudo apt-get -y install build-essential devscripts
+        sudo apt-get -y install debhelper dh-apache2 dh-python freeboard git python3 python3-setuptools
         git remote add github1 https://github.com/grandpaul/BerryNet.git
         git remote update
         git branch -a
@@ -25,3 +27,7 @@ jobs:
         git checkout github1/pristine-tar -b pristine-tar
         git checkout github1/debian/sid -b debian/sid
         uscan --verbose
+        VER1=`ls ../berrynet_*.orig.tar.gz | sed 's/.*berrynet_//' | sed 's/.orig.tar.gz//'
+        echo VER1 is $VER1
+        cd ../berrynet-$VER1
+        debuild
