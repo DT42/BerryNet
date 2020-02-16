@@ -99,15 +99,16 @@ def main():
 
     if args['mode'] == 'stream':
         counter = 0
+        fail_counter = 0
+
         # Check input stream source
         if args['stream_src'].isdigit():
             # source is a physically connected camera
-            stream_source = '/dev/video{}'.format(int(args['stream_src']))
-            capture = cv2.VideoCapture(int(args['stream_src']))
+            stream_source = int(args['stream_src'])
         else:
             # source is an IP camera
             stream_source = args['stream_src']
-            capture = cv2.VideoCapture(args['stream_src'])
+        capture = cv2.VideoCapture(stream_source)
         cam_fps = capture.get(cv2.CAP_PROP_FPS)
         if cam_fps > 30 or cam_fps < 1:
             logger.warn('Camera FPS is {} (>30 or <1). Set it to 30.'.format(cam_fps))
@@ -125,7 +126,11 @@ def main():
         #    t_warmup_now = time.time()
 
         logger.debug('===== VideoCapture Information =====')
-        logger.debug('Stream Source: {}'.format(stream_source))
+        if stream_source.isdigit():
+            stream_source_uri = '/dev/video{}'.format(stream_source)
+        else:
+            stream_source_uri = stream_source
+        logger.debug('Stream Source: {}'.format(stream_source_uri))
         logger.debug('Camera FPS: {}'.format(cam_fps))
         logger.debug('Output FPS: {}'.format(out_fps))
         logger.debug('Interval: {}'.format(interval))
@@ -134,27 +139,48 @@ def main():
 
         while True:
             status, im = capture.read()
-            if (status is False):
-                logger.warn('ERROR: Failure happened when reading frame')
 
-            counter += 1
-            if counter == interval:
-                logger.debug('Drop frames: {}'.format(counter-1))
-                counter = 0
+            # To verify whether the input source is alive, you should use the
+            # return value of capture.read(). It will not work by capturing
+            # exception of a capture instance, or by checking the return value
+            # of capture.isOpened().
+            #
+            # Two reasons:
+            # 1. If a dead stream is alive again, capture will not notify
+            #    that input source is dead.
+            #
+            # 2. If you check capture.isOpened(), it will keep retruning
+            #    True if a stream is dead afterward. So you can not use
+            #    the capture return value (capture status) to determine
+            #    whether a stream is alive or not.
+            if (status is True):
+                counter += 1
+                if counter == interval:
+                    logger.debug('Drop frames: {}'.format(counter-1))
+                    counter = 0
 
-                # Open a window and display the ready-to-send frame.
-                # This is useful for development and debugging.
-                if args['display']:
-                    cv2.imshow('Frame', im)
-                    cv2.waitKey(1)
+                    # Open a window and display the ready-to-send frame.
+                    # This is useful for development and debugging.
+                    if args['display']:
+                        cv2.imshow('Frame', im)
+                        cv2.waitKey(1)
 
-                t = datetime.now()
-                retval, jpg_bytes = cv2.imencode('.jpg', im)
-                mqtt_payload = payload.serialize_jpg(jpg_bytes)
-                comm.send('berrynet/data/rgbimage', mqtt_payload)
-                logger.debug('send: {} ms'.format(duration(t)))
+                    t = datetime.now()
+                    retval, jpg_bytes = cv2.imencode('.jpg', im)
+                    mqtt_payload = payload.serialize_jpg(jpg_bytes)
+                    comm.send('berrynet/data/rgbimage', mqtt_payload)
+                    logger.debug('send: {} ms'.format(duration(t)))
+                else:
+                    pass
             else:
-                pass
+                fail_counter += 1
+                logger.critical('ERROR: Failure #{} happened when reading frame'.format(fail_counter))
+
+                # Re-create capture.
+                capture.release()
+                logger.critical('Re-create a capture and reconnect to {} after 5s'.format(stream_source))
+                time.sleep(5)
+                capture = cv2.VideoCapture(stream_source)
     elif args['mode'] == 'file':
         # Prepare MQTT payload
         im = cv2.imread(args['filepath'])
