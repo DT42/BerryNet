@@ -18,6 +18,8 @@ jobs:
         echo SHA is $GITHUB_SHA	
         echo REF is $GITHUB_REF
         sudo apt install git-buildpackage
+        cd ..
+        ls
         git branch -a
         git checkout origin/upstream -b upstream
         git checkout origin/pristine-tar -b pristine-tar
