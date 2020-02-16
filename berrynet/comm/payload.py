@@ -16,6 +16,7 @@
 # along with BerryNet.  If not, see <http://www.gnu.org/licenses/>.
 
 import base64
+import hashlib
 import json
 
 from datetime import datetime
@@ -77,11 +78,16 @@ def rgb2bgr(rgb_nparray):
     return cv2.cvtColor(rgb_nparray, cv2.COLOR_RGB2BGR)
 
 
+def generate_bytes_md5sum(content_bytes):
+    content_b64 = base64.b64encode(content_bytes)
+    return hashlib.md5(content_b64).hexdigest()
+
+
 def serialize_payload(json_object):
     return json.dumps(json_object)
 
 
-def serialize_jpg(jpg_bytes):
+def serialize_jpg(jpg_bytes, md5sum=False):
     """Create Serialized JSON object consisting of image bytes and meta
 
     :param imarray: JPEG bytes
@@ -92,6 +98,8 @@ def serialize_jpg(jpg_bytes):
     obj = {}
     obj['timestamp'] = datetime.now().isoformat()
     obj['bytes'] = stringify_jpg(jpg_bytes)
+    if md5sum:
+        obj['md5sum'] = generate_bytes_md5sum(jpg_bytes)
     return json.dumps(obj)
 
 

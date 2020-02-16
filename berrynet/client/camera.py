@@ -76,6 +76,10 @@ def parse_args():
         help=('Open a window and display the sent out frames. '
               'This argument is only effective in stream mode.')
     )
+    ap.add_argument('--hash',
+        action='store_true',
+        help='Add md5sum of a captured frame into the result.'
+    )
     ap.add_argument('--debug',
         action='store_true',
         help='Debug mode toggle'
@@ -172,7 +176,7 @@ def main():
 
                     t = datetime.now()
                     retval, jpg_bytes = cv2.imencode('.jpg', im)
-                    mqtt_payload = payload.serialize_jpg(jpg_bytes)
+                    mqtt_payload = payload.serialize_jpg(jpg_bytes, args['hash'])
                     comm.send(args['topic'], mqtt_payload)
                     logger.debug('send: {} ms'.format(duration(t)))
                 else:
@@ -192,7 +196,7 @@ def main():
         retval, jpg_bytes = cv2.imencode('.jpg', im)
 
         t = datetime.now()
-        mqtt_payload = payload.serialize_jpg(jpg_bytes)
+        mqtt_payload = payload.serialize_jpg(jpg_bytes, args['hash'])
         logger.debug('payload: {} ms'.format(duration(t)))
         logger.debug('payload size: {}'.format(len(mqtt_payload)))
 
