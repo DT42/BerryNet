@@ -15,5 +15,5 @@ jobs:
       run: |
         echo Add other actions to build,
         echo test, and deploy your project.
-        apt install git-buildpackage
+        sudo apt install git-buildpackage
         gbp --help
