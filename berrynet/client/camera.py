@@ -67,6 +67,10 @@ def parse_args():
         type=int,
         help='MQTT broker port.'
     )
+    ap.add_argument('--topic',
+        default='berrynet/data/rgbimage',
+        help='The topic to send the captured frames.'
+    )
     ap.add_argument('--display',
         action='store_true',
         help=('Open a window and display the sent out frames. '
@@ -134,6 +138,7 @@ def main():
         logger.debug('Camera FPS: {}'.format(cam_fps))
         logger.debug('Output FPS: {}'.format(out_fps))
         logger.debug('Interval: {}'.format(interval))
+        logger.debug('Send MQTT Topic: {}'.format(args['topic']))
         #logger.debug('Warmup Counter: {}'.format(warmup_counter))
         logger.debug('====================================')
 
@@ -168,7 +173,7 @@ def main():
                     t = datetime.now()
                     retval, jpg_bytes = cv2.imencode('.jpg', im)
                     mqtt_payload = payload.serialize_jpg(jpg_bytes)
-                    comm.send('berrynet/data/rgbimage', mqtt_payload)
+                    comm.send(args['topic'], mqtt_payload)
                     logger.debug('send: {} ms'.format(duration(t)))
                 else:
                     pass
@@ -193,7 +198,7 @@ def main():
 
         # Client publishes payload
         t = datetime.now()
-        comm.send('berrynet/data/rgbimage', mqtt_payload)
+        comm.send(args['topic'], mqtt_payload)
         logger.debug('mqtt.publish: {} ms'.format(duration(t)))
         logger.debug('publish at {}'.format(datetime.now().isoformat()))
     else:
