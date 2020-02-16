@@ -18,10 +18,10 @@ jobs:
         echo SHA is $GITHUB_SHA	
         echo REF is $GITHUB_REF
         sudo apt install git-buildpackage
-        cd ..
-        ls
+        git remote add github1 https://github.com/grandpaul/BerryNet.git
+        git remote update
         git branch -a
-        git checkout origin/upstream -b upstream
-        git checkout origin/pristine-tar -b pristine-tar
-        git checkout origin/debian/sid -b debian/sid
+        git checkout github1/upstream -b upstream
+        git checkout github1/pristine-tar -b pristine-tar
+        git checkout github1/debian/sid -b debian/sid
         uscan --verbose
