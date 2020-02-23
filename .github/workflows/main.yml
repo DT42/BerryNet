@@ -16,8 +16,8 @@ jobs:
         run: |
           echo Add other actions to build,
           echo test, and deploy your project.
-          echo SHA is $GITHUB_SHA	
-          echo REF is $GITHUB_REF
+          echo GITHUB_SHA is $GITHUB_SHA	
+          echo GITHUB_REF is $GITHUB_REF
           sudo apt-get -y update
           sudo apt-get -y install git-buildpackage
           sudo apt-get -y install build-essential devscripts
@@ -35,14 +35,13 @@ jobs:
           git checkout github1/pristine-tar -b pristine-tar
           git checkout github1/debian/sid -b debian/sid
           echo gbp buildpackage --no-sign
+          OLDPWD=`pwd`
+          echo OLDPWD is $OLDPWD
           uscan --verbose
           VER1=`ls ../berrynet_*.orig.tar.gz | sed 's/.*berrynet_//' | sed 's/.orig.tar.gz//'`
           echo VER1 is $VER1
-          OLDPWD=`pwd`
-          echo $OLDPWD
-          cd ..
-          cd berrynet-$VER1
-          debuild
+          cd ../berrynet-$VER1
+          debuild --no-sign
           cd $OLDPWD
           7z a debpackage.7z ../*.dsc ../*.debian.tar.xz ../*.orig.tar.gz ../*.deb ../*.changes ../*.build ../*.buildinfo
       - name: Upload to release
