@@ -37,12 +37,13 @@ jobs:
           echo gbp buildpackage --no-sign
           uscan --verbose
           VER1=`ls ../berrynet_*.orig.tar.gz | sed 's/.*berrynet_//' | sed 's/.orig.tar.gz//'`
-          OLDPWD=`pwd`
           echo VER1 is $VER1
+          OLDPWD=`pwd`
+          echo $OLDPWD
           cd ..
           cd berrynet-$VER1
           debuild
-          cd "$OLDPWD"
+          cd $OLDPWD
           7z a debpackage.7z ../*.dsc ../*.debian.tar.xz ../*.orig.tar.gz ../*.deb ../*.changes ../*.build ../*.buildinfo
       - name: Upload to release
         uses: JasonEtco/upload-to-release@master
