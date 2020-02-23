@@ -10,8 +10,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Run a multi-line script
+    - name: Build Debian Package
+      uses: actions/checkout@v2
       run: |
         echo Add other actions to build,
         echo test, and deploy your project.
@@ -23,6 +23,7 @@ jobs:
         sudo apt-get -y install lsb-release
         sudo apt-get -y install debhelper dh-apache2 dh-python git python3 python3-setuptools
         sudo apt-get -y install pristine-tar
+        sudo apt-get -y install p7zip-full
         lsb_release -a
         curl -sL https://raw.githubusercontent.com/DT42/BerryNet-repo/master/setup.sh | sudo -E bash
         sudo apt-get -y install freeboard
@@ -33,9 +34,12 @@ jobs:
         git checkout github1/pristine-tar -b pristine-tar
         git checkout github1/debian/sid -b debian/sid
         gbp buildpackage --no-sign
-        #uscan --verbose
-        #VER1=`ls ../berrynet_*.orig.tar.gz | sed 's/.*berrynet_//' | sed 's/.orig.tar.gz//'`
-        #echo VER1 is $VER1
-        #cd ..
-        #cd berrynet-$VER1
-        #debuild
+        cd ..
+        7z a debpackage.7z *.dsc *.debian.tar.xz *.orig.tar.gz *.deb *.changes *.build *.buildinfo
+    - name: Upload to release
+      uses: JasonEtco/upload-to-release@master
+      with:
+        args: debpackage.7z application/x-7z-compressed
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  
