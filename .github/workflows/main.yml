@@ -32,7 +32,7 @@ jobs:
         git checkout github1/pristine-tar -b pristine-tar
         git checkout github1/debian/sid -b debian/sid
         uscan --verbose
-        VER1=`ls ../berrynet_*.orig.tar.gz | sed 's/.*berrynet_//' | sed 's/.orig.tar.gz//'
+        VER1=`ls ../berrynet_*.orig.tar.gz | sed 's/.*berrynet_//' | sed 's/.orig.tar.gz//'`
         echo VER1 is $VER1
         cd ..
         cd berrynet-$VER1
