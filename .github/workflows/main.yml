@@ -10,36 +10,36 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Build Debian Package
-      uses: actions/checkout@v2
-      run: |
-        echo Add other actions to build,
-        echo test, and deploy your project.
-        echo SHA is $GITHUB_SHA	
-        echo REF is $GITHUB_REF
-        sudo apt-get -y update
-        sudo apt-get -y install git-buildpackage
-        sudo apt-get -y install build-essential devscripts
-        sudo apt-get -y install lsb-release
-        sudo apt-get -y install debhelper dh-apache2 dh-python git python3 python3-setuptools
-        sudo apt-get -y install pristine-tar
-        sudo apt-get -y install p7zip-full
-        lsb_release -a
-        curl -sL https://raw.githubusercontent.com/DT42/BerryNet-repo/master/setup.sh | sudo -E bash
-        sudo apt-get -y install freeboard
-        git remote add github1 https://github.com/grandpaul/BerryNet.git
-        git remote update
-        git branch -a
-        git checkout github1/upstream -b upstream
-        git checkout github1/pristine-tar -b pristine-tar
-        git checkout github1/debian/sid -b debian/sid
-        gbp buildpackage --no-sign
-        cd ..
-        7z a debpackage.7z *.dsc *.debian.tar.xz *.orig.tar.gz *.deb *.changes *.build *.buildinfo
-    - name: Upload to release
-      uses: JasonEtco/upload-to-release@master
-      with:
-        args: debpackage.7z application/x-7z-compressed
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build Debian Package
+        uses: actions/checkout@v2
+        run: |
+          echo Add other actions to build,
+          echo test, and deploy your project.
+          echo SHA is $GITHUB_SHA	
+          echo REF is $GITHUB_REF
+          sudo apt-get -y update
+          sudo apt-get -y install git-buildpackage
+          sudo apt-get -y install build-essential devscripts
+          sudo apt-get -y install lsb-release
+          sudo apt-get -y install debhelper dh-apache2 dh-python git python3 python3-setuptools
+          sudo apt-get -y install pristine-tar
+          sudo apt-get -y install p7zip-full
+          lsb_release -a
+          curl -sL https://raw.githubusercontent.com/DT42/BerryNet-repo/master/setup.sh | sudo -E bash
+          sudo apt-get -y install freeboard
+          git remote add github1 https://github.com/grandpaul/BerryNet.git
+          git remote update
+          git branch -a
+          git checkout github1/upstream -b upstream
+          git checkout github1/pristine-tar -b pristine-tar
+          git checkout github1/debian/sid -b debian/sid
+          gbp buildpackage --no-sign
+          cd ..
+          7z a debpackage.7z *.dsc *.debian.tar.xz *.orig.tar.gz *.deb *.changes *.build *.buildinfo
+      - name: Upload to release
+        uses: JasonEtco/upload-to-release@master
+        with:
+          args: debpackage.7z application/x-7z-compressed
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   
