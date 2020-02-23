@@ -10,8 +10,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Build Debian Package
+      - name: Checkout source
         uses: actions/checkout@v2
+      - name: Build Debian Package
         run: |
           echo Add other actions to build,
           echo test, and deploy your project.
