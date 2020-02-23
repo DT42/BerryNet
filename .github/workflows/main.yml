@@ -32,7 +32,7 @@ jobs:
         git checkout github1/upstream -b upstream
         git checkout github1/pristine-tar -b pristine-tar
         git checkout github1/debian/sid -b debian/sid
-        gbp buildpackage
+        gbp buildpackage --no-sign
         #uscan --verbose
         #VER1=`ls ../berrynet_*.orig.tar.gz | sed 's/.*berrynet_//' | sed 's/.orig.tar.gz//'`
         #echo VER1 is $VER1
