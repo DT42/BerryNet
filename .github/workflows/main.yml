@@ -35,8 +35,7 @@ jobs:
           git checkout github1/pristine-tar -b pristine-tar
           git checkout github1/debian/sid -b debian/sid
           gbp buildpackage --no-sign
-          cd ..
-          7z a debpackage.7z *.dsc *.debian.tar.xz *.orig.tar.gz *.deb *.changes *.build *.buildinfo
+          7z a debpackage.7z ../*.dsc ../*.debian.tar.xz ../*.orig.tar.gz ../*.deb ../*.changes ../*.build ../*.buildinfo
       - name: Upload to release
         uses: JasonEtco/upload-to-release@master
         with:
