@@ -42,7 +42,7 @@ jobs:
           echo VER1 is $VER1
           cd ../berrynet-$VER1; debuild --no-sign; cd $OLDPWD
           ls ..
-          7z a debpackage.7z ../*.dsc ../*.debian.tar.xz ../*.orig.tar.gz ../*.deb ../*.changes ../*.build ../*.buildinfo
+          7z a -snl debpackage.7z ../*.dsc ../*.debian.tar.xz ../*.orig.tar.gz ../*.deb ../*.changes ../*.build ../*.buildinfo ../berrynet-*.tar.gz
       - name: Upload to release
         uses: JasonEtco/upload-to-release@master
         with:
