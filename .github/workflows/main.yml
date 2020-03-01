@@ -40,9 +40,7 @@ jobs:
           uscan --verbose
           VER1=`ls ../berrynet_*.orig.tar.gz | sed 's/.*berrynet_//' | sed 's/.orig.tar.gz//'`
           echo VER1 is $VER1
-          cd ../berrynet-$VER1
-          debuild --no-sign
-          cd $OLDPWD
+          cd ../berrynet-$VER1; debuild --no-sign; cd $OLDPWD
           7z a debpackage.7z ../*.dsc ../*.debian.tar.xz ../*.orig.tar.gz ../*.deb ../*.changes ../*.build ../*.buildinfo
       - name: Upload to release
         uses: JasonEtco/upload-to-release@master
