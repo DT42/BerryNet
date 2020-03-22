@@ -196,19 +196,19 @@ install_tensorflow() {
 
 install_openvino_repository() {
     echo 'Adding the OpenVINO GPG key to your keyring...'
-    curl -sL https://apt.repos.intel.com/openvino/2019/GPG-PUB-KEY-INTEL-OPENVINO-2019 | sudo apt-key add -
-    sudo curl -sL -o /etc/apt/sources.list.d/intel-openvino-2019.list \
-        https://raw.githubusercontent.com/DT42/BerryNet/master/config/intel-openvino-2019.list
+    curl -sL https://apt.repos.intel.com/openvino/2020/GPG-PUB-KEY-INTEL-OPENVINO-2020 | sudo apt-key add -
+    sudo curl -sL -o /etc/apt/sources.list.d/intel-openvino-2020.list \
+        https://raw.githubusercontent.com/DT42/BerryNet/master/config/intel-openvino-2020.list
     sudo apt update
 }
 
 install_openvino() {
-    # OpenVINO 2019R2.1
     if [ "$DISTRIBUTIONID" = "Ubuntu" ]; then
+        let OPENVINO_VERSION="2020.1.023"
         if [ "$CODENAME" = "xenial" ]; then
-            sudo apt install intel-openvino-runtime-ubuntu16-2019.2.242
+            sudo apt install intel-openvino-runtime-ubuntu16-$OPENVINO_VERSION
         elif [ "$CODENAMe" = "bionic" ]; then
-            sudo apt install intel-openvino-runtime-ubuntu18-2019.2.242
+            sudo apt install intel-openvino-runtime-ubuntu18-$OPENVINO_VERSION
         else
             echo "ERROR: OpenVINO on Ubuntu $CODENAME is not supported by Intel."
         fi
