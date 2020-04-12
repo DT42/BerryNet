@@ -37,22 +37,22 @@ install_opencv() {
     if [ "$DISTRIBUTIONID" = "Ubuntu" ]; then
         sudo add-apt-repository -yu ppa:timsc/opencv-3.4
     fi
-    sudo apt install -y python3-opencv
+    sudo apt-get install -y python3-opencv
 }
 
 install_nodejs() {
     # v10.x is LTS, if you want the latest feature, change to "setup_11.x".
     curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
-    sudo apt install -y nodejs
+    sudo apt-get install -y nodejs
 }
 
 install_system_dependencies() {
-    sudo apt update
+    sudo apt-get update
     if [ "$CODENAME" = "buster" ]; then
-        sudo apt install -y \
+        sudo apt-get install -y \
             supervisor
     else
-        sudo apt install -y \
+        sudo apt-get install -y \
             apache2 \
             curl \
             dirmngr \
@@ -101,7 +101,7 @@ install_configs() {
 }
 
 install_berrynet_py() {
-    sudo apt install -y berrynet
+    sudo apt-get install -y berrynet
     # FIXME: Freeboard dependency
     #sudo npm install -g mime
 }
@@ -133,7 +133,7 @@ install_berrynet_js() {
 install_model() {
     local model_name="$1"
     echo "Install model $model_name"
-    sudo apt install -y $model_name
+    sudo apt-get install -y $model_name
 }
 
 download_classifier_model_caffe2() {
@@ -155,7 +155,7 @@ install_tensorflow() {
             #     python3-absl-py                 none
             #     python3-google-pasta            none
             #     python3-setuptools              40.8.0-1
-            sudo apt install -y \
+            sudo apt-get install -y \
                 python3-numpy \
                 python3-termcolor \
                 python3-six \
@@ -199,21 +199,21 @@ install_openvino_repository() {
     curl -sL https://apt.repos.intel.com/openvino/2020/GPG-PUB-KEY-INTEL-OPENVINO-2020 | sudo apt-key add -
     sudo curl -sL -o /etc/apt/sources.list.d/intel-openvino-2020.list \
         https://raw.githubusercontent.com/DT42/BerryNet/master/config/intel-openvino-2020.list
-    sudo apt update
+    sudo apt-get update
 }
 
 install_openvino() {
     if [ "$DISTRIBUTIONID" = "Ubuntu" ]; then
         let OPENVINO_VERSION="2020.1.023"
         if [ "$CODENAME" = "xenial" ]; then
-            sudo apt install intel-openvino-runtime-ubuntu16-$OPENVINO_VERSION
+            sudo apt-get install intel-openvino-runtime-ubuntu16-$OPENVINO_VERSION
         elif [ "$CODENAMe" = "bionic" ]; then
-            sudo apt install intel-openvino-runtime-ubuntu18-$OPENVINO_VERSION
+            sudo apt-get install intel-openvino-runtime-ubuntu18-$OPENVINO_VERSION
         else
             echo "ERROR: OpenVINO on Ubuntu $CODENAME is not supported by Intel."
         fi
     elif [ "$DISTRIBUTIONID" = "Raspbian" ]; then
-        sudo apt install -y openvino-rpi
+        sudo apt-get install -y openvino-rpi
     fi
 }
 
@@ -223,7 +223,7 @@ install_darknet () {
     #
     # To understand how Darknet NNPACK packages are built, please refer to
     # https://github.com/DT42/BerryNet/blob/master/doc/darknet-nnpack.md
-    sudo apt install -y darknet libdarknet
+    sudo apt-get install -y darknet libdarknet
 }
 
 #install_darknet() {
@@ -245,7 +245,7 @@ install_darknet () {
 #    popd > /dev/null
 #    popd > /dev/null
 #
-#    sudo apt install -y clang
+#    sudo apt-get install -y clang
 #
 #    pushd /tmp > /dev/null
 #    git clone https://github.com/thomaspark-pkj/NNPACK-darknet.git
