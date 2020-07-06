@@ -64,7 +64,8 @@ jobs:
           python setup.py install
       - name: Download inception models
         run: |
-          wget "https://storage.googleapis.com/download.tensorflow.org/models/inception_v3_2016_08_28_frozen.pb.tar.gz" -O berrynet/engine/inception_v3_2016_08_28_frozen.pb.tar.gz | tar -zxvf berrynet/engine/inception_v3_2016_08_28_frozen.pb.tar.gz -C berrynet/engine
+          wget "https://storage.googleapis.com/download.tensorflow.org/models/inception_v3_2016_08_28_frozen.pb.tar.gz" -O berrynet/engine/inception_v3_2016_08_28_frozen.pb.tar.gz
+          tar -zxvf berrynet/engine/inception_v3_2016_08_28_frozen.pb.tar.gz -C berrynet/engine
 
       - name: Test with pytest
         run: |
