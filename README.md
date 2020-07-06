@@ -1,6 +1,8 @@
 <p align="center"><a href="http://berrynet.org" target="_blank" rel="noopener noreferrer"><img width="50%" src="https://user-images.githubusercontent.com/292790/33802809-e4726cf8-dd45-11e7-8a64-fdc4c3ff9310.png" alt="BerryNet Logo"></a></p>
 <h2  align="center">Deep Learning Gateway on Raspberry Pi And Other Edge Devices</h2>
 
+![Docker Image CI](https://github.com/DT42/BerryNet/workflows/Docker%20Image%20CI/badge.svg)
+
 [Supporting BerryNet](https://github.com/DT42/BerryNet/wiki/Donation)
 
 * [Become a backer or sponsor on Open Collective](https://opencollective.com/berrynet).
