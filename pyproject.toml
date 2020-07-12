@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "python_project_template"
+version = "0.1.0"
+description = ""
+authors = ["davidtnfsh <davidtnfsh@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+requests = "^2.23.0"
+opencv-python = "^4.3.0"
+tensorflow = "1.14.*"
+
+[tool.poetry.dev-dependencies]
+safety = "^1.8.7"
+bandit = "^1.6.2"
+isort = "^4.3.21"
+pytest-cov = "^2.8.1"
+black = "^19.10b0"
+mypy = "^0.770"
+pytest = "^5.4.1"
+pylint = "^2.4.4"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"

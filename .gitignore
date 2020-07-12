@@ -9,6 +9,8 @@ dist
 
 # Environments
 env
+venv
+.vscode
 
 # Others
 *.swp
