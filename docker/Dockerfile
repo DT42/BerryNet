@@ -5,35 +5,41 @@ LABEL maintainer="dev@dt42.io"
 LABEL project="Berrynet"
 LABEL version="3.7.0"
 
+ENV POETRY_VIRTUALENVS_CREATE=false \
+    POETRY_CACHE_DIR='/var/cache/pypoetry'
+
 # Update apt
-RUN apt-get update
+RUN apt-get update \
+    # Install dependencies
+    && apt-get install -y --no-install-recommends git wget lsb-release software-properties-common \
+    # Install build-essential
+    build-essential curl \
+    # Install systemd
+    systemd systemd-sysv \
+    # Install python
+    python3 python3-dev \
+    # Install python libs
+    python3-wheel python3-setuptools python3-pip \
+    python3-paho-mqtt python3-logzero python3-astor \
+    python3-opengl python3-six python3-grpcio \
+    python3-keras-applications python3-keras-preprocessing \
+    python3-protobuf python3-termcolor python3-numpy \
+    # Install daemons
+    mosquitto mosquitto-clients \
+    apache2
 
-# Install dependencies
-RUN apt-get install -y git sudo wget lsb-release software-properties-common
+# Install python dependencies
+WORKDIR /app
+COPY poetry.lock poetry.lock
+COPY pyproject.toml pyproject.toml
 
-# Install build-essential
-RUN apt-get install -y build-essential curl
-
-# Install systemd
-RUN apt-get install -y systemd systemd-sysv
-
-# Install python
-RUN apt-get install -y python3 python3-dev
-
-# Install python libs
-RUN apt-get install -y python3-wheel python3-setuptools python3-pip
-RUN apt-get install -y python3-paho-mqtt python3-logzero python3-astor
-RUN apt-get install -y python3-opengl python3-six python3-grpcio
-RUN apt-get install -y python3-keras-applications python3-keras-preprocessing
-RUN apt-get install -y python3-protobuf python3-termcolor python3-numpy
-
-# Install daemons
-RUN apt-get install -y mosquitto mosquitto-clients
-RUN apt-get install -y apache2
-
-# Install tensorflow
-RUN pip3 install tensorflow
+RUN pip3 install --no-cache-dir poetry \
+    && poetry install --no-interaction --no-ansi --no-dev \
+    # Cleaning poetry installation's cache for production:
+    && rm -rf "$POETRY_CACHE_DIR" \
+    && pip3 uninstall -yq poetry
 
 # Install BerryNet
-RUN git clone https://github.com/DT42/BerryNet.git
-RUN cd BerryNet; ./configure
+WORKDIR /app/BerryNet
+COPY . .
+RUN ./configure
