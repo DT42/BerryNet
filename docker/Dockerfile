@@ -26,13 +26,13 @@ RUN apt-get update \
     python3-protobuf python3-termcolor python3-numpy \
     # Install daemons
     mosquitto mosquitto-clients \
-    apache2
+    apache2 \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install python dependencies
 WORKDIR /app
 COPY poetry.lock poetry.lock
 COPY pyproject.toml pyproject.toml
-
 RUN pip3 install --no-cache-dir poetry \
     && poetry install --no-interaction --no-ansi --no-dev \
     # Cleaning poetry installation's cache for production:
