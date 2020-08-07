@@ -34,7 +34,7 @@
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged",
-      "commit-msg": ""
+      "commit-msg": "pip freeze | safety check --full-report --stdin"
     }
   },
   "lint-staged": {

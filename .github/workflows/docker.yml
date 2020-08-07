@@ -72,5 +72,5 @@ jobs:
 
       - name: Test coverage
         run: |
-          pytest --cov=project --cov-report=term-missing tests
+          pytest --cov=berrynet --cov-report=term-missing tests
 
