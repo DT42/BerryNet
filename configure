@@ -285,6 +285,9 @@ install_caffe2() {
 
 update_system_service() {
     sudo service mosquitto restart
+    # [BUG]: error: <class 'socket.error'>, [Errno 2] No such file or directory: file: /usr/lib/python2.7/socket.py line: 228
+    # [ref]: https://github.com/Supervisor/supervisor/issues/376
+    sudo supervisord
     sudo supervisorctl reload
     sudo a2enconf berrynet-dashboard
 }
