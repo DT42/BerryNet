@@ -127,7 +127,7 @@ def main():
         capture = cv2.VideoCapture(stream_source)
         cam_fps = capture.get(cv2.CAP_PROP_FPS)
         if cam_fps > 30 or cam_fps < 1:
-            logger.warn('Camera FPS is {} (>30 or <1). Set it to 30.'.format(cam_fps))
+            logger.warn('Camera FPS is %s (>30 or <1). Set it to 30.' % cam_fps)
             cam_fps = 30
         out_fps = args['fps']
         interval = int(cam_fps / out_fps)
@@ -146,12 +146,11 @@ def main():
             stream_source_uri = '/dev/video{}'.format(stream_source)
         else:
             stream_source_uri = stream_source
-        logger.debug('Stream Source: {}'.format(stream_source_uri))
-        logger.debug('Camera FPS: {}'.format(cam_fps))
-        logger.debug('Output FPS: {}'.format(out_fps))
-        logger.debug('Interval: {}'.format(interval))
-        logger.debug('Send MQTT Topic: {}'.format(args['topic']))
-        #logger.debug('Warmup Counter: {}'.format(warmup_counter))
+        logger.debug('Stream Source: %s' % stream_source_uri)
+        logger.debug('Camera FPS: %s' % cam_fps)
+        logger.debug('Output FPS: %s' % out_fps)
+        logger.debug('Interval: %s' % interval)
+        logger.debug('Send MQTT Topic: %s' % args['topic'])
         logger.debug('====================================')
 
         while True:
@@ -170,10 +169,10 @@ def main():
             #    True if a stream is dead afterward. So you can not use
             #    the capture return value (capture status) to determine
             #    whether a stream is alive or not.
-            if (status is True):
+            if status:
                 counter += 1
                 if counter == interval:
-                    logger.debug('Drop frames: {}'.format(counter-1))
+                    logger.debug('Drop frames: %s' % counter - 1)
                     counter = 0
 
                     # Open a window and display the ready-to-send frame.
@@ -183,38 +182,40 @@ def main():
                         cv2.waitKey(1)
 
                     t = datetime.now()
-                    retval, jpg_bytes = cv2.imencode('.jpg', im)
+                    _, jpg_bytes = cv2.imencode('.jpg', im)
                     mqtt_payload = payload.serialize_jpg(jpg_bytes, args['hash'], metadata)
                     comm.send(args['topic'], mqtt_payload)
-                    logger.debug('send: {} ms'.format(duration(t)))
-                else:
-                    pass
+                    logger.debug('send: %s ms' % duration(t))
             else:
                 fail_counter += 1
-                logger.critical('ERROR: Failure #{} happened when reading frame'.format(fail_counter))
+                logger.critical(
+                    'ERROR: Failure #%s happened when reading frame' % fail_counter
+                )
 
                 # Re-create capture.
                 capture.release()
-                logger.critical('Re-create a capture and reconnect to {} after 5s'.format(stream_source))
+                logger.critical(
+                    'Re-create a capture and reconnect to %s after 5s' % stream_source
+                )
                 time.sleep(5)
                 capture = cv2.VideoCapture(stream_source)
     elif args['mode'] == 'file':
         # Prepare MQTT payload
         im = cv2.imread(args['filepath'])
-        retval, jpg_bytes = cv2.imencode('.jpg', im)
+        _, jpg_bytes = cv2.imencode('.jpg', im)
 
         t = datetime.now()
         mqtt_payload = payload.serialize_jpg(jpg_bytes, args['hash'], metadata)
-        logger.debug('payload: {} ms'.format(duration(t)))
-        logger.debug('payload size: {}'.format(len(mqtt_payload)))
+        logger.debug('payload: %s ms' % duration(t))
+        logger.debug('payload size: %s' % len(mqtt_payload))
 
         # Client publishes payload
         t = datetime.now()
         comm.send(args['topic'], mqtt_payload)
-        logger.debug('mqtt.publish: {} ms'.format(duration(t)))
-        logger.debug('publish at {}'.format(datetime.now().isoformat()))
+        logger.debug('mqtt.publish: %s ms' % duration(t))
+        logger.debug('publish at %s' % datetime.now().isoformat())
     else:
-        logger.error('User assigned unknown mode {}'.format(args['mode']))
+        logger.error('User assigned unknown mode %s' % args['mode'])
 
 
 if __name__ == '__main__':
