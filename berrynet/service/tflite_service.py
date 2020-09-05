@@ -156,7 +156,8 @@ def parse_args():
     ap.add_argument(
         '--num_threads',
         default=1,
-        help="Number of threads for running inference.")
+        help="Number of threads for running inference.",
+        type=int)
     ap.add_argument(
         '--draw',
         action='store_true',

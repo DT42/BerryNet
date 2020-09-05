@@ -23,12 +23,12 @@ class TFLiteDetectorEngine(DLEngine):
 
         # Define lite graph and Load Tensorflow Lite model into memory
         self.interpreter = tf.lite.Interpreter(
-            model_path=model)
+            model_path=model,
+            num_threads=num_threads)
         self.interpreter.allocate_tensors()
         self.input_details = self.interpreter.get_input_details()
         self.output_details = self.interpreter.get_output_details()
         self.input_dtype = self.input_details[0]['dtype']
-        self.num_threads = num_threads
         self.threshold = threshold
 
     def __delete__(self, instance):
@@ -54,7 +54,6 @@ class TFLiteDetectorEngine(DLEngine):
         return frame
 
     def inference(self, tensor):
-        self.interpreter.set_num_threads(int(self.num_threads));
         self.interpreter.set_tensor(self.input_details[0]['index'], tensor)
         self.interpreter.invoke()
 
@@ -117,7 +116,8 @@ class TFLiteClassifierEngine(DLEngine):
 
         # Define lite graph and Load Tensorflow Lite model into memory
         self.interpreter = tf.lite.Interpreter(
-            model_path=model)
+            model_path=model,
+            num_threads=num_threads)
         self.interpreter.allocate_tensors()
         self.input_details = self.interpreter.get_input_details()
         self.output_details = self.interpreter.get_output_details()
@@ -127,7 +127,6 @@ class TFLiteClassifierEngine(DLEngine):
         self.input_mean = input_mean
         self.input_std = input_std
         self.top_k = int(top_k)
-        self.num_threads = num_threads
 
     def __delete__(self, instance):
         #tf.reset_default_graph()
@@ -149,7 +148,6 @@ class TFLiteClassifierEngine(DLEngine):
         return frame
 
     def inference(self, tensor):
-        self.interpreter.set_num_threads(int(self.num_threads));
         self.interpreter.set_tensor(self.input_details[0]['index'], tensor)
         self.interpreter.invoke()
         output_data = self.interpreter.get_tensor(self.output_details[0]['index'])
