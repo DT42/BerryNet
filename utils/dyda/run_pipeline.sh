@@ -13,7 +13,7 @@ dyda_source_dir="$HOME/codes/dyda"
 berrynet_source_dir="$HOME/codes/BerryNet"
 dyda_config_system_dir="/etc/dyda/pipelines/configs"
 dyda_config_local_dir="$dyda_source_dir/dyda/pipelines/configs"
-bnpipeline_dir="$berrynet_source_dir/bndyda/bntrainer"
+bnpipeline_dir="$berrynet_source_dir/bndyda/bndyda"
 
 # AIKEA (TFLite)
 config="$dyda_config_system_dir/object_detection_and_tracking_aikea.config"

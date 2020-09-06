@@ -35,7 +35,7 @@ from berrynet.comm import payload
 from berrynet.engine import DLEngine
 from berrynet.service import EngineService
 from dyda_utils import tools
-from bntrainer.launcher_berrynet import BerryNetPipelineLauncher
+from bndyda.launcher_berrynet import BerryNetPipelineLauncher
 
 
 class PipelineEngine(DLEngine):
