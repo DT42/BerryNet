@@ -1,0 +1,86 @@
+bntrainer (2.6.1-1) xenial; urgency=medium
+
+  * Bump version by DT42 CI Runner
+
+ -- root <root@runner-wArAHquA-project-7412321-concurrent-0>  Wed, 04 Sep 2019 08:24:02 +0000
+
+bntrainer (2.6.1-1) xenial; urgency=medium
+
+  * Add support to change result topic MQTT sends to
+
+ -- phid <phid@gc1.dt42.io>  Wed, 04 Sep 2019 16:03:48 +0800
+
+bntrainer (2.6.0-1) xenial; urgency=medium
+
+  * Bump version by DT42 CI Runner
+
+ -- root <root@runner-wArAHquA-project-7412321-concurrent-0>  Tue, 03 Sep 2019 08:13:19 +0000
+
+bntrainer (2.6.0-1) xenial; urgency=medium
+
+  * Add support to assign another broker for output
+  * Replace Berrynet Communicator with plain paho-mqtt publish function
+    in send_result()
+
+ -- phid <phid@gc1.dt42.io>  Tue, 03 Sep 2019 15:54:30 +0800
+
+bntrainer (2.5.0-1) xenial; urgency=medium
+
+  * Bump version by DT42 CI Runner
+
+ -- root <root@runner-wArAHquA-project-7412321-concurrent-0>  Wed, 21 Aug 2019 08:27:37 +0000
+
+bntrainer (2.5.0-1) xenial; urgency=medium
+
+  * Deprecate `--pid` parameter
+  * Improved multi-channel support
+
+ -- phid <phid@gc1.dt42.io>  Wed, 21 Aug 2019 15:06:00 +0800
+
+bntrainer (2.4.4-1) xenial; urgency=medium
+
+  * Refactor generalize_result
+
+ -- phid <phid@gc1.dt42.io>  Tue, 09 Jul 2019 14:13:55 +0800
+
+bntrainer (2.4.3-1) xenial; urgency=medium
+
+  * Make sure model_outputs is a list
+
+ -- phid <phid@gc1.dt42.io>  Thu, 04 Jul 2019 14:55:00 +0800
+
+bntrainer (2.4.2-1) xenial; urgency=medium
+
+  * Bump debian version to 2.4.2
+  * Changes:
+    - Add support for pipeline image output
+
+ -- phid <phid@gc1.dt42.io>  Mon, 24 Jun 2019 12:11:37 +0800
+
+bntrainer (2.4.1-2) xenial; urgency=medium
+
+  * Replace berrynet dep with python3-berrynet
+
+ -- James Chien <shchien@dt42.io>  Fri, 28 Jun 2019 13:45:09 +0800
+
+bntrainer (2.4.1-1) xenial; urgency=medium
+
+  * Bump debian version to 2.4.1 
+
+  * Changes:
+    - Revert bad list detection (0a73ffce)
+    - Improve exception logging
+
+ -- James Chien <shchien@dt42.io>  Thu, 14 Feb 2019 16:29:31 +0800
+
+bntrainer (2.4.0) xenial; urgency=medium
+
+  * Bump debian version to 2.4.0
+
+ -- James Chien <shchien@dt42.io>  Thu, 31 Jan 2019 14:50:38 +0800
+
+bntrainer (2.3.0) xenial; urgency=medium
+
+  * Initial release.
+
+ -- James Chien <shchien@dt42.io>  Tue, 25 Dec 2018 21:37:29 +0800
