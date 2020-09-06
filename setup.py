@@ -6,7 +6,7 @@ from setuptools import find_packages
 
 setup(
     name='berrynet',
-    version='v3.8.0',
+    version='v3.9.0',
     description='BerryNet',
     long_description=
         'TBD',
@@ -66,7 +66,8 @@ setup(
             'bn_telegram=berrynet.client.telegram_bot:main',
             'bn_tflite=berrynet.service.tflite_service:main',
             'bn_openvino=berrynet.service.openvino_service:main',
-            'bn_darknet=berrynet.service.darknet_service:main'
+            'bn_darknet=berrynet.service.darknet_service:main',
+            'bn_pipeline=bndyda.bnpipeline:main',
         ]
     },
     #ext_modules=[
