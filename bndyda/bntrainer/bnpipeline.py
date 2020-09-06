@@ -183,7 +183,21 @@ class PipelineService(EngineService):
         logger.debug('counter #{}'.format(self.counter))
         logger.debug('payload size: {}'.format(len(pl)))
         logger.debug('payload type: {}'.format(type(pl)))
-        jpg_json = payload.deserialize_payload(pl.decode('utf-8'))
+        # Unify the type of input payload to a list, so that
+        # bnpipeline can process the input in the same way.
+        #
+        # If the payload is
+        #     - a list of items: keep the list
+        #     - a single item: convert to a list with an item
+        mqtt_payload = payload.deserialize_payload(pl.decode('utf-8'))
+        if isinstance(mqtt_payload, list):
+            jpg_json = mqtt_payload
+        else:
+            jpg_json = [mqtt_payload]
+            logger.info('Convert input type from {0} to {1}'.format(
+                type(mqtt_payload),
+                type(jpg_json)))
+
         jpg_bytes_list = [
             payload.destringify_jpg(img['bytes']) for img in jpg_json]
         metas = [img.get('meta', {}) for img in jpg_json]
@@ -207,6 +221,7 @@ class PipelineService(EngineService):
         # metadata here. This commit should be revert when Galaxy pipeline
         # support it: https://gitlab.com/DT42/galaxy42/dt42-trainer/issues/120
         meta_data = metas[0]
+
         try:
             logger.debug(meta_data)
             output = self.engine.inference(image_data,
