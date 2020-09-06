@@ -29,7 +29,9 @@ setup(
     packages=find_packages(exclude=['tests']),
     install_requires=[
         'logzero',
-        'paho-mqtt'
+        'paho-mqtt',
+        'python3-opencv',
+        'python3-opengl',
     ],
     # Without TF: pip3 install berrynet
     # TF CPU mode: pip3 install berrynet[tf]
