@@ -1,4 +1,8 @@
 #!/bin/bash
+#
+# Manually run BerryNet pipeline powered by Dyda.
+#
+# Verified on Dyda v1.41.0
 
 dyda_source_dir="$HOME/codes/dyda"
 berrynet_source_dir="$HOME/codes/BerryNet"
