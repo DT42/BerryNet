@@ -1,7 +1,0 @@
-Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: bntrainer
-Source: http://dt42.io
-
-Files: *
-Copyright: 2019 DT42
-License: DT42 License
