@@ -2,6 +2,11 @@
 #
 # Manually run BerryNet pipeline powered by Dyda.
 #
+# Testing input & output client commands
+#
+#     $ bn_dashboard --topic berrynet/engine/pipeline/result --no-full-screen --no-decoration --debug
+#     $ bn_camera --mode file --filepath <image-filepath>
+#
 # Verified on Dyda v1.41.0
 
 dyda_source_dir="$HOME/codes/dyda"
