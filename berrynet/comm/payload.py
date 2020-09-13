@@ -87,7 +87,7 @@ def serialize_payload(json_object):
     return json.dumps(json_object)
 
 
-def serialize_jpg(jpg_bytes, md5sum=False):
+def serialize_jpg(jpg_bytes, md5sum=False, meta={}):
     """Create Serialized JSON object consisting of image bytes and meta
 
     :param imarray: JPEG bytes
@@ -98,6 +98,7 @@ def serialize_jpg(jpg_bytes, md5sum=False):
     obj = {}
     obj['timestamp'] = datetime.now().isoformat()
     obj['bytes'] = stringify_jpg(jpg_bytes)
+    obj['meta'] = meta
     if md5sum:
         obj['md5sum'] = generate_bytes_md5sum(jpg_bytes)
     return json.dumps(obj)

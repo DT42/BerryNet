@@ -18,6 +18,7 @@
 # along with BerryNet.  If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
+import json
 import logging
 import time
 
@@ -80,6 +81,11 @@ def parse_args():
         action='store_true',
         help='Add md5sum of a captured frame into the result.'
     )
+    ap.add_argument('--meta',
+        type=str,
+        default='{}',
+        help='Metadata field for stringified JSON data.'
+    )
     ap.add_argument('--debug',
         action='store_true',
         help='Debug mode toggle'
@@ -104,6 +110,8 @@ def main():
     comm = Communicator(comm_config, debug=True)
 
     duration = lambda t: (datetime.now() - t).microseconds / 1000
+
+    metadata = json.loads(args.get('meta', '{}'))
 
     if args['mode'] == 'stream':
         counter = 0
@@ -176,7 +184,7 @@ def main():
 
                     t = datetime.now()
                     retval, jpg_bytes = cv2.imencode('.jpg', im)
-                    mqtt_payload = payload.serialize_jpg(jpg_bytes, args['hash'])
+                    mqtt_payload = payload.serialize_jpg(jpg_bytes, args['hash'], metadata)
                     comm.send(args['topic'], mqtt_payload)
                     logger.debug('send: {} ms'.format(duration(t)))
                 else:
@@ -196,7 +204,7 @@ def main():
         retval, jpg_bytes = cv2.imencode('.jpg', im)
 
         t = datetime.now()
-        mqtt_payload = payload.serialize_jpg(jpg_bytes, args['hash'])
+        mqtt_payload = payload.serialize_jpg(jpg_bytes, args['hash'], metadata)
         logger.debug('payload: {} ms'.format(duration(t)))
         logger.debug('payload size: {}'.format(len(mqtt_payload)))
 
