@@ -5,8 +5,7 @@
 # Testing input & output client commands
 #
 #     $ bn_dashboard --topic berrynet/engine/pipeline/result --no-full-screen --no-decoration --debug
-#     $ bn_camera --mode file --filepath <image-filepath>
-#
+#     $ bn_camera --meta '{"roi": [{"top": 50, "left": 10, "bottom": 600, "right": 600, "overlap_threshold": 0.5}]}' --mode file --filepath <image-filepath>
 # Verified on Dyda v1.41.0
 
 dyda_source_dir="$HOME/codes/dyda"
