@@ -22,6 +22,7 @@ import json
 import io
 import logging
 import os
+import subprocess
 import tempfile
 import tarfile
 import time
@@ -42,13 +43,21 @@ class DydaConfigUpdateService(object):
         self.comm.send(self.comm_config['publish'], jsonPayload)
         
     def handleConfig(self, pl):
+        payload_json = ""
         try:
             payload_json = payload.deserialize_payload(pl.decode('utf-8'))
-            print(payload_json)
             self.comm.send(self.comm_config['publish'], payload.serialize_payload(payload_json))
         except Exception as e:
             logger.info(e)
 
+        # output config file
+        with open(self.comm_config['configfile'], 'w') as configfile:
+            configfile.write(payload.serialize_payload(payload_json))
+            configfile.close()
+
+        # restart service
+        subprocess.run(["supervisorctl", "restart", "bnpipeline-bndyda"])
+            
     def run(self, args):
         """Infinite loop serving inference requests"""
         self.comm.run()
@@ -80,6 +89,11 @@ def parse_args():
         default='berrynet/manager/aikea/config',
         help='topic to publish'
     )
+    ap.add_argument(
+        '--configfile',
+        default='/var/lib/berrynet/dyda.config',
+        help='topic to publish'
+    )
     return vars(ap.parse_args())
 
 
@@ -98,7 +112,8 @@ def main():
         'broker': {
             'address': args['broker_ip'],
             'port': args['broker_port']
-        }
+        },
+        'configfile': args['configfile']
     }
     config_service = DydaConfigUpdateService(comm_config,
                                         args['debug'])
