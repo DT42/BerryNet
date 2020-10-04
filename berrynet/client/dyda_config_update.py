@@ -39,8 +39,8 @@ class DydaConfigUpdateClient(object):
             self.comm_config['subscribe'][topic] = self.handleResult
         self.comm = Communicator(self.comm_config, debug=True)
 
-    def sendConfig(self, jsonPayload):
-        self.comm.send(self.comm_config['publish'], jsonPayload)
+    def sendConfig(self, payloadID):
+        self.comm.send(self.comm_config['publish'], payloadID)
         
     def handleResult(self, pl):
         try:
@@ -53,9 +53,7 @@ class DydaConfigUpdateClient(object):
 
     def run(self, args):
         """Infinite loop serving inference requests"""
-        with open(args['payload']) as f:
-            payload = f.read()
-            self.sendConfig(payload)
+        self.sendConfig(args['payload'])
         self.comm.run()
 
 def parse_args():
@@ -77,7 +75,8 @@ def parse_args():
     )
     ap.add_argument(
         '--payload',
-        help='payload file'
+        required=True,
+        help='payload ID'
     )
     ap.add_argument(
         '--topic',
