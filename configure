@@ -171,24 +171,14 @@ install_tensorflow() {
 	    TENSORFLOW_PKGNAME="tensorflow-1.15.0-cp37-cp37m-linux_armv7l.whl"
 	    if [ ! -e "/tmp/$TENSORFLOW_PKGNAME" ]; then
                 wget -O /tmp/$TENSORFLOW_PKGNAME \
-                    https://github.com/PINTO0309/Tensorflow-bin/raw/master/$TENSORFLOW_PKGNAME
-	    else
-                echo "$TENSORFLOW_PKGNAME has existed, skip to download it."
-	    fi
-	    sudo -H pip3 install /tmp/$TENSORFLOW_PKGNAME
-            ;;
-        "stretch")
-	    TENSORFLOW_PKGNAME="tensorflow-1.15.0-cp35-cp35m-linux_armv7l.whl"
-	    if [ ! -e "/tmp/$TENSORFLOW_PKGNAME" ]; then
-                wget -O /tmp/$TENSORFLOW_PKGNAME \
-                    https://github.com/PINTO0309/Tensorflow-bin/raw/master/$TENSORFLOW_PKGNAME
+                    https://s3.amazonaws.com/pypi.berrynet.org/$TENSORFLOW_PKGNAME
 	    else
                 echo "$TENSORFLOW_PKGNAME has existed, skip to download it."
 	    fi
 	    sudo -H pip3 install /tmp/$TENSORFLOW_PKGNAME
             ;;
         *)
-            echo "ERROR: Fail to install TensorFlow, unknown Raspbian codename $CODENAME"
+            echo "ERROR: Fail to install TensorFlow, unknown or unsupported Raspbian codename $CODENAME"
             exit 1
         esac
     fi
