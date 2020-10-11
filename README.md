@@ -85,7 +85,7 @@ You will learn how to configure or change the components in the [Configuration](
 
 # Dashboard: Freeboard
 
-## Open Freeboard on RPi3 (with touch screen)
+## Open Freeboard on RPi (with touch screen)
 
 Freeboard is a web-based dashboard. Here are the steps to show the detection result iamge and text on Freeboard:
 
