@@ -53,8 +53,9 @@ class DydaConfigUpdateClient(object):
 
     def run(self, args):
         """Infinite loop serving inference requests"""
+        self.comm.start_nb()
         self.sendConfig(args['payload'])
-        self.comm.run()
+        time.sleep(1)
 
 def parse_args():
     ap = argparse.ArgumentParser()
