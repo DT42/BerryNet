@@ -27,6 +27,7 @@ import tempfile
 import tarfile
 import time
 import sys
+import configparser
 
 from berrynet import logger
 from berrynet.comm import Communicator
@@ -38,6 +39,9 @@ class DydaConfigUpdateService(object):
         for topic, functor in self.comm_config['subscribe'].items():
             self.comm_config['subscribe'][topic] = self.handleConfig
         self.comm = Communicator(self.comm_config, debug=True)
+        idlistConfig = configparser.ConfigParser()
+        idlistConfig.read(self.comm_config['idlist'])
+        self.idlist = idlistConfig["ID"]
 
     def sendConfig(self, jsonPayload):
         self.comm.send(self.comm_config['publish'], jsonPayload)
@@ -45,8 +49,15 @@ class DydaConfigUpdateService(object):
     def handleConfig(self, pl):
         payload_json = ""
         try:
-            payload_json = payload.deserialize_payload(pl.decode('utf-8'))
-            self.comm.send(self.comm_config['publish'], payload.serialize_payload(payload_json))
+            id=pl.decode('utf-8')
+            if (id in self.idlist):
+                configFilename = self.idlist[id]
+                f = open(configFilename)
+                payload_json = payload.deserialize_payload(f.read())
+                self.sendConfig(payload.serialize_payload(payload_json))
+            else:
+                logger.warning("ID %s is not in idlist"%(id))
+                return
         except Exception as e:
             logger.info(e)
 
@@ -92,7 +103,12 @@ def parse_args():
     ap.add_argument(
         '--configfile',
         default='/var/lib/berrynet/dyda.config',
-        help='topic to publish'
+        help='config file path for dyda'
+    )
+    ap.add_argument(
+        '--idlist',
+        required=True,
+        help='list of id and config file'
     )
     return vars(ap.parse_args())
 
@@ -113,7 +129,8 @@ def main():
             'address': args['broker_ip'],
             'port': args['broker_port']
         },
-        'configfile': args['configfile']
+        'configfile': args['configfile'],
+        'idlist': args['idlist']
     }
     config_service = DydaConfigUpdateService(comm_config,
                                         args['debug'])
