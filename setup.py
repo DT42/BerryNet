@@ -4,12 +4,16 @@ from setuptools import setup
 from setuptools import find_packages
 
 
+with open("README.md", "r") as f:
+    long_description = f.read()
+
+
 setup(
     name='berrynet',
-    version='v3.10.0',
-    description='BerryNet',
-    long_description=
-        'TBD',
+    version='v3.10.1',
+    description='Deep learning gateway on Raspberry Pi and other edge devices.',
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     url='https://github.com/DT42/BerryNet',
     author='DT42 Inc.',
     author_email='berrynet@dt42.io',
