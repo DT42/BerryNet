@@ -30,6 +30,8 @@ setup(
     install_requires=[
         'logzero',
         'paho-mqtt',
+        'PyOpenGL',
+        'PyOpenGL-accelerate',
     ],
     # Without TF: pip3 install berrynet
     # TF CPU mode: pip3 install berrynet[tf]
