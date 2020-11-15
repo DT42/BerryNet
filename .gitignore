@@ -14,3 +14,12 @@ venv
 
 # Others
 *.swp
+
+# node packages
+node_modules
+
+# pytest-coverage
+.coverage
+
+# mypy
+.mypy_cache/

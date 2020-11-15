@@ -61,7 +61,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install poetry
           poetry install
-          python setup.py install
       - name: Download inception models
         run: |
           wget "https://storage.googleapis.com/download.tensorflow.org/models/inception_v3_2016_08_28_frozen.pb.tar.gz" -O berrynet/engine/inception_v3_2016_08_28_frozen.pb.tar.gz
@@ -70,3 +69,8 @@ jobs:
       - name: Test with pytest
         run: |
           python -m unittest
+
+      - name: Test coverage
+        run: |
+          pytest --cov=berrynet --cov-report=term-missing tests
+
