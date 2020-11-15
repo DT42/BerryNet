@@ -39,7 +39,7 @@ To bring easy and flexible edge AI experience to user, we keep expending support
 
 ## Installation
 
-You can install BerryNet by using pre-built image or from source. Please refer to the [installation guide](tutorials/installation) for the details. 
+You can install BerryNet by using pre-built image or from source. Please refer to the [installation guide](https://dt42.io/berrynet-doc/tutorials/installation/) for the details. 
 
 We are pushing BerryNet into Debian repository, so you will be able to install by only typing one command in the future.
 
@@ -172,4 +172,4 @@ If you use [LabelMe](http://labelme.csail.mit.edu/Release3.0/) to annotate data,
 
 ## Discussion
 
-Please refer to the [Slack](https://join.slack.com/t/berrynet/shared_invite/enQtODg5MjA0ODExMjUzLWIwMDNkZWExZGE2Njc1ZDljMmFiOWJlZDdmZmEwYmQ4YTJiNzg2NDc1NTJhMDVkMzhmNzA3YTU0ZTc4M2JiNTE), [Telegram Group](https://t.me/berrynetdev) or [Google Group](https://groups.google.com/a/dt42.io/d/forum/berrynet) for questions, suggestions, or any idea discussion.
+Please refer to the [Slack](https://join.slack.com/t/berrynet/shared_invite/enQtODg5MjA0ODExMjUzLWIwMDNkZWExZGE2Njc1ZDljMmFiOWJlZDdmZmEwYmQ4YTJiNzg2NDc1NTJhMDVkMzhmNzA3YTU0ZTc4M2JiNTE) or [Telegram Group](https://t.me/berrynetdev) for questions, suggestions, or any idea discussion.
