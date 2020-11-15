@@ -3,12 +3,12 @@
 
 ![Docker Image CI](https://github.com/DT42/BerryNet/workflows/Docker%20Image%20CI/badge.svg)
 
-[Supporting BerryNet](https://github.com/DT42/BerryNet/wiki/Donation)
+[Supporting BerryNet](community/donation)
 
 * [Become a backer or sponsor on Open Collective](https://opencollective.com/berrynet).
-* [One-time donation via PayPal or crypto-currencies](https://github.com/DT42/BerryNet/wiki/Donation#one-time-donations).
+* [One-time donation via PayPal or crypto-currencies](community/donation#one-time-donations).
 
-# Introduction
+## Introduction
 
 This project turns edge devices such as Raspberry Pi into an intelligent gateway with deep learning running on it. No internet connection is required, everything is done locally on the edge device itself. Further, multiple edge devices can create a distributed AIoT network.
 
@@ -37,9 +37,9 @@ To bring easy and flexible edge AI experience to user, we keep expending support
 <p align="center">Figure 4: Reference hardwares</p>
 
 
-# Installation
+## Installation
 
-You can install BerryNet by using pre-built image or from source. Please refer to the [Wiki page](https://github.com/DT42/BerryNet/wiki/Installation) for the details. 
+You can install BerryNet by using pre-built image or from source. Please refer to the [installation guide](tutorials/installation) for the details. 
 
 We are pushing BerryNet into Debian repository, so you will be able to install by only typing one command in the future.
 
@@ -52,25 +52,25 @@ $ ./configure
 ```
 
 
-# Start and Stop BerryNet
+## Start and Stop BerryNet
 
 BerryNet performs an AIoT application by connecting independent components together. Component types include but not limited to AI engine, I/O processor, data processor (algorithm), or data collector.
 
 We recommend to manage BerryNet componetns by [supervisor](http://supervisord.org/), but you can also run BerryNet components manually. You can manage BerryNet via `supervisorctl`:
 
-```
-# Check status of BerryNet components
-$ sudo supervisorctl status all
+    ```
+    # Check status of BerryNet components
+    $ sudo supervisorctl status all
 
-# Stop Camera client
-$ sudo supervisorctl stop camera
+    # Stop Camera client
+    $ sudo supervisorctl stop camera
 
-# Restart all components
-$ sudo supervisorctl restart all
+    # Restart all components
+    $ sudo supervisorctl restart all
 
-# Show last stderr logs of camera client
-$ sudo supervisorctl tail camera stderr
-```
+    # Show last stderr logs of camera client
+    $ sudo supervisorctl tail camera stderr
+    ```
 
 For more possibilities of supervisorctl, please refer to the [official tutorial](http://supervisord.org/running.html#running-supervisorctl).
 
@@ -83,9 +83,9 @@ The default application has three components:
 You will learn how to configure or change the components in the [Configuration](#configuration) section.
 
 
-# Dashboard: Freeboard
+## Dashboard: Freeboard
 
-## Open Freeboard on RPi (with touch screen)
+### Open Freeboard on RPi (with touch screen)
 
 Freeboard is a web-based dashboard. Here are the steps to show the detection result iamge and text on Freeboard:
 
@@ -94,7 +94,7 @@ Freeboard is a web-based dashboard. Here are the steps to show the detection res
 * 2: Click `LOAD FREEBOARD`, and select the newly downloaded `dashboard-tflitedetector.json`
 * 3: Wait for seconds, you should see the inference result image and text on Freeboard
 
-## Open Freeboard on another computer
+### Open Freeboard on another computer
 
 Assuming that you have two devices:
 
@@ -112,7 +112,7 @@ Here are the steps:
 For more details about dashboard configuration (e.g. how to add widgets), please refer to [Freeboard project](https://github.com/Freeboard/freeboard).
 
 
-# Enable Data Collector
+## Enable Data Collector
 
 You might want to store the snapshot and inference results for data analysis.
 
@@ -133,11 +133,11 @@ The topic config indicates what MQTT topic the data collector will listen, and w
 The inference result image and text will be saved into the indicated result directory.
 
 
-# Configuration
+## Configuration
 
 The default supervisor config is at `/etc/supervisor/conf.d/berrynet-tflite.conf`. To write your own supervisor config, you can refer to [here](https://github.com/DT42/BerryNet/tree/master/config/supervisor/conf.d) for more example supervisor configs of BerryNet
 
-## Camera Client
+### Camera Client
 
 BerryNet camera client can run in two modes: stream or file. In stream mode, local camera (e.g. USB camera and RPi camera) and IP camera can be supported, and input frame rate (FPS) can be changed on demand (default is 1). In file mode, user can indicate filepath as input source.
 
@@ -154,7 +154,7 @@ $ bn_camera --mode file --filepath <image-filepath>
 ```
 
 
-# Use Your Data To Train
+## Use Your Data To Train
 
 The original instruction of retraining YOLOv2 model see [github repository of darknet](https://github.com/AlexeyAB/darknet#how-to-train-to-detect-your-custom-objects)
 
@@ -170,6 +170,6 @@ The rest parts are the same as retraining YOLO.
 If you use [LabelMe](http://labelme.csail.mit.edu/Release3.0/) to annotate data, `utils/xmlTotxt.py` can help convert the xml format to the text format that darknet uses.
 
 
-# Discussion
+## Discussion
 
 Please refer to the [Slack](https://join.slack.com/t/berrynet/shared_invite/enQtODg5MjA0ODExMjUzLWIwMDNkZWExZGE2Njc1ZDljMmFiOWJlZDdmZmEwYmQ4YTJiNzg2NDc1NTJhMDVkMzhmNzA3YTU0ZTc4M2JiNTE), [Telegram Group](https://t.me/berrynetdev) or [Google Group](https://groups.google.com/a/dt42.io/d/forum/berrynet) for questions, suggestions, or any idea discussion.
