@@ -51,6 +51,8 @@ install_system_dependencies() {
     if [ "$CODENAME" = "buster" ]; then
         sudo apt-get install -y \
             supervisor
+        sudo -H pip3 install --timeout 60 PyOpenGL
+        sudo -H pip3 install --timeout 60 PyOpenGL-accelerate
     else
         sudo apt-get install -y \
             apache2 \
