@@ -58,10 +58,10 @@ jobs:
           python-version: 3.7
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
+          python3 -m pip install --upgrade pip
           pip install poetry
           poetry install
-          python setup.py install
+          python3 setup.py install
       - name: Download inception models
         run: |
           wget "https://storage.googleapis.com/download.tensorflow.org/models/inception_v3_2016_08_28_frozen.pb.tar.gz" -O berrynet/engine/inception_v3_2016_08_28_frozen.pb.tar.gz
@@ -69,4 +69,4 @@ jobs:
 
       - name: Test with pytest
         run: |
-          python -m unittest
+          python3 -m unittest
