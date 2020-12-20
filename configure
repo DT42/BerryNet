@@ -70,16 +70,16 @@ install_system_dependencies() {
             python3-pip \
             supervisor \
             wget
-        sudo -H pip3 install --timeout 60 cython
-        sudo -H pip3 install --timeout 60 logzero
-        sudo -H pip3 install --timeout 60 paho-mqtt
-        sudo -H pip3 install --timeout 60 PyOpenGL
-        sudo -H pip3 install --timeout 60 PyOpenGL-accelerate
-        sudo -H pip3 install --timeout 60 watchdog
-
-        install_opencv
-        install_nodejs
     fi
+    sudo -H pip3 install --timeout 60 cython
+    sudo -H pip3 install --timeout 60 logzero
+    sudo -H pip3 install --timeout 60 paho-mqtt
+    sudo -H pip3 install --timeout 60 PyOpenGL
+    sudo -H pip3 install --timeout 60 PyOpenGL-accelerate
+    sudo -H pip3 install --timeout 60 watchdog
+
+    install_opencv
+    install_nodejs
 }
 
 install_berrynet_repository() {
