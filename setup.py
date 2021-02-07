@@ -10,7 +10,7 @@ with open("README.md", "r") as f:
 
 setup(
     name='berrynet',
-    version='v3.10.1',
+    version='v3.10.2',
     description='Deep learning gateway on Raspberry Pi and other edge devices.',
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -73,7 +73,7 @@ setup(
             'bn_tflite=berrynet.service.tflite_service:main',
             'bn_openvino=berrynet.service.openvino_service:main',
             'bn_darknet=berrynet.service.darknet_service:main',
-            'bn_pipeline=bndyda.bnpipeline:main',
+            'bn_pipeline=berrynet.bndyda.bnpipeline:main',
         ]
     },
     #ext_modules=[
