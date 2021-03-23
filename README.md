@@ -3,10 +3,11 @@
 
 ![Docker Image CI](https://github.com/DT42/BerryNet/workflows/Docker%20Image%20CI/badge.svg)
 
-[Supporting BerryNet](community/donation)
+[Supporting BerryNet](https://dt42.io/berrynet-doc/community/donation/)
 
+* [One-time donation via PayPal](https://paypal.me/berrynet).
+* [One-time donation via crypto-currencies](https://dt42.io/berrynet-doc/community/donation/).
 * [Become a backer or sponsor on Open Collective](https://opencollective.com/berrynet).
-* [One-time donation via PayPal or crypto-currencies](community/donation#one-time-donations).
 
 ## Introduction
 
