@@ -198,7 +198,7 @@ class TelegramBotService(object):
                 # Check if the file is a regular file
                 if not os.path.isfile(fullPath):
                     continue
-                # Check if the file is accessable
+                # Check if the file is accessible
                 if not os.access(fullPath, os.R_OK):
                     continue
                 # Pack the file

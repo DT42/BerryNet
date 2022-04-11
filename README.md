@@ -88,7 +88,7 @@ You will learn how to configure or change the components in the [Configuration](
 
 ### Open Freeboard on RPi (with touch screen)
 
-Freeboard is a web-based dashboard. Here are the steps to show the detection result iamge and text on Freeboard:
+Freeboard is a web-based dashboard. Here are the steps to show the detection result image and text on Freeboard:
 
 * 1: Enter `http://127.0.0.1:8080` in browser's URL bar, and press enter
 * 2: [Download](https://raw.githubusercontent.com/DT42/BerryNet/master/config/dashboard-tflitedetector.json) the Freeboard configuration for default application, `dashboard-tflitedetector.json`
@@ -123,7 +123,7 @@ To run BerryNet data collector manually, you can run the command below:
 $ bn_data_collector --topic-config <topic-config-filepath> --data-dirpath <result-dirpath>
 ```
 
-The topic config indicates what MQTT topic the data collector will listen, and what handler will be triggered. Here is a topic config exmaple:
+The topic config indicates what MQTT topic the data collector will listen, and what handler will be triggered. Here is a topic config example:
 
 ```
 {

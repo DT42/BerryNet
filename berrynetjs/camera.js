@@ -164,6 +164,6 @@ client.on('message', (t, m) => {
       cameraIntervalID = null;
     }
   } else {
-    log('camera client: unkown action.');
+    log('camera client: unknown action.');
   }
 });
