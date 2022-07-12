@@ -115,7 +115,7 @@ class PipelineEngine(DLEngine):
         logger.debug('Warmup shape: {}'.format(shape))
         input_data = [np.zeros(shape=shape, dtype=np.uint8)] * iteration
 
-        # FIXME: get engines programatically
+        # FIXME: get engines programmatically
         dl_comp_config = self.get_dl_component_config(self.pipeline_config)
         for comp_config in dl_comp_config:
             t_start = time.time()
@@ -215,7 +215,7 @@ class PipelineService(EngineService):
             # FIXME: workaround for pipeline
             # Pipeline throw IndexError when there's no results, see:
             # https://gitlab.com/DT42/galaxy42/dt42-trainer/issues/86
-            # So we catch the exeception, and produce a dummy result
+            # So we catch the exception, and produce a dummy result
             # to hook. This workaround should be removed after the issue
             # has been fixed.
             model_outputs = empty_inference_result(len(jpg_json))
