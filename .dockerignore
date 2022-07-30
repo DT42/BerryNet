@@ -1,0 +1,9 @@
+__pycache__
+.mypy_cache
+.pytest_cache
+.vscode
+bower_components
+venv
+node_modules
+.git
+.github

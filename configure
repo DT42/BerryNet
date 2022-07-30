@@ -21,7 +21,8 @@
 
 set -e
 
-LOG="$PWD/berrynet-install.log"
+INFO_LOG="$PWD/berrynet-install.log"
+LOG="$PWD/berrynet-install-error.log"
 DISTRIBUTIONID=`lsb_release -i -s`
 CODENAME=`lsb_release -c -s`
 INSTALL_TENSORFLOW="Y"
@@ -275,6 +276,9 @@ install_caffe2() {
 
 update_system_service() {
     sudo service mosquitto restart
+    # [BUG]: error: <class 'socket.error'>, [Errno 2] No such file or directory: file: /usr/lib/python2.7/socket.py line: 228
+    # [ref]: https://github.com/Supervisor/supervisor/issues/376
+    sudo supervisord
     sudo supervisorctl reload
     sudo a2enconf berrynet-dashboard
 }
@@ -293,7 +297,7 @@ if [ "$INSTALL_TENSORFLOW" = "Y" ]; then
     install_model mobilenet-1.0-224-quantized-tflite 2>&1 | tee -a $LOG
     install_model mobilenet-ssd-coco-tflite 2>&1 | tee -a $LOG
 else
-    echo "Not install TensorFlow" >> $LOG
+    echo "Not install TensorFlow" >> $INFO_LOG
 fi
 
 if [ "$INSTALL_OPENVINO" = "Y" ]; then
@@ -302,24 +306,40 @@ if [ "$INSTALL_OPENVINO" = "Y" ]; then
     install_model mobilenet-1.0-224-fp16-openvino 2>&1 | tee -a $LOG
     install_model mobilenet-ssd-openvino 2>&1 | tee -a $LOG
 else
-    echo "Not install OpenVINO" >> $LOG
+    echo "Not install OpenVINO" >> $INFO_LOG
 fi
 
 if [ "$INSTALL_DARKNET" = "Y" ]; then
     install_darknet 2>&1 | tee -a $LOG
     install_model tinyyolovoc 2>&1 | tee -a $LOG
 else
-    echo "Not install Darknet NNPACK" >> $LOG
+    echo "Not install Darknet NNPACK" >> $INFO_LOG
 fi
 
 if [ "$INSTALL_CAFFE2" = "Y" ]; then
     install_caffe2 2>&1 | tee -a $LOG
     download_classifier_model_caffe2 2>&1 | tee -a $LOG
 else
-    echo "Not install Caffe2" >> $LOG
+    echo "Not install Caffe2" >> $INFO_LOG
 fi
 
 update_system_service 2>&1 | tee -a $LOG
+
+# if these string exists in $LOG, throw exception
+if grep -i "error" $LOG
+then
+    exit 1
+fi
+
+if grep -i "not found" $LOG
+then
+    exit 1
+fi
+
+if grep -i "exception" $LOG
+then
+    exit 1
+fi
 
 {
     echo "Installation is completed successfully!"
@@ -334,4 +354,4 @@ update_system_service 2>&1 | tee -a $LOG
     echo "    /usr/local/berrynet/npm-debug.log"
     echo ""
     echo "We are happy to check and fix it, thank you!"
-} | tee -a $LOG
+} | tee -a $INFO_LOG
