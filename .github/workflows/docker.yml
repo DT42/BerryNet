@@ -11,9 +11,10 @@ env:
   RC_NAME: dt42/berrynet
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # Raspberry Pi 4 and 5 run 64-bit Arm.
+    runs-on: ubuntu-24.04-arm
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v7
       # need to set dockerhub password in GitHub secrets
       #   - name: Login to docker hub
       #     uses: actions-hub/docker/login@master
@@ -27,11 +28,32 @@ jobs:
       #       docker pull ${RC_NAME}:cache
 
       - name: Build image
-        if: always()
         run: |
-          docker build --cache-from ${RC_NAME}:cache -t ${RC_NAME} -f docker/Dockerfile .
+          docker build -t ${RC_NAME} -f docker/Dockerfile .
           docker tag ${RC_NAME} ${RC_NAME}:${GITHUB_SHA}
           docker tag ${RC_NAME} ${RC_NAME}:cache
+
+      - name: Test image
+        run: |
+          docker run -d --name berrynet ${RC_NAME}
+          sleep 20
+          # There is no camera on the runner, so feed an image file.
+          docker exec berrynet supervisorctl status litert-service dashboard
+          docker cp berrynet/engine/grace_hopper.jpg berrynet:/tmp/test.jpg
+          docker exec berrynet sh -c '
+            mosquitto_sub -t berrynet/engine/litertdetector/result -C 1 -W 60 > /tmp/result.json &
+            pid=$!
+            sleep 2
+            bn_camera --mode file --filepath /tmp/test.jpg
+            wait $pid'
+          docker exec berrynet python3 -c "import json; print(json.load(open('/tmp/result.json'))['annotations'])"
+          docker exec berrynet curl -fsS -o /dev/null http://localhost:8080/
+
+      - name: Show logs
+        if: failure()
+        run: |
+          docker logs berrynet
+          docker exec berrynet sh -c 'tail -n 20 /var/log/berrynet/*.log'
 
     # need to set dockerhub password in GitHub secrets
     #   - name: Push to docker registry
