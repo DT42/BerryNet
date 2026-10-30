@@ -172,6 +172,17 @@ The topic config indicates what MQTT topic the data collector will listen, and w
 The inference result image and text will be saved into the indicated result directory.
 
 
+## Soil Moisture Monitor: Zigbee Sensors to Telegram
+
+BerryNet can also watch Zigbee soil moisture sensors (e.g. THIRDREALITY Smart Soil Moisture Sensor Gen2 with SONOFF ZBDongle-P) through [Zigbee2MQTT](https://www.zigbee2mqtt.io/), and send too dry/wet, low battery and offline alerts, scheduled reports and `/status` replies to Telegram:
+
+```
+$ bn_soil_monitor --config /etc/berrynet/soil-monitor.json
+```
+
+Please refer to the [soil moisture monitor guide](doc/soil-monitor.md) for the setup details.
+
+
 ## Configuration
 
 The default supervisor config is at `/etc/supervisor/conf.d/berrynet-litert.conf`, or `berrynet-onnx.conf` with `BERRYNET_ENGINE=onnx`. To write your own supervisor config, you can refer to [here](https://github.com/DT42/BerryNet/tree/master/config/supervisor/conf.d) for more example supervisor configs of BerryNet

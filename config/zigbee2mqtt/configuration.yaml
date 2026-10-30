@@ -1,0 +1,39 @@
+# Zigbee2MQTT configuration for BerryNet soil moisture monitor.
+#
+# Copy to the Zigbee2MQTT data directory, e.g.
+# /opt/zigbee2mqtt/data/configuration.yaml
+
+# Reuse the Mosquitto broker installed by BerryNet.
+mqtt:
+  base_topic: zigbee2mqtt
+  server: mqtt://localhost:1883
+
+# SONOFF ZBDongle-P (TI CC2652P) uses the zstack adapter.
+# Find the port by `ls -l /dev/serial/by-id/`, it is more stable than
+# /dev/ttyUSB0 after reboot.
+serial:
+  port: /dev/serial/by-id/usb-ITead_Sonoff_Zigbee_3.0_USB_Dongle_Plus_<id>-if00-port0
+  adapter: zstack
+
+# Pair the sensors by "Permit join" in the frontend. Port 8080 is used by
+# the BerryNet dashboard.
+frontend:
+  enabled: true
+  port: 8081
+
+advanced:
+  network_key: GENERATE
+  pan_id: GENERATE
+  ext_pan_id: GENERATE
+  log_level: info
+
+# Friendly names are the MQTT topics bn_soil_monitor subscribes,
+# e.g. zigbee2mqtt/soil_sensor_1. Rename the sensors in the frontend
+# or here after pairing.
+#devices:
+#  '0x0000000000000001':
+#    friendly_name: soil_sensor_1
+#  '0x0000000000000002':
+#    friendly_name: soil_sensor_2
+#  '0x0000000000000003':
+#    friendly_name: soil_sensor_3
