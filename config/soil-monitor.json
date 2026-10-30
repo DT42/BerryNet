@@ -1,0 +1,20 @@
+{
+    "token": "<telegram bot token from BotFather>",
+    "chat_ids": [],
+    "language": "zh_TW",
+    "broker_ip": "localhost",
+    "broker_port": 1883,
+    "z2m_base_topic": "zigbee2mqtt",
+    "publish_topic": "berrynet/data/soilmoisture",
+    "dry_threshold": 30,
+    "wet_threshold": 85,
+    "hysteresis": 5,
+    "low_battery": 20,
+    "report_times": ["08:00", "20:00"],
+    "offline_timeout": 720,
+    "sensors": [
+        {"name": "soil_sensor_1", "label": "Balcony tomato"},
+        {"name": "soil_sensor_2", "label": "Monstera", "dry_threshold": 25},
+        {"name": "soil_sensor_3", "label": "Succulents", "dry_threshold": 10, "wet_threshold": 60}
+    ]
+}
