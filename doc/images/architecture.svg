@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="838" height="1179" viewBox="0 0 838 1179" font-family="Calibri, Carlito, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif">
+  <title>BerryNet architecture</title>
+  <rect width="838" height="1179" fill="#FFFFFF"/>
+  <!-- App Clients -->
+  <rect x="29.5" y="32.5" width="219" height="419" fill="none" stroke="#22486D"/>
+  <text x="138.5" y="79" font-size="40.0" fill="#22486D" text-anchor="middle">App Clients</text>
+  <rect x="55" y="102" width="170" height="48" fill="#22486D"/>
+  <text x="140.0" y="126.0" font-size="24.0" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">Camera</text>
+  <rect x="55" y="166" width="170" height="48" fill="#22486D"/>
+  <text x="140.0" y="190.0" font-size="24.0" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">Dashboard</text>
+  <rect x="55" y="231" width="170" height="48" fill="#22486D"/>
+  <text x="140.0" y="255.0" font-size="24.0" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">IM / Email</text>
+  <rect x="55" y="295" width="170" height="48" fill="#22486D"/>
+  <text x="140.0" y="319.0" font-size="24.0" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">Zigbee Sensor</text>
+  <rect x="55" y="359" width="170" height="48" fill="#22486D"/>
+  <text x="140.0" y="383.0" font-size="24.0" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">...</text>
+  <!-- AI Engines -->
+  <rect x="285.5" y="32.5" width="525" height="419" fill="none" stroke="#22486D"/>
+  <text x="547.5" y="79" font-size="40.0" fill="#22486D" text-anchor="middle">AI Engines</text>
+  <rect x="317.5" y="102.5" width="219" height="322" fill="none" stroke="#22486D"/>
+  <text x="427.0" y="141" font-size="32.0" fill="#22486D" text-anchor="middle">Frameworks</text>
+  <rect x="342" y="163" width="170" height="48" fill="#22486D"/>
+  <text x="427.0" y="187.0" font-size="24.0" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">LiteRT</text>
+  <rect x="342" y="226" width="170" height="48" fill="#22486D"/>
+  <text x="427.0" y="250.0" font-size="24.0" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">ONNX Runtime</text>
+  <rect x="342" y="289" width="170" height="48" fill="#22486D"/>
+  <text x="427.0" y="313.0" font-size="24.0" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">...</text>
+  <rect x="558.5" y="102.5" width="219" height="322" fill="none" stroke="#22486D"/>
+  <text x="668.0" y="141" font-size="32.0" fill="#22486D" text-anchor="middle">Models</text>
+  <rect x="583" y="163" width="170" height="48" fill="#22486D"/>
+  <text x="668.0" y="187.0" font-size="24.0" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">MobileNet</text>
+  <rect x="583" y="226" width="170" height="48" fill="#22486D"/>
+  <text x="668.0" y="250.0" font-size="24.0" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">SSD MobileNet</text>
+  <rect x="583" y="289" width="170" height="48" fill="#22486D"/>
+  <text x="668.0" y="313.0" font-size="24.0" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">YOLOv4</text>
+  <rect x="583" y="352" width="170" height="48" fill="#22486D"/>
+  <text x="668.0" y="376.0" font-size="24.0" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">...</text>
+  <!-- Communication -->
+  <rect x="29.5" y="476.5" width="781" height="148" fill="none" stroke="#22486D"/>
+  <text x="419.5" y="523" font-size="40.0" fill="#22486D" text-anchor="middle">Communication</text>
+  <rect x="129" y="542" width="582" height="65" fill="#22486D"/>
+  <text x="420.0" y="574.5" font-size="26.5" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">MQTT</text>
+  <!-- Runtime -->
+  <rect x="29.5" y="649.5" width="781" height="149" fill="none" stroke="#22486D"/>
+  <text x="419.5" y="696" font-size="40.0" fill="#22486D" text-anchor="middle">Runtime</text>
+  <rect x="129" y="715" width="582" height="65" fill="#22486D"/>
+  <text x="420.0" y="747.5" font-size="32.0" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">Python</text>
+  <!-- Operating Systems -->
+  <rect x="29.5" y="822.5" width="781" height="149" fill="none" stroke="#22486D"/>
+  <text x="419.5" y="869" font-size="40.0" fill="#22486D" text-anchor="middle">Operating Systems</text>
+  <rect x="88" y="888" width="208" height="65" fill="#22486D"/>
+  <text x="192.0" y="907.6" font-size="22.5" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">Raspberry Pi OS</text>
+  <text x="192.0" y="933.4" font-size="22.5" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">Bookworm 64-bit</text>
+  <rect x="323" y="888" width="208" height="65" fill="#22486D"/>
+  <text x="427.0" y="907.6" font-size="22.5" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">Raspberry Pi OS</text>
+  <text x="427.0" y="933.4" font-size="22.5" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">Trixie 64-bit</text>
+  <rect x="558" y="888" width="208" height="65" fill="#22486D"/>
+  <text x="662.0" y="907.6" font-size="22.5" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">Docker</text>
+  <text x="662.0" y="933.4" font-size="22.5" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">Debian Trixie</text>
+  <!-- Computing HW -->
+  <rect x="29.5" y="995.5" width="781" height="149" fill="none" stroke="#22486D"/>
+  <text x="419.5" y="1042" font-size="40.0" fill="#22486D" text-anchor="middle">Computing HW</text>
+  <rect x="88" y="1061" width="208" height="64" fill="#22486D"/>
+  <text x="192.0" y="1080.1" font-size="22.5" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">Raspberry Pi 5</text>
+  <text x="192.0" y="1105.9" font-size="22.5" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">Arm Cortex-A76</text>
+  <rect x="323" y="1061" width="208" height="64" fill="#22486D"/>
+  <text x="427.0" y="1080.1" font-size="22.5" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">Raspberry Pi 4</text>
+  <text x="427.0" y="1105.9" font-size="22.5" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">Arm Cortex-A72</text>
+  <rect x="558" y="1061" width="208" height="64" fill="#22486D"/>
+  <text x="662.0" y="1080.1" font-size="22.5" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">Pi 500 / 400</text>
+  <text x="662.0" y="1105.9" font-size="22.5" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">CM5 / CM4</text>
+</svg>
