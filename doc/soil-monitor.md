@@ -94,10 +94,10 @@ back online.
 
 ## 4. Run bn_soil_monitor
 
-`bn_soil_monitor` is installed with the BerryNet Python package
-(`sudo pip3 install .` in the BerryNet source tree). It only depends on
-`paho-mqtt` and `logzero`; running `python3 -m berrynet.client.soil_monitor`
-in the source tree works as well.
+`bn_soil_monitor` is installed by BerryNet `./configure` like the other
+`bn_*` commands (into `/opt/berrynet/venv`, linked to `/usr/local/bin`).
+It only depends on `paho-mqtt` and `logzero`; in a development environment
+created by `uv sync`, run it with `uv run bn_soil_monitor`.
 
 1. Copy the example config and fill in the bot token and sensor names. The
    file contains the bot token, so make it readable by root only:
