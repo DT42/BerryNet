@@ -43,7 +43,7 @@ unit-test:
   script:
   - pip3 install dist/*.whl tensorflow
   - apt update && apt install -y libsm6 libxrender-dev
-  - python3 setup.py test
+  - python3 -m unittest
   allow_failure: true
 
 pep8-codestyle:
