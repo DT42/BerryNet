@@ -63,6 +63,8 @@ dev = [
     "black",
     "isort",
     "mypy",
+    # berrynet.service and the tests import cv2.
+    "opencv-python",
     "pip-audit",
     "pylint",
     "pytest",
