@@ -15,21 +15,60 @@ This project turns Raspberry Pi into an intelligent gateway with deep learning r
 
 At DT42, we believe that bringing deep learning to edge devices is the trend towards the future. It not only saves costs of data transmission and storage but also makes devices able to respond according to the events shown in the images or videos without connecting to the cloud.
 
-![Figure 1](https://user-images.githubusercontent.com/292790/45943626-a3d28b80-c019-11e8-829c-5eb6afd3faa4.png)
+![Figure 1](doc/images/architecture.svg)
 
 <p align="center">Figure 1: BerryNet architecture</p>
 
-Figure 1 shows the software architecture of the project, we use Python, MQTT and AI engines to analyze images or video frames with deep learning. The AI engines run models with [LiteRT](https://ai.google.dev/edge/litert) or [ONNX Runtime](https://onnxruntime.ai/). There are two types of AI engines, the classification engine (with MobileNet [[1]](https://arxiv.org/pdf/1704.04861.pdf) models) and the object detection engine (with SSD MobileNet [[2]](https://arxiv.org/pdf/1512.02325.pdf) or YOLOv4 [[3]](https://arxiv.org/pdf/2004.10934.pdf) models). Figure 2 shows the differences between classification and object detection.
+Figure 1 shows the software architecture of the project, we use Python, MQTT and AI engines to analyze images or video frames with deep learning. The AI engines run models with [LiteRT](https://ai.google.dev/edge/litert) or [ONNX Runtime](https://onnxruntime.ai/). There are two types of AI engines, the classification engine (with MobileNet [[1]](https://arxiv.org/pdf/1704.04861.pdf) models) and the object detection engine (with SSD MobileNet [[2]](https://arxiv.org/pdf/1512.02325.pdf) or YOLOv4 [[3]](https://arxiv.org/pdf/2004.10934.pdf) models).
 
-![Figure 2](https://cloud.githubusercontent.com/assets/292790/25520013/d9497738-2c2c-11e7-9693-3840647f2e1e.jpg)
+```mermaid
+flowchart LR
+    cameras["Raspberry Pi camera module<br/>USB camera<br/>IP camera"]
+    sensors["Zigbee sensors"]
 
-<p align="center">Figure 2: Classification vs detection</p>
+    subgraph rpi ["Raspberry Pi"]
+        camera["bn_camera"]
+        z2m["Zigbee2MQTT"]
+        subgraph broker ["MQTT broker (Mosquitto)"]
+            rgbimage>"berrynet/data/rgbimage"]
+            result>"berrynet/engine/{service_name}/result"]
+            zigbee>"zigbee2mqtt/{sensor}"]
+            soilmoisture>"berrynet/data/soilmoisture"]
+        end
+        models[("Model packages<br/>bn_model")]
+        engine["AI engine<br/>bn_litert: LiteRT<br/>bn_onnx: ONNX Runtime"]
+        soil["bn_soil_monitor"]
+        display["bn_dashboard"]
+        collector["bn_data_collector"]
+        notifier["bn_telegram<br/>bn_gmail"]
+    end
 
-One of the application of this intelligent gateway is to use the camera to monitor the place you care about. For example, Figure 3 shows the analyzed results from the camera hosted in the DT42 office. The frames were captured by the IP camera and they were submitted into the AI engine. The output from the AI engine will be shown in the dashboard. We are working on the Email and IM notification so you can get a notification when there is a dog coming into the meeting area with the next release.
+    browser["Freeboard dashboard<br/>in browser"]
+    messaging["Telegram<br/>Email"]
 
-![Figure 3](https://cloud.githubusercontent.com/assets/292790/25498294/0ab79976-2bba-11e7-9114-46e328d15a18.gif)
+    cameras --> camera --> rgbimage --> engine --> result
+    models --> engine
+    result --> browser
+    result --> display
+    result --> collector
+    result --> notifier --> messaging
+    sensors --> z2m --> zigbee --> soil --> soilmoisture
+    soil --> messaging
+```
 
-<p align="center">Figure 3: Object detection result example</p>
+<p align="center">Figure 2: BerryNet components and MQTT topics</p>
+
+Figure 2 shows how the components work together. They exchange data as MQTT messages, e.g. camera frames and inference results, through the Mosquitto broker on the Raspberry Pi, and supervisor manages them. Figure 3 shows the differences between classification and object detection.
+
+![Figure 3](https://cloud.githubusercontent.com/assets/292790/25520013/d9497738-2c2c-11e7-9693-3840647f2e1e.jpg)
+
+<p align="center">Figure 3: Classification vs detection</p>
+
+One of the application of this intelligent gateway is to use the camera to monitor the place you care about. For example, Figure 4 shows the analyzed results from the camera hosted in the DT42 office. The frames were captured by the IP camera and they were submitted into the AI engine. The output from the AI engine will be shown in the dashboard. We are working on the Email and IM notification so you can get a notification when there is a dog coming into the meeting area with the next release.
+
+![Figure 4](https://cloud.githubusercontent.com/assets/292790/25498294/0ab79976-2bba-11e7-9114-46e328d15a18.gif)
+
+<p align="center">Figure 4: Object detection result example</p>
 
 ## Supported Hardware
 
@@ -217,4 +256,4 @@ $ bn_camera --mode file --filepath <image-filepath>
 
 ## Discussion
 
-Please refer to the [Slack](https://join.slack.com/t/berrynet/shared_invite/enQtODg5MjA0ODExMjUzLWIwMDNkZWExZGE2Njc1ZDljMmFiOWJlZDdmZmEwYmQ4YTJiNzg2NDc1NTJhMDVkMzhmNzA3YTU0ZTc4M2JiNTE) or [Telegram Group](https://t.me/berrynetdev) for questions, suggestions, or any idea discussion.
+Please use [GitHub Discussions](https://github.com/DT42/BerryNet/discussions) for questions, suggestions, or any idea discussion.
