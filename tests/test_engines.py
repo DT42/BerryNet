@@ -99,26 +99,29 @@ class TestLiteRTEngines(unittest.TestCase):
 
         engine = LiteRTYoloV4DetectorEngine.__new__(LiteRTYoloV4DetectorEngine)
         engine.input_h = engine.input_w = 400
-        engine.score_threshold = 0.25
+        engine.threshold = 0.25
         engine.iou_threshold = 0.45
         engine.max_detections = 50
         box_xywh = np.array([[[100, 100, 40, 40],
                               [102, 101, 40, 40],
                               [101, 100, 40, 40],
                               [300, 200, 20, 40],
-                              [200, 200, 10, 10]]], dtype=np.float32)
+                              [200, 200, 10, 10],
+                              [10, 390, 40, 40]]], dtype=np.float32)
         scores = np.array([[[0.9, 0.1],
                             [0.8, 0.1],    # overlaps with box 0
                             [0.1, 0.6],    # overlaps, but another class
                             [0.1, 0.7],
-                            [0.2, 0.1]]],  # below score threshold
+                            [0.2, 0.1],    # below threshold
+                            [0.5, 0.1]]],  # beyond the image edges
                           dtype=np.float32)
         boxes, classes, confidences = engine.postprocess(box_xywh, scores)
-        np.testing.assert_allclose(confidences, [0.9, 0.7, 0.6])
-        np.testing.assert_array_equal(classes, [0, 1, 1])
+        np.testing.assert_allclose(confidences, [0.9, 0.7, 0.6, 0.5])
+        np.testing.assert_array_equal(classes, [0, 1, 1, 0])
         np.testing.assert_allclose(boxes, [[0.2, 0.2, 0.3, 0.3],
                                            [0.45, 0.725, 0.55, 0.775],
-                                           [0.2, 0.2025, 0.3, 0.3025]])
+                                           [0.2, 0.2025, 0.3, 0.3025],
+                                           [0.925, 0.0, 1.0, 0.075]])
 
 
 @unittest.skipUnless(HAS_ONNX, 'ONNX Runtime is not installed')

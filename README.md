@@ -48,7 +48,7 @@ $ cd BerryNet
 $ ./configure
 ```
 
-`configure` installs BerryNet into `/opt/berrynet/venv` (the `bn_*` commands are linked to `/usr/local/bin`), downloads the default LiteRT and ONNX object detection models into `/usr/share/dlmodels`, and starts the default application with supervisor.
+`configure` installs BerryNet into `/opt/berrynet/venv` (the `bn_*` commands are linked to `/usr/local/bin`), downloads the object detection model into `/usr/share/dlmodels`, and starts the default application with supervisor. The default application runs LiteRT, run `BERRYNET_ENGINE=onnx ./configure` to use ONNX Runtime instead.
 
 You can also build and run a Docker image:
 
@@ -131,6 +131,8 @@ Freeboard is a web-based dashboard. Here are the steps to show the detection res
 * 1: Enter `http://127.0.0.1:8080/#source=dashboard-litertdetector.json` in browser's URL bar, and press enter
 * 2: Wait for seconds, you should see the inference result image and text on Freeboard
 
+If the default application runs ONNX Runtime, use `dashboard-onnxdetector.json` instead of `dashboard-litertdetector.json` here and below.
+
 ### Open Freeboard on another computer
 
 Assuming that you have two devices:
@@ -172,7 +174,9 @@ The inference result image and text will be saved into the indicated result dire
 
 ## Configuration
 
-The default supervisor config is at `/etc/supervisor/conf.d/berrynet-litert.conf`. To use ONNX Runtime instead, replace it with [berrynet-onnx.conf](config/supervisor/conf.d/berrynet-onnx.conf). To write your own supervisor config, you can refer to [here](https://github.com/DT42/BerryNet/tree/master/config/supervisor/conf.d) for more example supervisor configs of BerryNet
+The default supervisor config is at `/etc/supervisor/conf.d/berrynet-litert.conf`, or `berrynet-onnx.conf` with `BERRYNET_ENGINE=onnx`. To write your own supervisor config, you can refer to [here](https://github.com/DT42/BerryNet/tree/master/config/supervisor/conf.d) for more example supervisor configs of BerryNet
+
+The MQTT broker (Mosquitto) accepts clients without authentication on port 1883, and on port 3000 over websockets for the dashboard, so that BerryNet components on other devices can connect. On an untrusted network, restrict these ports with a firewall or set up [Mosquitto authentication](https://mosquitto.org/documentation/authentication-methods/).
 
 ### Camera Client
 

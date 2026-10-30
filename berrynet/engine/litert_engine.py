@@ -130,8 +130,10 @@ class LiteRTClassifierEngine(DLEngine):
 
     def process_output(self, output):
         scores = output['scores'].astype(np.float32)
-        if not self.floating_model:
-            scores /= 255.0
+        # Dequantize the scores of quantized models.
+        scale, zero_point = self.output_details[0]['quantization']
+        if scale > 0:
+            scores = (scores - zero_point) * scale
         return {
             'annotations': classification_annotations(scores, self.labels,
                                                       self.top_k)
@@ -171,9 +173,8 @@ class LiteRTYoloV4DetectorEngine(DLEngine):
     tensorflow-yolov4-tflite.
     """
 
-    def __init__(self, model, labels, threshold=0.1, num_threads=1,
-                 score_threshold=0.25, iou_threshold=0.45,
-                 max_detections=50):
+    def __init__(self, model, labels, threshold=0.25, num_threads=1,
+                 iou_threshold=0.45, max_detections=50):
         super(LiteRTYoloV4DetectorEngine, self).__init__()
 
         # Load labels
@@ -190,7 +191,6 @@ class LiteRTYoloV4DetectorEngine(DLEngine):
         self.input_dtype = self.input_details[0]['dtype']
         _, self.input_h, self.input_w, _ = self.input_details[0]['shape']
         self.threshold = threshold
-        self.score_threshold = score_threshold
         self.iou_threshold = iou_threshold
         self.max_detections = max_detections
 
@@ -220,15 +220,15 @@ class LiteRTYoloV4DetectorEngine(DLEngine):
             scores: Per-class scores of each box.
 
         Returns:
-            Normalized [ymin, xmin, ymax, xmax] boxes, class indexes and
-            scores, highest score first.
+            Normalized [ymin, xmin, ymax, xmax] boxes clipped to the
+            image, class indexes and scores, highest score first.
         """
         box_xywh = box_xywh.reshape(-1, 4)
         scores = scores.reshape(box_xywh.shape[0], -1)
         class_ids = scores.argmax(axis=-1)
         confidences = scores.max(axis=-1)
 
-        mask = confidences >= self.score_threshold
+        mask = confidences >= self.threshold
         box_xywh = box_xywh[mask]
         class_ids = class_ids[mask]
         confidences = confidences[mask]
@@ -246,7 +246,7 @@ class LiteRTYoloV4DetectorEngine(DLEngine):
                 boxes[index], confidences[index], self.iou_threshold)])
         keep = np.array(keep, dtype=int)
         keep = keep[confidences[keep].argsort()[::-1]][:self.max_detections]
-        return boxes[keep], class_ids[keep], confidences[keep]
+        return np.clip(boxes[keep], 0.0, 1.0), class_ids[keep], confidences[keep]
 
     def inference(self, tensor):
         self.interpreter.set_tensor(self.input_details[0]['index'], tensor)

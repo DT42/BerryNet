@@ -49,19 +49,30 @@ class RpicamCapture(object):
              '--height', str(height), '--framerate', str(fps),
              '--output', '-'],
             stdout=subprocess.PIPE)
-        self.buffer = b''
+        self.buffer = bytearray()
         self.jpg_bytes = None
 
     def read_jpg(self):
         """Return the next JPEG frame, or None at the end of the stream."""
+        scanned = 2
         while True:
             start = self.buffer.find(b'\xff\xd8')
-            if start >= 0:
-                end = self.buffer.find(b'\xff\xd9', start + 2)
+            if start < 0:
+                # Keep the last byte, it may start an SOI marker.
+                del self.buffer[:-1]
+                scanned = 2
+            else:
+                if start > 0:
+                    del self.buffer[:start]
+                    scanned = 2
+                end = self.buffer.find(b'\xff\xd9', scanned)
                 if end >= 0:
-                    jpg_bytes = self.buffer[start:end + 2]
-                    self.buffer = self.buffer[end + 2:]
+                    jpg_bytes = bytes(self.buffer[:end + 2])
+                    del self.buffer[:end + 2]
                     return jpg_bytes
+                # Do not search the same bytes again, except the last one
+                # which may start an EOI marker.
+                scanned = max(len(self.buffer) - 1, 2)
             chunk = self.process.stdout.read1(1 << 16)
             if not chunk:
                 return None

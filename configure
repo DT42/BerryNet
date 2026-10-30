@@ -21,6 +21,8 @@
 # 64-bit Raspberry Pi OS Bookworm or Trixie.
 #
 # Environment variables:
+#     BERRYNET_ENGINE               AI engine of the default application,
+#                                   litert (default) or onnx.
 #     BERRYNET_MODELS               Model packages to install, see
 #                                   "bn_model available".
 #     BERRYNET_SKIP_PLATFORM_CHECK  Set to 1 to install on other Debian-based
@@ -29,7 +31,7 @@
 set -euo pipefail
 
 if [ "$(id -u)" -ne 0 ]; then
-    exec sudo --preserve-env=BERRYNET_MODELS,BERRYNET_SKIP_PLATFORM_CHECK \
+    exec sudo --preserve-env=BERRYNET_ENGINE,BERRYNET_MODELS,BERRYNET_SKIP_PLATFORM_CHECK \
         "$0" "$@"
 fi
 
@@ -39,7 +41,8 @@ PREFIX="/opt/berrynet"
 VENV="$PREFIX/venv"
 DASHBOARD_DIR="$PREFIX/dashboard"
 MODEL_DIR="/usr/share/dlmodels"
-MODELS="${BERRYNET_MODELS:-ssd-mobilenet-v1-coco-litert ssd-mobilenet-v1-coco-onnx}"
+ENGINE="${BERRYNET_ENGINE:-litert}"
+MODELS="${BERRYNET_MODELS:-ssd-mobilenet-v1-coco-$ENGINE}"
 SKIP_PLATFORM_CHECK="${BERRYNET_SKIP_PLATFORM_CHECK:-0}"
 UV_VERSION="0.13.6"
 FREEBOARD_REPO="https://github.com/Freeboard/freeboard.git"
@@ -131,21 +134,25 @@ install_dashboard() {
     git -C "$DASHBOARD_DIR" apply "$SRC_DIR/patch/ui-berrynet-theme.patch"
     rm -rf "$DASHBOARD_DIR/.git"
     cp -r "$SRC_DIR/patch/www/freeboard/." "$DASHBOARD_DIR/"
-    cp "$SRC_DIR/config/dashboard-litertdetector.json" "$DASHBOARD_DIR/"
+    cp "$SRC_DIR"/config/dashboard-*.json "$DASHBOARD_DIR/"
 }
 
 install_configs() {
     local conf_dir="/etc/supervisor/conf.d"
+    local engine_conf="$conf_dir/berrynet-$ENGINE.conf"
 
     mkdir -p /var/log/berrynet
-    cp "$SRC_DIR/config/supervisor/conf.d/berrynet-litert.conf" "$conf_dir/"
+    # Remove configs of the other engine and of earlier BerryNet versions,
+    # which run another camera client.
+    rm -f "$conf_dir"/berrynet-{litert,onnx,tflite,darknet,movidius}.conf
+    cp "$SRC_DIR/config/supervisor/conf.d/berrynet-$ENGINE.conf" "$conf_dir/"
     cp "$SRC_DIR/config/supervisor/conf.d/berrynet-dashboard.conf" "$conf_dir/"
     # Use the Raspberry Pi camera module if there is one, or a USB camera.
     if command -v rpicam-hello > /dev/null && \
             rpicam-hello --list-cameras 2> /dev/null | grep -q '^[0-9]* : '; then
         echo "Found Raspberry Pi camera module"
         sed -i 's/^command=bn_camera /command=bn_camera --stream-src picamera /' \
-            "$conf_dir/berrynet-litert.conf"
+            "$engine_conf"
     fi
 
     cp "$SRC_DIR/config/etc/mosquitto/conf.d/berrynet.conf" \
@@ -161,6 +168,14 @@ update_system_service() {
     fi
 }
 
+case "$ENGINE" in
+litert | onnx)
+    ;;
+*)
+    echo "ERROR: BERRYNET_ENGINE should be litert or onnx, but it is '$ENGINE'."
+    exit 1
+    ;;
+esac
 if [ "$SKIP_PLATFORM_CHECK" != "1" ]; then
     check_platform
 fi
@@ -174,7 +189,7 @@ update_system_service
 cat << EOF
 Installation is completed successfully!
 
-Dashboard: http://<IP address of this device>:8080/#source=dashboard-litertdetector.json
+Dashboard: http://<IP address of this device>:8080/#source=dashboard-${ENGINE}detector.json
 
 If there is any issue, please open an issue on
 

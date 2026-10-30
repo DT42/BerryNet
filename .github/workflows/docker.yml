@@ -92,6 +92,12 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: uv sync --locked --all-extras
+      - name: Cache models
+        if: matrix.python-version != '3.15'
+        uses: actions/cache@v6
+        with:
+          path: models
+          key: models-${{ hashFiles('berrynet/dlmodelmgr.py', 'tests/data.py') }}
       - name: Download models
         if: matrix.python-version != '3.15'
         run: uv run python -m tests.data

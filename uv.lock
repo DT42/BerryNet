@@ -153,7 +153,6 @@ dependencies = [
     { name = "numpy", version = "2.5.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "paho-mqtt" },
     { name = "pyopengl" },
-    { name = "pyopengl-accelerate" },
 ]
 
 [package.optional-dependencies]
@@ -189,7 +188,6 @@ requires-dist = [
     { name = "opencv-python", marker = "extra == 'opencv'" },
     { name = "paho-mqtt" },
     { name = "pyopengl" },
-    { name = "pyopengl-accelerate" },
 ]
 provides-extras = ["litert", "onnx", "opencv"]
 
@@ -1445,39 +1443,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/6f/16/912b7225d56284859cd9a672827f18be43f8012f8b7b932bc4bd959a298e/pyopengl-3.1.10.tar.gz", hash = "sha256:c4a02d6866b54eb119c8e9b3fb04fa835a95ab802dd96607ab4cdb0012df8335", size = 1915580, upload-time = "2025-08-18T02:33:01.76Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/de/e4/1ba6f44e491c4eece978685230dde56b14d51a0365bc1b774ddaa94d14cd/pyopengl-3.1.10-py3-none-any.whl", hash = "sha256:794a943daced39300879e4e47bd94525280685f42dbb5a998d336cfff151d74f", size = 3194996, upload-time = "2025-08-18T02:32:59.902Z" },
-]
-
-[[package]]
-name = "pyopengl-accelerate"
-version = "3.1.10"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/6d/49/dffa946f07e84eb4666d7fb5553a1d569d54405c863ff7a19b71758712f6/pyopengl_accelerate-3.1.10.tar.gz", hash = "sha256:82751c83f0a6f732b8b5923990edc2441d38176a98756b1718e8d6c4379f5a71", size = 21930, upload-time = "2025-08-18T02:34:06.752Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/7a/31/88628b5a0fb965b9f2d7d69496003012a28b773c5aeda86576ef715550fe/pyopengl_accelerate-3.1.10-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:05ab94a380f5bc7a67a9e0b408f46aa369f390c6fa694e5732905a642257cb4b", size = 431962, upload-time = "2025-08-18T02:33:17.006Z" },
-    { url = "https://files.pythonhosted.org/packages/73/95/4d9465170917e8869417b6e787be6ff61ae8d1a0e38c91e236c8776b9ac2/pyopengl_accelerate-3.1.10-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:a52b001949f11879847a8d282081937b4097e6f0c479d539135587738874a2e3", size = 3190157, upload-time = "2025-08-18T02:33:18.537Z" },
-    { url = "https://files.pythonhosted.org/packages/95/cf/2f4104575d4aecb92a13c6f35ac63b80fc856521466c18de0925423912f3/pyopengl_accelerate-3.1.10-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:42317a5ac934447bc758fba67364d6fd41288068db6dfe5f57fe118b3908f58d", size = 3083316, upload-time = "2025-08-18T02:33:20.284Z" },
-    { url = "https://files.pythonhosted.org/packages/fa/3a/6d45470821cf27315b8be7642061ec0f4a2c5897779d55b777196d45b12e/pyopengl_accelerate-3.1.10-cp311-cp311-win32.whl", hash = "sha256:e3a3f92499d24241b5bdd1dba765c2f84f213c1262a6c71f298b40604987cd72", size = 333170, upload-time = "2025-08-18T02:33:21.683Z" },
-    { url = "https://files.pythonhosted.org/packages/49/a2/0cb19fc0586d6e584d24404c8384bbd2cf7e796ad20e166d34bb8c7a64f5/pyopengl_accelerate-3.1.10-cp311-cp311-win_amd64.whl", hash = "sha256:c6647eff570c3e6a4d3ca714c144d841e61f6b5b103b805700ee536e2edf862f", size = 390922, upload-time = "2025-08-18T02:33:23.042Z" },
-    { url = "https://files.pythonhosted.org/packages/4c/6b/ba5b6aeff08ef764f9625f092fef27aab07279fbffe0ec50c60359020b6e/pyopengl_accelerate-3.1.10-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:a0adc05a0585f98128dcfea80bca5fd016336a6f571a372721dc8e0406b12c2e", size = 424760, upload-time = "2025-08-18T02:33:24.431Z" },
-    { url = "https://files.pythonhosted.org/packages/a4/3d/8a6dde7092eeba0ddb0d75359e2cc1c7b61947b6f73da0bb73ac7ef9e997/pyopengl_accelerate-3.1.10-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:3282e7edd22d7126a3874c08ebcb146122031d0cea774c52f872ae56aaf17f39", size = 3279849, upload-time = "2025-08-18T02:33:25.628Z" },
-    { url = "https://files.pythonhosted.org/packages/50/4f/b4de3294248fcf0739356cc3730fb651b2106ddbe05fc528307df4331955/pyopengl_accelerate-3.1.10-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:7366b6be51aca799d6b4bfbe6a5e9e6e4b0968956d0920676498e6ac2b9ce028", size = 3140923, upload-time = "2025-08-18T02:33:27.106Z" },
-    { url = "https://files.pythonhosted.org/packages/2a/03/913312996a6345fec9436dc57069ac8c8bc31e306d3fba9e4825fc04ece2/pyopengl_accelerate-3.1.10-cp312-cp312-win32.whl", hash = "sha256:f014f2f5a0d68c751ad31c89805c043a08c423a8d6d5e7be620f6d819c6fa971", size = 328551, upload-time = "2025-08-18T02:33:28.619Z" },
-    { url = "https://files.pythonhosted.org/packages/fe/1f/6e839b7ba4823c34f762d3f3e9e8f8405bd3e210314b60df862e030ad8ad/pyopengl_accelerate-3.1.10-cp312-cp312-win_amd64.whl", hash = "sha256:6fa0963d686462dc3a03d10123af385f012001c8b020e908774df29741136bd5", size = 389822, upload-time = "2025-08-18T02:33:29.685Z" },
-    { url = "https://files.pythonhosted.org/packages/71/52/54b93275b76ea2beed7ffbf7e2e2392254c6f5927c438a2db9b972aec255/pyopengl_accelerate-3.1.10-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:bec9014f702997578b5e797d81b3e041cc5b41f0457c0184473f867c38d52665", size = 413558, upload-time = "2025-08-18T02:33:30.846Z" },
-    { url = "https://files.pythonhosted.org/packages/32/08/a491f4c74e53d22189e1aa9049b51ec44ed993e596d41c85d1732cd33ea2/pyopengl_accelerate-3.1.10-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:171e22f7d5055479b0bd7f98192525f8890af4bf19765bea7e860885cbce622e", size = 3139831, upload-time = "2025-08-18T02:33:32.415Z" },
-    { url = "https://files.pythonhosted.org/packages/d6/56/ffdf6adff65022d4df844100d6510c26def358b012c25766983f402b35ff/pyopengl_accelerate-3.1.10-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:5eea15130bc248ca83dce31736afb190c21a0186aa02cefdf4019bc0f3f857f1", size = 3000578, upload-time = "2025-08-18T02:33:33.69Z" },
-    { url = "https://files.pythonhosted.org/packages/6b/a1/6c7a6da865e07665f196ce3a443ed5d6ebd297f459bfa61288a577abaef9/pyopengl_accelerate-3.1.10-cp313-cp313-win32.whl", hash = "sha256:2354d2a2eb1266c984f061148460b2cb02146e90bd501b984d03bcc34f48b8d8", size = 325101, upload-time = "2025-08-18T02:33:34.963Z" },
-    { url = "https://files.pythonhosted.org/packages/7c/d4/93cd104a967dca51cf8ee2edf18bea2b697e9d87ece0beaa6f3ca5f5515d/pyopengl_accelerate-3.1.10-cp313-cp313-win_amd64.whl", hash = "sha256:551a46e907ea24884b6795b290b3b3b0618d217d38cf7cae9c825641375a74fe", size = 385238, upload-time = "2025-08-18T02:33:36.19Z" },
-    { url = "https://files.pythonhosted.org/packages/ae/8d/f86cb315b34fdc670c747b5041bec468258bbda55f9809f004dcbf3ff0fe/pyopengl_accelerate-3.1.10-cp314-cp314-macosx_11_0_arm64.whl", hash = "sha256:415b6ddceaa6a3fed699f1e7a6aac0de6f37e5ae19349c4ed3a7c38e17a8e09e", size = 416781, upload-time = "2025-08-18T02:33:38.021Z" },
-    { url = "https://files.pythonhosted.org/packages/5e/14/215c66da71a065734217ea53d884c5c008a35757d5d17f667799cdee8fbc/pyopengl_accelerate-3.1.10-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:d6b8aabfb227ad579f3dfabe8f0e9909026d1af540baf6405b38efa4f10fb9eb", size = 3090132, upload-time = "2025-08-18T02:33:39.517Z" },
-    { url = "https://files.pythonhosted.org/packages/20/7e/3a4fa502e6e1531af3a89b736a001886f2c2a88f83fc44b853ef177beb89/pyopengl_accelerate-3.1.10-cp314-cp314-musllinux_1_2_x86_64.whl", hash = "sha256:3d521cd41a4e62c38ec315770049dfc5c4b25e5c1debd4038cfbf75e05022f7c", size = 2963250, upload-time = "2025-08-18T02:33:41.211Z" },
-    { url = "https://files.pythonhosted.org/packages/29/64/2216644cd1d58771634ec7decbfe973f3eb6ac545224181efaaf30b15197/pyopengl_accelerate-3.1.10-cp314-cp314-win32.whl", hash = "sha256:fce5e6015ba2db99f0ebb07e4cd98ca4e70b419f186ea042cb70379228c1a339", size = 334199, upload-time = "2025-08-18T02:33:42.519Z" },
-    { url = "https://files.pythonhosted.org/packages/04/f0/da152261f49e248b1530460367ee35fcc78c0878685fc07b39a6f53223d4/pyopengl_accelerate-3.1.10-cp314-cp314-win_amd64.whl", hash = "sha256:081b6b0f39f35f750ddf60fc865556e6d01481eb818ce1482f79cfde2abe598b", size = 394806, upload-time = "2025-08-18T02:33:43.638Z" },
-    { url = "https://files.pythonhosted.org/packages/b0/25/7516f1fdeba4d13da3941b198a368cf72d6d17f9bcc48d76476f75973866/pyopengl_accelerate-3.1.10-cp314-cp314t-macosx_11_0_arm64.whl", hash = "sha256:a35503ee877b35264172903eb6c8110b021531090a4647a81252f52a68757d4d", size = 462905, upload-time = "2025-08-18T02:33:45.15Z" },
-    { url = "https://files.pythonhosted.org/packages/9b/72/d8bcd7a2264098dfe36ac15dfded7a8a513d56e4e6adfc9e651fd17cccb1/pyopengl_accelerate-3.1.10-cp314-cp314t-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:db2005912defa77a1e7390024d52b295c85a1c7ebd85ba073f1839d4bfffe855", size = 3379961, upload-time = "2025-08-18T02:33:46.602Z" },
-    { url = "https://files.pythonhosted.org/packages/17/a7/e74bf3a52d7e97f92e8a3cdd7edba7f50c6053536f54a7124772fcbbcf62/pyopengl_accelerate-3.1.10-cp314-cp314t-musllinux_1_2_x86_64.whl", hash = "sha256:fcf6827b1fff244ca6953068c17285b9eae173a20fccc1d9c193779f71b88d0f", size = 3254293, upload-time = "2025-08-18T02:33:48.105Z" },
-    { url = "https://files.pythonhosted.org/packages/fa/e4/c840324bab4efed955f258422a88a621e7462cafd627b3d2c9d314d4279d/pyopengl_accelerate-3.1.10-cp314-cp314t-win32.whl", hash = "sha256:e55ea6a85894ad74d6f09953e3d359fe27def9fed220588787993e49e42db1d0", size = 408410, upload-time = "2025-08-18T02:33:49.441Z" },
-    { url = "https://files.pythonhosted.org/packages/87/97/6312caecc721cf4e4fdac2a156dc57e403e3d9a17553d72e86653cbc92ef/pyopengl_accelerate-3.1.10-cp314-cp314t-win_amd64.whl", hash = "sha256:a2866cb65c45b013c2bf9995010824cc1b50ae91a4166746beb9ce241803e62a", size = 484776, upload-time = "2025-08-18T02:33:51.342Z" },
 ]
 
 [[package]]

@@ -29,16 +29,22 @@ class ChunkedStdout(object):
 
 class TestRpicamCapture(unittest.TestCase):
     def test_read_mjpeg_stream(self):
-        stream = b'garbage' + jpg(50) + jpg(200)
+        stream = b'garbage\xff' + jpg(50) + b'\xffgarbage' + jpg(200) + jpg(120)
+        # Markers split between reads, and frames in one read.
+        for chunk_size in (1, 7, 1 << 16):
+            with self.subTest(chunk_size=chunk_size):
+                self.check_mjpeg_stream(stream, chunk_size)
+
+    def check_mjpeg_stream(self, stream, chunk_size):
         with mock.patch('subprocess.Popen') as popen:
-            popen.return_value.stdout = ChunkedStdout(stream)
+            popen.return_value.stdout = ChunkedStdout(stream, chunk_size)
             capture = camera.open_capture('picamera')
 
         command = popen.call_args.args[0]
         self.assertEqual(command[0], 'rpicam-vid')
         self.assertIn('mjpeg', command)
         self.assertEqual(capture.get(cv2.CAP_PROP_FPS), 30)
-        for value in (50, 200):
+        for value in (50, 200, 120):
             self.assertTrue(capture.grab())
             status, im = capture.retrieve()
             self.assertTrue(status)
@@ -46,6 +52,7 @@ class TestRpicamCapture(unittest.TestCase):
             self.assertAlmostEqual(float(im.mean()), value, delta=2)
         self.assertFalse(capture.grab())
         self.assertEqual(capture.retrieve(), (False, None))
+        self.assertLessEqual(len(capture.buffer), 1)
 
         capture.release()
         popen.return_value.terminate.assert_called_once_with()

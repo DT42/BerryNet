@@ -28,7 +28,6 @@ dependencies = [
     "numpy",
     "paho-mqtt",
     "PyOpenGL",
-    "PyOpenGL-accelerate",
 ]
 
 # Inference engines:     uv sync --extra litert --extra onnx
