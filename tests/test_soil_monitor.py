@@ -18,6 +18,26 @@ def report(**kwargs):
     return json.dumps(kwargs).encode('utf-8')
 
 
+class TestSplitMessage(unittest.TestCase):
+    def test_short_message(self):
+        self.assertEqual(soil_monitor.split_message('a\nb'), ['a\nb'])
+
+    def test_split_by_lines(self):
+        self.assertEqual(soil_monitor.split_message('aa\nbb\ncc', limit=5),
+                         ['aa\nbb', 'cc'])
+
+    def test_utf16_length(self):
+        # Each emoji is two UTF-16 code units.
+        self.assertEqual(
+            soil_monitor.split_message('\U0001f331\U0001f331\nab', limit=4),
+            ['\U0001f331\U0001f331', 'ab'])
+
+    def test_cut_long_line(self):
+        self.assertEqual(
+            soil_monitor.split_message('\U0001f331' * 3, limit=5),
+            ['\U0001f331\U0001f331'])
+
+
 class TestParseSensorReport(unittest.TestCase):
     def test_thirdreality_report(self):
         reading = soil_monitor.parse_sensor_report(report(
@@ -146,6 +166,7 @@ class TestSoilMonitorService(unittest.TestCase):
             chat_ids=[111], publish_topic='berrynet/data/soilmoisture',
             report_times=['08:00'], offline_timeout=3600)
         self.service.comm = mock.Mock()
+        self.service.comm.client.publish.return_value.rc = 0
 
     def outbox(self):
         messages = []
@@ -169,7 +190,7 @@ class TestSoilMonitorService(unittest.TestCase):
         self.assertIn('Tomato is too dry: soil moisture 25%', text)
         self.assertIn('threshold 30%', text)
 
-        topic, published = self.service.comm.send.call_args[0]
+        topic, published = self.service.comm.client.publish.call_args[0]
         self.assertEqual(topic, 'berrynet/data/soilmoisture')
         result = json.loads(published)
         self.assertEqual(result['sensor'], 'soil_1')
@@ -182,12 +203,12 @@ class TestSoilMonitorService(unittest.TestCase):
     def test_normal_reading_is_silent(self):
         self.service.update('soil_1', report(soil_moisture=50))
         self.assertEqual(self.outbox(), [])
-        self.assertTrue(self.service.comm.send.called)
+        self.assertTrue(self.service.comm.client.publish.called)
 
     def test_publish_disabled(self):
         self.service.publish_topic = ''
         self.service.update('soil_1', report(soil_moisture=50))
-        self.assertFalse(self.service.comm.send.called)
+        self.assertFalse(self.service.comm.client.publish.called)
 
     def test_notify_every_reading(self):
         self.service.notify_every_reading = True
@@ -199,7 +220,10 @@ class TestSoilMonitorService(unittest.TestCase):
 
     def test_bad_payload_does_not_raise(self):
         self.service.update('soil_1', b'not json')
-        self.service.comm.send.side_effect = RuntimeError('broker down')
+        self.service.comm.client.publish.side_effect = RuntimeError('down')
+        self.service.update('soil_1', report(soil_moisture=50))
+        self.service.comm.client.publish.side_effect = None
+        self.service.comm.client.publish.return_value.rc = 4  # no conn
         self.service.update('soil_1', report(soil_moisture=50))
 
     def test_status(self):
@@ -246,6 +270,22 @@ class TestSoilMonitorService(unittest.TestCase):
         self.assertEqual(chat_id, 222)
         self.assertIn('not allowed', text)
         self.assertEqual(command('hello'), [])
+
+        self.service.bot_username = 'MyBot'
+        self.assertEqual(len(command('/status@mybot')), 1)
+        self.assertEqual(command('/status@OtherBot'), [])
+
+    def test_long_message_is_split(self):
+        self.service.notify('\n'.join(['\U0001f331' * 100] * 30))
+        messages = self.outbox()
+        self.assertEqual(len(messages), 2)
+        for _, text in messages:
+            self.assertLessEqual(len(text.encode('utf-16-le')) // 2, 4096)
+
+    def test_stop_drops_unsent_messages(self):
+        self.service.notify('hi')
+        self.service.stop()
+        self.assertTrue(self.service.outbox.empty())
 
     def test_deliver_retry(self):
         self.service.stop_event.wait = mock.Mock()
@@ -294,7 +334,13 @@ class TestTelegramClient(unittest.TestCase):
                          'http://bot.api/bot123:abc/sendMessage')
         body = json.loads(request.data.decode('utf-8'))
         self.assertEqual(body['chat_id'], 111)
-        self.assertEqual(len(body['text']), 4096)
+        self.assertEqual(body['text'], 'x' * 5000)
+
+    @mock.patch('urllib.request.urlopen')
+    def test_non_object_response(self, urlopen):
+        urlopen.return_value = self.response('blocked')
+        with self.assertRaises(TelegramError):
+            self.client.get_me()
 
     @mock.patch('urllib.request.urlopen')
     def test_api_error(self, urlopen):
@@ -345,11 +391,29 @@ class TestSettings(unittest.TestCase):
         self.assertEqual(settings['report_times'], ['08:00'])
         self.assertEqual(settings['broker_port'], 1883)
 
-    def test_token_from_env(self):
-        with mock.patch.dict('os.environ',
-                             {'BERRYNET_TELEGRAM_TOKEN': '9:xyz'}):
-            settings = soil_monitor.load_settings(self.args())
-        self.assertEqual(settings['token'], '9:xyz')
+    def test_token_precedence(self):
+        config = json.dumps({'token': '1:config'})
+        env = {'BERRYNET_TELEGRAM_TOKEN': '2:env'}
+        with mock.patch('builtins.open', mock.mock_open(read_data=config)):
+            settings = soil_monitor.load_settings(
+                self.args(config='soil.json'))
+            self.assertEqual(settings['token'], '1:config')
+            with mock.patch.dict('os.environ', env):
+                settings = soil_monitor.load_settings(
+                    self.args(config='soil.json'))
+                self.assertEqual(settings['token'], '2:env')
+                settings = soil_monitor.load_settings(
+                    self.args(config='soil.json', token='3:cli'))
+                self.assertEqual(settings['token'], '3:cli')
+
+    def test_repeated_options(self):
+        argv = ['bn_soil_monitor', '--chat-id', '111', '222',
+                '--chat-id', '333', '--sensor', 's1', '--sensor', 's2']
+        with mock.patch('sys.argv', argv):
+            args = soil_monitor.parse_args()
+        self.assertEqual(args['chat_ids'], ['111', '222', '333'])
+        self.assertEqual(args['sensors'], ['s1', 's2'])
+        self.assertIsNone(args['report_times'])
 
     def test_invalid_settings(self):
         with self.assertRaises(ValueError):

@@ -145,6 +145,29 @@ def format_number(value):
     return '{:.1f}'.format(value).rstrip('0').rstrip('.')
 
 
+def split_message(text, limit=TELEGRAM_MAX_MESSAGE_LENGTH):
+    """Split text by lines into messages within Telegram length limit.
+
+    Telegram counts the length in UTF-16 code units, where an emoji
+    usually takes two. A single line longer than the limit is cut.
+    """
+    def utf16(s):
+        return s.encode('utf-16-le')
+
+    messages = []
+    message = ''
+    for line in text.split('\n'):
+        # Cutting may split a surrogate pair, which is dropped by 'ignore'.
+        line = utf16(line)[:limit * 2].decode('utf-16-le', 'ignore')
+        candidate = message + '\n' + line if message else line
+        if len(utf16(candidate)) > limit * 2:
+            messages.append(message)
+            candidate = line
+        message = candidate
+    messages.append(message)
+    return messages
+
+
 def parse_sensor_report(pl):
     """Parse a Zigbee2MQTT device message into a normalized reading.
 
@@ -323,6 +346,8 @@ class TelegramClient(object):
         try:
             result = json.loads(body.decode('utf-8'))
         except (UnicodeDecodeError, ValueError):
+            result = None
+        if not isinstance(result, dict):
             raise TelegramError('Invalid response from Telegram')
         if not result.get('ok'):
             raise TelegramError(
@@ -337,7 +362,7 @@ class TelegramClient(object):
     def send_message(self, chat_id, text):
         return self.call('sendMessage', {
             'chat_id': chat_id,
-            'text': text[:TELEGRAM_MAX_MESSAGE_LENGTH],
+            'text': text,
             'disable_web_page_preview': True,
         })
 
@@ -394,6 +419,7 @@ class SoilMonitorService(object):
         self.stop_event = threading.Event()
         self.started_at = datetime.now()
         self.last_report_key = None
+        self.bot_username = None
 
     def msg(self, key, **kwargs):
         return self.messages[key].format(**kwargs)
@@ -428,11 +454,14 @@ class SoilMonitorService(object):
             self.notify(self.msg('reading', label=sensor.label,
                                  details=details))
         if self.publish_topic:
-            try:
-                self.comm.send(self.publish_topic, json.dumps(result))
-            except Exception as e:
-                logger.warning('Failed to publish to {}: {}'.format(
-                    self.publish_topic, e))
+            # Publish by the connected client instead of Communicator.send,
+            # which opens a new connection and blocks the network loop
+            # running this callback.
+            info = self.comm.client.publish(self.publish_topic,
+                                            json.dumps(result))
+            if info.rc:
+                logger.warning('Failed to publish to {}, error code {}'.format(
+                    self.publish_topic, info.rc))
 
     def generalize(self, sensor, now):
         """Create the payload published to BerryNet."""
@@ -506,10 +535,12 @@ class SoilMonitorService(object):
             logger.info('Notification (not sent): {}'.format(text))
             return
         for chat_id in self.chat_ids:
-            self.outbox.put((chat_id, text))
+            self.reply(chat_id, text)
 
     def reply(self, chat_id, text):
-        self.outbox.put((chat_id, text))
+        """Queue a message for a chat."""
+        for message in split_message(text):
+            self.outbox.put((chat_id, message))
 
     def deliver(self, chat_id, text):
         """Send a message, retrying on network and rate limit errors."""
@@ -546,7 +577,12 @@ class SoilMonitorService(object):
             return
         chat_id = message['chat']['id']
         # Commands in group chats may look like /status@MyBot.
-        command = text.split()[0].split('@')[0].lower()
+        command, _, bot = text.split()[0].partition('@')
+        command = command.lower()
+        if bot and self.bot_username and \
+                bot.lower() != self.bot_username.lower():
+            logger.debug('Ignore command {} for @{}'.format(command, bot))
+            return
         logger.info('Received command {} from chat id {}'.format(
             command, chat_id))
 
@@ -610,8 +646,9 @@ class SoilMonitorService(object):
         if self.telegram is not None:
             try:
                 bot = self.telegram.get_me()
+                self.bot_username = bot.get('username')
                 logger.info('Connected to Telegram bot @{}'.format(
-                    bot.get('username')))
+                    self.bot_username))
             except TelegramError as e:
                 logger.warning('Failed to verify Telegram bot: {}'.format(e))
             threading.Thread(target=self._send_loop, daemon=True).start()
@@ -630,6 +667,13 @@ class SoilMonitorService(object):
 
     def stop(self):
         self.stop_event.set()
+        while True:
+            try:
+                chat_id, text = self.outbox.get_nowait()
+            except queue.Empty:
+                break
+            logger.warning('Drop unsent message to {}: {}'.format(
+                chat_id, text))
         self.comm.stop_nb()
         self.comm.disconnect()
 
@@ -676,6 +720,8 @@ def load_settings(args):
     """Merge default settings, config file and CLI arguments.
 
     CLI arguments override the config file, which overrides defaults.
+    The token is taken from CLI, environment variable
+    BERRYNET_TELEGRAM_TOKEN, then the config file.
     """
     settings = dict(DEFAULT_SETTINGS)
     if args.get('config'):
@@ -689,8 +735,10 @@ def load_settings(args):
         if key in DEFAULT_SETTINGS and value is not None:
             settings[key] = value
 
-    settings['token'] = load_token(
-        settings['token'] or os.environ.get('BERRYNET_TELEGRAM_TOKEN'))
+    env_token = os.environ.get('BERRYNET_TELEGRAM_TOKEN')
+    if env_token and not args.get('token'):
+        settings['token'] = env_token
+    settings['token'] = load_token(settings['token'])
     settings['chat_ids'] = [normalize_chat_id(c)
                             for c in settings['chat_ids']]
     settings['report_times'] = [normalize_report_time(t)
@@ -751,10 +799,11 @@ def parse_args():
     ap.add_argument(
         '--chat-id',
         dest='chat_ids',
-        nargs='*',
+        action='append',
+        nargs='+',
         default=None,
-        help=('Telegram chat id receiving notifications, '
-              'and can be indicated multiple times.')
+        help=('Telegram chat id receiving notifications '
+              'and allowed to use /status. Can be repeated.')
     )
     ap.add_argument(
         '--language',
@@ -765,9 +814,11 @@ def parse_args():
     ap.add_argument(
         '--sensor',
         dest='sensors',
-        nargs='*',
+        action='append',
+        nargs='+',
         default=None,
-        help='Zigbee2MQTT friendly name of a soil moisture sensor.'
+        help=('Zigbee2MQTT friendly name of a soil moisture sensor. '
+              'Can be repeated.')
     )
     ap.add_argument(
         '--broker-ip',
@@ -821,7 +872,8 @@ def parse_args():
     ap.add_argument(
         '--report-time',
         dest='report_times',
-        nargs='*',
+        action='append',
+        nargs='+',
         default=None,
         help='Send a status report at local time HH:MM, e.g. 08:00 20:00.'
     )
@@ -856,7 +908,12 @@ def parse_args():
         action='store_true',
         help='Debug mode toggle'
     )
-    return vars(ap.parse_args())
+    args = vars(ap.parse_args())
+    # Flatten values of repeated options.
+    for key in ('chat_ids', 'sensors', 'report_times'):
+        if args[key] is not None:
+            args[key] = [v for values in args[key] for v in values]
+    return args
 
 
 def main():
@@ -869,7 +926,10 @@ def main():
     try:
         settings = load_settings(args)
         sensors = create_sensors(settings)
-    except (OSError, KeyError, ValueError) as e:
+        offline_timeout = settings['offline_timeout'] * 60
+    except (OSError, KeyError, ValueError, TypeError, AttributeError) as e:
+        # Wrong value types in the config file raise TypeError or
+        # AttributeError.
         logger.critical(e)
         raise SystemExit(1)
 
@@ -894,7 +954,7 @@ def main():
         language=settings['language'],
         publish_topic=settings['publish_topic'],
         report_times=settings['report_times'],
-        offline_timeout=settings['offline_timeout'] * 60,
+        offline_timeout=offline_timeout,
         notify_every_reading=settings['notify_every_reading'],
         enable_commands=settings['commands'])
     service.run(args)

@@ -79,6 +79,11 @@ device or anywhere that can reach the broker.
 The sensor is a sleepy end device and reports only when values change or
 periodically, so it may take a while to see a message.
 
+Keep the Zigbee2MQTT `retain` device option disabled. The broker delivers a
+retained message again whenever `bn_soil_monitor` (re)connects, and an old
+reading would be treated as a new report, e.g. an offline sensor would look
+back online.
+
 ## 3. Create a Telegram Bot
 
 1. Talk to [@BotFather](https://t.me/BotFather) in Telegram, send `/newbot`
@@ -131,7 +136,9 @@ $ bn_soil_monitor --token <token> --chat-id 123456789 \
     --dry-threshold 30 --report-time 08:00 20:00 --language zh_TW
 ```
 
-The token can also be set by environment variable `BERRYNET_TELEGRAM_TOKEN`.
+The token can also be set by environment variable `BERRYNET_TELEGRAM_TOKEN`,
+which overrides the config file. Options taking multiple values can be
+repeated, e.g. `--chat-id 111 --chat-id 222`.
 Without a token, notifications are only written to the log, which is useful
 to verify the Zigbee side first.
 
@@ -166,7 +173,7 @@ them.
 
 | Config key | CLI | Default | Description |
 | --- | --- | --- | --- |
-| `token` | `--token` | | Telegram bot token, or path of a JSON file with `token` |
+| `token` | `--token` | | Telegram bot token, or path of a JSON file with `token`. `BERRYNET_TELEGRAM_TOKEN` overrides the config file |
 | `chat_ids` | `--chat-id` | `[]` | Chats receiving notifications and allowed to use `/status` |
 | `language` | `--language` | `en` | `en` or `zh_TW` |
 | `sensors` | `--sensor` | `[]` | Zigbee2MQTT friendly names, or objects with `name`, `label`, `dry_threshold`, `wet_threshold` |

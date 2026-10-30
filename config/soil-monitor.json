@@ -1,5 +1,5 @@
 {
-    "token": "<telegram bot token from BotFather>",
+    "token": "",
     "chat_ids": [],
     "language": "zh_TW",
     "broker_ip": "localhost",

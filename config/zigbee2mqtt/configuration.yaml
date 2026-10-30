@@ -21,11 +21,6 @@ frontend:
   enabled: true
   port: 8081
 
-# Retain the last device state, so bn_soil_monitor gets the latest
-# readings right after it (re)starts.
-device_options:
-  retain: true
-
 advanced:
   network_key: GENERATE
   pan_id: GENERATE
