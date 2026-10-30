@@ -1,5 +1,5 @@
 <p align="center"><a href="http://berrynet.org" target="_blank" rel="noopener noreferrer"><img width="50%" src="https://user-images.githubusercontent.com/292790/33802809-e4726cf8-dd45-11e7-8a64-fdc4c3ff9310.png" alt="BerryNet Logo"></a></p>
-<h2  align="center">Deep Learning Gateway on Raspberry Pi And Other Edge Devices</h2>
+<h2  align="center">Deep Learning Gateway on Raspberry Pi</h2>
 
 ![Docker Image CI](https://github.com/DT42/BerryNet/workflows/Docker%20Image%20CI/badge.svg)
 
@@ -11,7 +11,7 @@
 
 ## Introduction
 
-This project turns edge devices such as Raspberry Pi into an intelligent gateway with deep learning running on it. No internet connection is required, everything is done locally on the edge device itself. Further, multiple edge devices can create a distributed AIoT network.
+This project turns Raspberry Pi into an intelligent gateway with deep learning running on it. No internet connection is required, everything is done locally on the edge device itself. Further, multiple edge devices can create a distributed AIoT network.
 
 At DT42, we believe that bringing deep learning to edge devices is the trend towards the future. It not only saves costs of data transmission and storage but also makes devices able to respond according to the events shown in the images or videos without connecting to the cloud.
 
@@ -19,7 +19,7 @@ At DT42, we believe that bringing deep learning to edge devices is the trend tow
 
 <p align="center">Figure 1: BerryNet architecture</p>
 
-Figure 1 shows the software architecture of the project, we use Node.js/Python, MQTT and an AI engine to analyze images or video frames with deep learning. So far, there are two default types of AI engines, the classification engine (with Inception v3 [[1]](https://arxiv.org/pdf/1512.00567.pdf) model) and the object detection engine (with TinyYOLO [[2]](https://pjreddie.com/media/files/papers/YOLO9000.pdf) model or MobileNet SSD [[3]](https://arxiv.org/pdf/1704.04861.pdf) model). Figure 2 shows the differences between classification and object detection.
+Figure 1 shows the software architecture of the project, we use Python, MQTT and AI engines to analyze images or video frames with deep learning. The AI engines run models with [LiteRT](https://ai.google.dev/edge/litert) or [ONNX Runtime](https://onnxruntime.ai/). There are two types of AI engines, the classification engine (with MobileNet [[1]](https://arxiv.org/pdf/1704.04861.pdf) models) and the object detection engine (with SSD MobileNet [[2]](https://arxiv.org/pdf/1512.02325.pdf) or YOLOv4 [[3]](https://arxiv.org/pdf/2004.10934.pdf) models). Figure 2 shows the differences between classification and object detection.
 
 ![Figure 2](https://cloud.githubusercontent.com/assets/292790/25520013/d9497738-2c2c-11e7-9693-3840647f2e1e.jpg)
 
@@ -31,20 +31,16 @@ One of the application of this intelligent gateway is to use the camera to monit
 
 <p align="center">Figure 3: Object detection result example</p>
 
-To bring easy and flexible edge AI experience to user, we keep expending support of the AI engines and the reference HWs.
+## Supported Hardware
 
-![Figure 4](https://user-images.githubusercontent.com/292790/64026655-c2b69780-cb71-11e9-90b9-6269319012f1.png)
-
-<p align="center">Figure 4: Reference hardwares</p>
+* Raspberry Pi 5 or Raspberry Pi 4, including Raspberry Pi 500/400 and Compute Module 5/4
+* 64-bit Raspberry Pi OS Bookworm or Trixie
+* Raspberry Pi camera module, USB camera, or IP camera
 
 
 ## Installation
 
-You can install BerryNet by using pre-built image or from source. Please refer to the [installation guide](https://dt42.io/berrynet-doc/tutorials/installation/) for the details. 
-
-We are pushing BerryNet into Debian repository, so you will be able to install by only typing one command in the future.
-
-Here is the quick steps to install from source:
+Install BerryNet from source on Raspberry Pi OS:
 
 ```
 $ git clone https://github.com/DT42/BerryNet.git
@@ -52,16 +48,47 @@ $ cd BerryNet
 $ ./configure
 ```
 
+`configure` installs BerryNet into `/opt/berrynet/venv` (the `bn_*` commands are linked to `/usr/local/bin`), downloads the default LiteRT and ONNX object detection models into `/usr/share/dlmodels`, and starts the default application with supervisor.
+
+You can also build and run a Docker image:
+
+```
+$ docker build -t berrynet -f docker/Dockerfile .
+$ docker run -p 1883:1883 -p 3000:3000 -p 8080:8080 --device /dev/video0 berrynet
+```
+
+### AI Engines and Models
+
+BerryNet runs models with LiteRT (`bn_litert`) or ONNX Runtime (`bn_onnx`). `bn_model` downloads model packages and verifies their checksums:
+
+```
+# Show model packages which can be installed
+$ bn_model available
+
+# Install an ONNX classification model
+$ sudo bn_model install mobilenet-v2-imagenet-onnx
+
+# Run engines with model packages
+$ bn_litert --service detector --model_package ssd-mobilenet-v1-coco-litert
+$ bn_onnx --service classifier --model_package mobilenet-v2-imagenet-onnx
+```
+
+You can also give model and label files with `--model` and `--label`. An engine publishes results to the MQTT topic `berrynet/engine/<service_name>/result`, and the service name is `<engine><service>` by default, e.g. `litertdetector` or `onnxclassifier`.
+
 ### Development Environment
 
 The Python development environment is managed by [uv](https://docs.astral.sh/uv/) and supports Python 3.11 or newer (tested up to 3.15).
 
 ```
-$ uv sync --extra tf --extra opencv
-$ uv run python -m unittest
+$ uv sync --all-extras
+
+# Download the models and images for the tests
+$ BERRYNET_MODEL_DIR=models uv run python -m tests.data
+
+$ BERRYNET_MODEL_DIR=models uv run python -m unittest
 ```
 
-TensorFlow does not publish wheels for Python 3.14+ yet, so on those versions the `tf` extra installs nothing and the TensorFlow engine test is skipped.
+LiteRT and ONNX Runtime do not publish wheels for Python 3.15 yet, so on Python 3.15 their extras install nothing and the engine tests are skipped.
 
 
 ## Start and Stop BerryNet
@@ -89,7 +116,7 @@ For more possibilities of supervisorctl, please refer to the [official tutorial]
 The default application has three components:
 
 * Camera client to provide input images
-* Object detection engine to find type and position of the detected objects in an image
+* Object detection engine (LiteRT with SSD MobileNet) to find type and position of the detected objects in an image
 * Dashboard to display the detection results
 
 You will learn how to configure or change the components in the [Configuration](#configuration) section.
@@ -101,10 +128,8 @@ You will learn how to configure or change the components in the [Configuration](
 
 Freeboard is a web-based dashboard. Here are the steps to show the detection result image and text on Freeboard:
 
-* 1: Enter `http://127.0.0.1:8080` in browser's URL bar, and press enter
-* 2: [Download](https://raw.githubusercontent.com/DT42/BerryNet/master/config/dashboard-tflitedetector.json) the Freeboard configuration for default application, `dashboard-tflitedetector.json`
-* 2: Click `LOAD FREEBOARD`, and select the newly downloaded `dashboard-tflitedetector.json`
-* 3: Wait for seconds, you should see the inference result image and text on Freeboard
+* 1: Enter `http://127.0.0.1:8080/#source=dashboard-litertdetector.json` in browser's URL bar, and press enter
+* 2: Wait for seconds, you should see the inference result image and text on Freeboard
 
 ### Open Freeboard on another computer
 
@@ -116,10 +141,10 @@ Assuming that you have two devices:
 Here are the steps:
 
 * 1: Enter `http://192.168.1.42:8080` in browser's URL bar, and press enter
-* 2: [Download](https://raw.githubusercontent.com/DT42/BerryNet/master/config/dashboard-tflitedetector.json) the Freeboard configuration for default application, `dashboard-tflitedetector.json`
-* 3: Replace all the `localhost` to `192.168.1.42` in `dashboard-tflitedetector.json`
-* 2: Click `LOAD FREEBOARD`, and select the newly downloaded `dashboard-tflitedetector.json`
-* 3: Wait for seconds, you should see the inference result image and text on Freeboard
+* 2: [Download](http://192.168.1.42:8080/dashboard-litertdetector.json) the Freeboard configuration for default application, `dashboard-litertdetector.json`
+* 3: Replace all the `localhost` to `192.168.1.42` in `dashboard-litertdetector.json`
+* 4: Click `LOAD FREEBOARD`, and select the modified `dashboard-litertdetector.json`
+* 5: Wait for seconds, you should see the inference result image and text on Freeboard
 
 For more details about dashboard configuration (e.g. how to add widgets), please refer to [Freeboard project](https://github.com/Freeboard/freeboard).
 
@@ -138,7 +163,7 @@ The topic config indicates what MQTT topic the data collector will listen, and w
 
 ```
 {
-    "berrynet/engine/tflitedetector/result": "self.update"
+    "berrynet/engine/litertdetector/result": "self.update"
 }
 ```
 
@@ -147,39 +172,32 @@ The inference result image and text will be saved into the indicated result dire
 
 ## Configuration
 
-The default supervisor config is at `/etc/supervisor/conf.d/berrynet-tflite.conf`. To write your own supervisor config, you can refer to [here](https://github.com/DT42/BerryNet/tree/master/config/supervisor/conf.d) for more example supervisor configs of BerryNet
+The default supervisor config is at `/etc/supervisor/conf.d/berrynet-litert.conf`. To use ONNX Runtime instead, replace it with [berrynet-onnx.conf](config/supervisor/conf.d/berrynet-onnx.conf). To write your own supervisor config, you can refer to [here](https://github.com/DT42/BerryNet/tree/master/config/supervisor/conf.d) for more example supervisor configs of BerryNet
 
 ### Camera Client
 
-BerryNet camera client can run in two modes: stream or file. In stream mode, local camera (e.g. USB camera and RPi camera) and IP camera can be supported, and input frame rate (FPS) can be changed on demand (default is 1). In file mode, user can indicate filepath as input source.
+BerryNet camera client can run in two modes: stream or file. In stream mode, Raspberry Pi camera module, USB camera and IP camera can be supported, and input frame rate (FPS) can be changed on demand (default is 1). In file mode, user can indicate filepath as input source.
 
 To run camera client in stream mode:
 
 ```
+# USB camera /dev/video0
 $ bn_camera --fps 5
+
+# Raspberry Pi camera module, read through rpicam-vid
+$ bn_camera --stream-src picamera --fps 5
+
+# IP camera
+$ bn_camera --stream-src rtsp://<ip-address>/<stream-path> --fps 5
 ```
+
+`configure` uses the Raspberry Pi camera module in the default application if one is connected.
 
 To run camera client in file mode:
 
 ```
 $ bn_camera --mode file --filepath <image-filepath>
 ```
-
-
-## Use Your Data To Train
-
-The original instruction of retraining YOLOv2 model see [github repository of darknet](https://github.com/AlexeyAB/darknet#how-to-train-to-detect-your-custom-objects)
-
-In the current of BerryNet, TinyYolo is used instead of YOLOv2. 
-The major differences are:
-
-1. Create file yolo-obj.cfg with the same content as in `tiny-yolo.cfg`
-2. Download pre-trained weights of darknet reference model, `darknet.weights.12`, for the convolutional layers (6.1MB)
-https://drive.google.com/drive/folders/0B-oZJEwmkAObMzAtc2QzZDhyVGM?usp=sharing
-
-The rest parts are the same as retraining YOLO.
-
-If you use [LabelMe](http://labelme.csail.mit.edu/Release3.0/) to annotate data, `utils/xmlTotxt.py` can help convert the xml format to the text format that darknet uses.
 
 
 ## Discussion
