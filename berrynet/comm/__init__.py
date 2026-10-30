@@ -7,7 +7,7 @@ from berrynet import logger
 from logzero import setup_logger
 
 
-def on_connect(client, userdata, flags, rc):
+def on_connect(client, userdata, flags, rc, properties=None):
     logger.debug('Connected with result code ' + str(rc))
     for topic in client.comm_config['subscribe'].keys():
         logger.debug('Subscribe topic {}'.format(topic))
@@ -24,7 +24,12 @@ def on_message(client, userdata, msg):
 
 class Communicator(object):
     def __init__(self, comm_config, debug=False):
-        self.client = mqtt.Client()
+        # paho-mqtt >= 2.0 requires choosing a callback API version;
+        # distro packages may still ship 1.x.
+        if hasattr(mqtt, 'CallbackAPIVersion'):
+            self.client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
+        else:
+            self.client = mqtt.Client()
         self.client.comm_config = comm_config
         self.client.on_connect = on_connect
         self.client.on_message = on_message

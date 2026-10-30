@@ -10,6 +10,7 @@ dist
 # Environments
 env
 venv
+.venv
 .vscode
 
 # Others

@@ -52,6 +52,17 @@ $ cd BerryNet
 $ ./configure
 ```
 
+### Development Environment
+
+The Python development environment is managed by [uv](https://docs.astral.sh/uv/) and supports Python 3.11 or newer (tested up to 3.15).
+
+```
+$ uv sync --extra tf --extra opencv
+$ uv run python -m unittest
+```
+
+TensorFlow does not publish wheels for Python 3.14+ yet, so on those versions the `tf` extra installs nothing and the TensorFlow engine test is skipped.
+
 
 ## Start and Stop BerryNet
 

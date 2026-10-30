@@ -251,7 +251,7 @@ class OpenVINODetectorEngine(DLEngine):
             inf_end = time()
             det_time = inf_end - inf_start
             if self.is_async_mode:
-                logger.debug('Inference time: N\A for async mode')
+                logger.debug('Inference time: N/A for async mode')
             else:
                 logger.debug("Inference time: {:.3f} ms".format(det_time * 1000))
 

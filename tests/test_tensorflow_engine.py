@@ -1,10 +1,17 @@
+import importlib.util
 import unittest
 
-import cv2
+# TensorFlow does not publish wheels for every supported Python version,
+# and both TensorFlow and OpenCV are optional extras.
+HAS_DEPS = all(importlib.util.find_spec(name) is not None
+               for name in ('tensorflow', 'cv2'))
+if HAS_DEPS:
+    import cv2
 
-from berrynet.engine.tensorflow_engine import TensorFlowEngine
+    from berrynet.engine.tensorflow_engine import TensorFlowEngine
 
 
+@unittest.skipUnless(HAS_DEPS, 'TensorFlow or OpenCV is not installed')
 class TestTensorFlowEngine(unittest.TestCase):
     def test_engine(self):
         model = 'berrynet/engine/inception_v3_2016_08_28_frozen.pb'
