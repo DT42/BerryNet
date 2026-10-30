@@ -9,7 +9,7 @@ cpuTemp1=$(($cpuTemp0/1000))
 cpuTemp2=$(($cpuTemp0/100))
 cpuTempM=$(($cpuTemp2 % $cpuTemp1))
 
-gpuTemp0=$(/opt/vc/bin/vcgencmd measure_temp)
+gpuTemp0=$(vcgencmd measure_temp)
 gpuTemp0=${gpuTemp0//\'/º}
 gpuTemp0=${gpuTemp0//temp=/}
 

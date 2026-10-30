@@ -17,321 +17,172 @@
 # You should have received a copy of the GNU General Public License
 # along with BerryNet.  If not, see <http://www.gnu.org/licenses/>.
 
-# One-click IoT gateway deployment script.
+# One-click IoT gateway deployment script for Raspberry Pi 4 and 5 running
+# 64-bit Raspberry Pi OS Bookworm or Trixie.
+#
+# Environment variables:
+#     BERRYNET_MODELS               Model packages to install, see
+#                                   "bn_model available".
+#     BERRYNET_SKIP_PLATFORM_CHECK  Set to 1 to install on other Debian-based
+#                                   systems, e.g. in a container.
 
-set -e
+set -euo pipefail
 
+if [ "$(id -u)" -ne 0 ]; then
+    exec sudo --preserve-env=BERRYNET_MODELS,BERRYNET_SKIP_PLATFORM_CHECK \
+        "$0" "$@"
+fi
+
+SRC_DIR="$(cd "$(dirname "$0")" && pwd)"
 LOG="$PWD/berrynet-install.log"
-DISTRIBUTIONID=`lsb_release -i -s`
-CODENAME=`lsb_release -c -s`
-INSTALL_TENSORFLOW="Y"
-INSTALL_OPENVINO="N"
-INSTALL_DARKNET="N"
-INSTALL_CAFFE2="N"
+PREFIX="/opt/berrynet"
+VENV="$PREFIX/venv"
+DASHBOARD_DIR="$PREFIX/dashboard"
+MODEL_DIR="/usr/share/dlmodels"
+MODELS="${BERRYNET_MODELS:-ssd-mobilenet-v1-coco-litert ssd-mobilenet-v1-coco-onnx}"
+SKIP_PLATFORM_CHECK="${BERRYNET_SKIP_PLATFORM_CHECK:-0}"
+UV_VERSION="0.13.6"
+FREEBOARD_REPO="https://github.com/Freeboard/freeboard.git"
+FREEBOARD_COMMIT="38789f6e8bd3d04f7d3b2c3427e509d00f2610fc"
 
+exec > >(tee -a "$LOG") 2>&1
 
-install_opencv() {
-    # OpenCV sources
-    #     x86 Ubuntu 16.04: PPA
-    #     Raspbian: BerryNet repo
-    if [ "$DISTRIBUTIONID" = "Ubuntu" ]; then
-        sudo add-apt-repository -yu ppa:timsc/opencv-3.4
-    fi
-    sudo apt-get install -y python3-opencv
+die() {
+    echo "ERROR: $*"
+    echo "Set BERRYNET_SKIP_PLATFORM_CHECK=1 to install anyway."
+    exit 1
 }
 
-install_nodejs() {
-    # v10.x is LTS, if you want the latest feature, change to "setup_11.x".
-    curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
-    sudo apt-get install -y nodejs
+check_platform() {
+    local model arch codename
+    model="$(tr -d '\0' < /proc/device-tree/model 2> /dev/null || true)"
+    arch="$(dpkg --print-architecture)"
+    codename="$(. /etc/os-release && echo "${VERSION_CODENAME:-}")"
+
+    case "$model" in
+    "Raspberry Pi 4"* | "Raspberry Pi 5"* | \
+    "Raspberry Pi Compute Module 4"* | "Raspberry Pi Compute Module 5"*)
+        ;;
+    *)
+        die "BerryNet supports Raspberry Pi 4 and 5, but this is '${model:-unknown}'."
+        ;;
+    esac
+    if [ "$arch" != "arm64" ]; then
+        die "BerryNet needs 64-bit (arm64) Raspberry Pi OS, but this is $arch."
+    fi
+    case "$codename" in
+    bookworm | trixie)
+        ;;
+    *)
+        die "BerryNet supports Raspberry Pi OS Bookworm and Trixie, but this is '${codename:-unknown}'."
+        ;;
+    esac
+    echo "Platform: $model, $codename, $arch"
 }
 
 install_system_dependencies() {
-    sudo apt-get update
-    if [ "$CODENAME" = "buster" ]; then
-        sudo apt-get install -y \
-            supervisor
-    else
-        sudo apt-get install -y \
-            apache2 \
-            curl \
-            dirmngr \
-            fswebcam \
-            git \
-            imagemagick \
-            libkrb5-dev \
-            libyaml-dev \
-            libzmq3-dev \
-            lsb-release \
-            mosquitto \
-            mosquitto-clients \
-            python3-dev \
-            python3-opengl \
-            python3-pip \
-            supervisor \
-            wget
+    apt-get update
+    # libgl1 and libglib2.0-0 are needed by OpenCV.
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        ca-certificates \
+        curl \
+        git \
+        libgl1 \
+        libglib2.0-0 \
+        mosquitto \
+        mosquitto-clients \
+        python3 \
+        python3-venv \
+        supervisor
+    # rpicam-vid reads the Raspberry Pi camera module.
+    if ! command -v rpicam-vid > /dev/null && \
+            apt-cache show rpicam-apps-lite > /dev/null 2>&1; then
+        DEBIAN_FRONTEND=noninteractive apt-get install -y rpicam-apps-lite
     fi
-    sudo -H pip3 install --timeout 60 cython
-    sudo -H pip3 install --timeout 60 logzero
-    sudo -H pip3 install --timeout 60 paho-mqtt
-    sudo -H pip3 install --timeout 60 PyOpenGL
-    sudo -H pip3 install --timeout 60 PyOpenGL-accelerate
-    sudo -H pip3 install --timeout 60 watchdog
-
-    install_opencv
-    install_nodejs
 }
 
-install_berrynet_repository() {
-    curl -sL https://raw.githubusercontent.com/DT42/BerryNet-repo/master/setup.sh | sudo -E bash -
+install_berrynet() {
+    python3 -m venv "$VENV"
+    "$VENV/bin/pip" install --quiet "uv==$UV_VERSION"
+    # Keep uv itself in the venv (--inexact), and do not link the venv to
+    # this source directory (--no-editable).
+    pushd "$SRC_DIR" > /dev/null
+    UV_PROJECT_ENVIRONMENT="$VENV" "$VENV/bin/uv" sync \
+        --locked --inexact --no-dev --no-editable \
+        --python "$VENV/bin/python" \
+        --extra litert --extra onnx --extra opencv
+    rm -rf build berrynet.egg-info
+    popd > /dev/null
+    for cmd in "$VENV"/bin/bn_*; do
+        ln -sf "$cmd" /usr/local/bin/
+    done
+}
+
+install_models() {
+    # shellcheck disable=SC2086
+    "$VENV/bin/bn_model" --basedir "$MODEL_DIR" install $MODELS
+}
+
+install_dashboard() {
+    rm -rf "$DASHBOARD_DIR"
+    git clone --quiet "$FREEBOARD_REPO" "$DASHBOARD_DIR"
+    git -C "$DASHBOARD_DIR" -c advice.detachedHead=false \
+        checkout --quiet "$FREEBOARD_COMMIT"
+    git -C "$DASHBOARD_DIR" apply "$SRC_DIR/patch/ui-berrynet-theme.patch"
+    rm -rf "$DASHBOARD_DIR/.git"
+    cp -r "$SRC_DIR/patch/www/freeboard/." "$DASHBOARD_DIR/"
+    cp "$SRC_DIR/config/dashboard-litertdetector.json" "$DASHBOARD_DIR/"
 }
 
 install_configs() {
-    # supervisor
-    sudo cp config/supervisor/conf.d/berrynet-tflite.conf /etc/supervisor/conf.d/
-    sudo mkdir -p /var/log/berrynet
+    local conf_dir="/etc/supervisor/conf.d"
 
-    # mosquitto
-    sudo cp config/etc/mosquitto/conf.d/berrynet.conf /etc/mosquitto/conf.d
-
-    if [ "$DISTRIBUTIONID" = "Raspbian" ]; then
-        # Make RPi camera to show at /dev/videoN
-        sudo cp config/bcm2835-v4l2.conf /etc/modules-load.d
+    mkdir -p /var/log/berrynet
+    cp "$SRC_DIR/config/supervisor/conf.d/berrynet-litert.conf" "$conf_dir/"
+    cp "$SRC_DIR/config/supervisor/conf.d/berrynet-dashboard.conf" "$conf_dir/"
+    # Use the Raspberry Pi camera module if there is one, or a USB camera.
+    if command -v rpicam-hello > /dev/null && \
+            rpicam-hello --list-cameras 2> /dev/null | grep -q '^[0-9]* : '; then
+        echo "Found Raspberry Pi camera module"
+        sed -i 's/^command=bn_camera /command=bn_camera --stream-src picamera /' \
+            "$conf_dir/berrynet-litert.conf"
     fi
-}
 
-install_berrynet_py() {
-    sudo apt-get install -y berrynet
-    # FIXME: Freeboard dependency
-    #sudo npm install -g mime
-}
-
-install_berrynet_js() {
-    local working_dir="/usr/local/berrynet"
-    sudo mkdir -p $working_dir
-    sudo cp -a \
-        broker.js \
-        camera.js \
-        config.js \
-        data_collector.js \
-        inference \
-        journal.js \
-        localimg.js \
-        mail.js \
-        line.js \
-        package.json \
-        $working_dir
-    sudo cp berrynet-manager /usr/local/bin
-    # FIXME: image dir should be created by program
-    mkdir -p /usr/local/berrynet/inference/image
-    # install npm dependencies
-    pushd $working_dir > /dev/null
-    sudo npm install --unsafe-perm
-    popd > /dev/null
-}
-
-install_model() {
-    local model_name="$1"
-    echo "Install model $model_name"
-    sudo apt-get install -y $model_name
-}
-
-download_classifier_model_caffe2() {
-    sh ./utils/install-caffe2-models.sh
-}
-
-install_tensorflow() {
-    if [ "$DISTRIBUTIONID" = "Ubuntu" ]; then
-	sudo -H pip3 install tensorflow
-    elif [ "$DISTRIBUTIONID" = "Raspbian" ]; then
-        case $CODENAME in
-        "buster")
-            # Unsatisfied dependencies in Buster, and wheels will be installed
-            #     python3-tensorboard             none
-            #     python3-wrapt                   1.10.11-1+b1
-            #     python3-gast                    none
-            #     python3-tensorflow-estimator    none
-            #     python3-astor                   0.5-1
-            #     python3-absl-py                 none
-            #     python3-google-pasta            none
-            #     python3-setuptools              40.8.0-1
-            sudo apt-get install -y \
-                python3-numpy \
-                python3-termcolor \
-                python3-six \
-                python3-keras-applications \
-                python3-protobuf \
-                python3-keras-preprocessing \
-                python3-wheel \
-                python3-grpcio \
-                python3-werkzeug \
-                python3-markdown \
-                python3-h5py
-
-	    TENSORFLOW_PKGNAME="tensorflow-1.15.0-cp37-cp37m-linux_armv7l.whl"
-	    if [ ! -e "/tmp/$TENSORFLOW_PKGNAME" ]; then
-                wget -O /tmp/$TENSORFLOW_PKGNAME \
-                    https://s3.amazonaws.com/pypi.berrynet.org/$TENSORFLOW_PKGNAME
-	    else
-                echo "$TENSORFLOW_PKGNAME has existed, skip to download it."
-	    fi
-	    sudo -H pip3 install /tmp/$TENSORFLOW_PKGNAME
-            ;;
-        *)
-            echo "ERROR: Fail to install TensorFlow, unknown or unsupported Raspbian codename $CODENAME"
-            exit 1
-        esac
-    fi
-}
-
-install_openvino_repository() {
-    echo 'Adding the OpenVINO GPG key to your keyring...'
-    curl -sL https://apt.repos.intel.com/openvino/2020/GPG-PUB-KEY-INTEL-OPENVINO-2020 | sudo apt-key add -
-    sudo curl -sL -o /etc/apt/sources.list.d/intel-openvino-2020.list \
-        https://raw.githubusercontent.com/DT42/BerryNet/master/config/intel-openvino-2020.list
-    sudo apt-get update
-}
-
-install_openvino() {
-    if [ "$DISTRIBUTIONID" = "Ubuntu" ]; then
-        let OPENVINO_VERSION="2020.1.023"
-        if [ "$CODENAME" = "xenial" ]; then
-            sudo apt-get install intel-openvino-runtime-ubuntu16-$OPENVINO_VERSION
-        elif [ "$CODENAMe" = "bionic" ]; then
-            sudo apt-get install intel-openvino-runtime-ubuntu18-$OPENVINO_VERSION
-        else
-            echo "ERROR: OpenVINO on Ubuntu $CODENAME is not supported by Intel."
-        fi
-    elif [ "$DISTRIBUTIONID" = "Raspbian" ]; then
-        sudo apt-get install -y openvino-rpi
-    fi
-}
-
-install_darknet () {
-    # For x86, we use pure Darknet.
-    # For Raspberry Pi, we use pure Darknet + NNPACK.
-    #
-    # To understand how Darknet NNPACK packages are built, please refer to
-    # https://github.com/DT42/BerryNet/blob/master/doc/darknet-nnpack.md
-    sudo apt-get install -y darknet libdarknet
-}
-
-#install_darknet() {
-#    local peachpy_version="0.0.1"
-#    local confu_version="cc90068"
-#    local ninja_version="v1.8.2"
-#    local nnpack_darknet_version="1ecda10"
-#    local darknet_nnpack_version="fa5bddc"
-#
-#    # build dependencies
-#    pip3 install --user PeachPy==$peachpy_version
-#    pip3 install --user git+https://github.com/Maratyszcza/confu@$confu_version
-#
-#    pushd /tmp > /dev/null
-#    git clone https://github.com/ninja-build/ninja.git
-#    pushd ninja > /dev/null
-#    git reset --hard $ninja_version
-#    ./configure.py --bootstrap
-#    popd > /dev/null
-#    popd > /dev/null
-#
-#    sudo apt-get install -y clang
-#
-#    pushd /tmp > /dev/null
-#    git clone https://github.com/thomaspark-pkj/NNPACK-darknet.git
-#    pushd NNPACK-darknet > /dev/null
-#    git reset --hard $nnpack_darknet_version
-#    $HOME/.local/bin/confu setup
-#    python ./configure.py --backend auto
-#    /tmp/ninja/ninja
-#    sudo cp lib/{libgoogletest-core.a,libnnpack.a,libpthreadpool.a} /usr/lib/
-#    sudo cp include/nnpack.h /usr/include/
-#    sudo cp deps/pthreadpool/include/pthreadpool.h /usr/include/
-#    popd > /dev/null
-#    popd > /dev/null
-#
-#    # build detection backend (darknet)
-#    pushd inference > /dev/null
-#    git clone https://github.com/thomaspark-pkj/darknet-nnpack.git darknet
-#    pushd darknet > /dev/null
-#    git reset --hard $darknet_nnpack_version
-#    patch -p 1 < ../../patch/01-detection-backend.patch
-#    make -j
-#    popd > /dev/null
-#    popd > /dev/null
-#
-#    cp utils/darknet/detectord.py inference/darknet
-#    mkdir inference/darknet/utils
-#    cp utils/darknet/utils/localrun.sh inference/darknet/utils
-#}
-
-install_caffe2() {
-    if [ "$DISTRIBUTIONID" = "Ubuntu" ]; then
-	sh ./utils/install-caffe2-ubuntu.sh
-    elif [ "$DISTRIBUTIONID" = "Raspbian" ]; then
-	sh ./utils/install-caffe2-raspbian.sh
-    fi
+    cp "$SRC_DIR/config/etc/mosquitto/conf.d/berrynet.conf" \
+        /etc/mosquitto/conf.d/
 }
 
 update_system_service() {
-    sudo service mosquitto restart
-    sudo supervisorctl reload
-    sudo a2enconf berrynet-dashboard
+    if [ -d /run/systemd/system ]; then
+        systemctl enable mosquitto supervisor
+        systemctl restart mosquitto supervisor
+    else
+        echo "systemd is not running, please start mosquitto and supervisor manually."
+    fi
 }
 
-install_system_dependencies 2>&1 | tee -a $LOG
-install_berrynet_repository 2>&1 | tee -a $LOG
-install_berrynet_py 2>&1 | tee -a $LOG
-install_configs 2>&1 | tee -a $LOG
-# FIXME: Raspbian 20190408 breaks some dependencies of BerryNet JS.
-#        Disable temporaily before this issue is fixed.
-#install_berrynet_js 2>&1 | tee -a $LOG
-
-if [ "$INSTALL_TENSORFLOW" = "Y" ]; then
-    install_tensorflow 2>&1 | tee -a $LOG
-    #install_model inception
-    install_model mobilenet-1.0-224-quantized-tflite 2>&1 | tee -a $LOG
-    install_model mobilenet-ssd-coco-tflite 2>&1 | tee -a $LOG
-else
-    echo "Not install TensorFlow" >> $LOG
+if [ "$SKIP_PLATFORM_CHECK" != "1" ]; then
+    check_platform
 fi
+install_system_dependencies
+install_berrynet
+install_models
+install_dashboard
+install_configs
+update_system_service
 
-if [ "$INSTALL_OPENVINO" = "Y" ]; then
-    install_openvino_repository 2>&1 | tee -a $LOG
-    install_openvino 2>&1 | tee -a $LOG
-    install_model mobilenet-1.0-224-fp16-openvino 2>&1 | tee -a $LOG
-    install_model mobilenet-ssd-openvino 2>&1 | tee -a $LOG
-else
-    echo "Not install OpenVINO" >> $LOG
-fi
+cat << EOF
+Installation is completed successfully!
 
-if [ "$INSTALL_DARKNET" = "Y" ]; then
-    install_darknet 2>&1 | tee -a $LOG
-    install_model tinyyolovoc 2>&1 | tee -a $LOG
-else
-    echo "Not install Darknet NNPACK" >> $LOG
-fi
+Dashboard: http://<IP address of this device>:8080/#source=dashboard-litertdetector.json
 
-if [ "$INSTALL_CAFFE2" = "Y" ]; then
-    install_caffe2 2>&1 | tee -a $LOG
-    download_classifier_model_caffe2 2>&1 | tee -a $LOG
-else
-    echo "Not install Caffe2" >> $LOG
-fi
+If there is any issue, please open an issue on
 
-update_system_service 2>&1 | tee -a $LOG
+    https://github.com/DT42/BerryNet/issues
 
-{
-    echo "Installation is completed successfully!"
-    echo ""
-    echo "If there is any issue, please open an issue on"
-    echo ""
-    echo "    https://github.com/DT42/BerryNet/issues"
-    echo ""
-    echo "and attach these logs:"
-    echo ""
-    echo "    $LOG"
-    echo "    /usr/local/berrynet/npm-debug.log"
-    echo ""
-    echo "We are happy to check and fix it, thank you!"
-} | tee -a $LOG
+and attach this log:
+
+    $LOG
+
+We are happy to check and fix it, thank you!
+EOF

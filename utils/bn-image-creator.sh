@@ -38,7 +38,7 @@ CTIME_YY=`date '+%Y'`
 CTIME_MM=`date '+%m'`
 CTIME_DD=`date '+%d'`
 
-IMAGE_FILENAME=$CTIME_YY-$CTIME_MM-$CTIME_DD-raspbian-buster-berrynet
+IMAGE_FILENAME=$CTIME_YY-$CTIME_MM-$CTIME_DD-raspios-berrynet
 
 echo "Creating image ${IMAGE_FILENAME}.zip"
 sudo bash -c "dd if="$DEVICE" bs=512 status=progress | zip ${IMAGE_FILENAME}.zip -"
