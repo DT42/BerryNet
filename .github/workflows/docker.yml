@@ -45,14 +45,22 @@ jobs:
     #     with:
     #       args: push ${RC_NAME}:cache
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
 
     strategy:
       fail-fast: false
       matrix:
-        # TensorFlow has no wheels for Python 3.14+ yet, so the TensorFlow
-        # engine test is skipped on 3.15.
+        os: [ubuntu-latest]
+        # LiteRT and ONNX Runtime have no wheels for Python 3.15 yet, so the
+        # engine tests are skipped on 3.15.
         python-version: ["3.11", "3.13", "3.15"]
+        include:
+          # Raspberry Pi 4 and 5 run 64-bit Arm.
+          - os: ubuntu-24.04-arm
+            python-version: "3.13"
+
+    env:
+      BERRYNET_MODEL_DIR: ${{ github.workspace }}/models
 
     steps:
       - uses: actions/checkout@v7
@@ -61,11 +69,10 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
-        run: uv sync --locked --extra tf --extra opencv
-      - name: Download inception models
-        run: |
-          wget "https://storage.googleapis.com/download.tensorflow.org/models/inception_v3_2016_08_28_frozen.pb.tar.gz" -O berrynet/engine/inception_v3_2016_08_28_frozen.pb.tar.gz
-          tar -zxvf berrynet/engine/inception_v3_2016_08_28_frozen.pb.tar.gz -C berrynet/engine
+        run: uv sync --locked --all-extras
+      - name: Download models
+        if: matrix.python-version != '3.15'
+        run: uv run python -m tests.data
 
       - name: Test with unittest
         run: |

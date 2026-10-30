@@ -41,7 +41,7 @@ unit-test:
   dependencies:
   - build-wheel
   script:
-  - pip3 install dist/*.whl tensorflow
+  - pip3 install "$(ls dist/*.whl)[litert,onnx,opencv]"
   - apt update && apt install -y libsm6 libxrender-dev
   - python3 -m unittest
   allow_failure: true
