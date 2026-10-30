@@ -1,10 +1,15 @@
+import importlib.util
 import unittest
 
 import cv2
 
-from berrynet.engine.tensorflow_engine import TensorFlowEngine
+# TensorFlow does not publish wheels for every supported Python version.
+HAS_TENSORFLOW = importlib.util.find_spec('tensorflow') is not None
+if HAS_TENSORFLOW:
+    from berrynet.engine.tensorflow_engine import TensorFlowEngine
 
 
+@unittest.skipUnless(HAS_TENSORFLOW, 'TensorFlow is not installed')
 class TestTensorFlowEngine(unittest.TestCase):
     def test_engine(self):
         model = 'berrynet/engine/inception_v3_2016_08_28_frozen.pb'
