@@ -37,31 +37,36 @@ class TensorFlowEngine(DLEngine):
     def __init__(self, model, label, input_layer, output_layer, top_k=3):
         super(TensorFlowEngine, self).__init__()
 
-        # Load model
-        with tf.gfile.FastGFile(model, 'rb') as f:
-            graph_def = tf.GraphDef()
-            graph_def.ParseFromString(f.read())
-            _ = tf.import_graph_def(graph_def, name='')
+        # TensorFlow 2 runs eagerly by default, so build the frozen graph
+        # in an explicit graph and run it with a compat.v1 session.
+        self.graph = tf.Graph()
+        with self.graph.as_default():
+            # Load model
+            with tf.io.gfile.GFile(model, 'rb') as f:
+                graph_def = tf.compat.v1.GraphDef()
+                graph_def.ParseFromString(f.read())
+                _ = tf.import_graph_def(graph_def, name='')
+
+            # NOTE: Do NOT call read_tensor_from_nparray twice to prevent
+            #       from recreating unexpected placeholders.
+            self.tensor_op = self.read_tensor_from_nparray(
+                input_height=299,
+                input_width=299,
+                input_mean=0,
+                input_std=255)
 
         # Load labels
-        self.labels = [line.rstrip() for line in tf.gfile.FastGFile(label)]
+        with tf.io.gfile.GFile(label) as f:
+            self.labels = [line.rstrip() for line in f]
 
         # Load other configs
         self.input_layer = input_layer
         self.output_layer = output_layer
         self.top_k = top_k
 
-        # NOTE: Do NOT call read_tensor_from_nparray twice to prevent from
-        #       recreating unexpected placeholders.
-        self.tensor_op = self.read_tensor_from_nparray(
-            input_height=299,
-            input_width=299,
-            input_mean=0,
-            input_std=255)
-
     def create(self):
         # Create session
-        self.sess = tf.Session()
+        self.sess = tf.compat.v1.Session(graph=self.graph)
 
     def process_input(self, rgb_array):
         return self.sess.run(self.tensor_op,
@@ -96,10 +101,10 @@ class TensorFlowEngine(DLEngine):
     def read_tensor_from_nparray(self, input_height=192, input_width=192,
                                  input_mean=0, input_std=255):
         """ Create normalized tensor based on input numpy array """
-        image_reader = tf.placeholder(tf.uint8, name='inarray')
+        image_reader = tf.compat.v1.placeholder(tf.uint8, name='inarray')
         float_caster = tf.cast(image_reader, tf.float32)
         dims_expander = tf.expand_dims(float_caster, 0)
-        resized = tf.image.resize_bilinear(dims_expander,
-                                           [input_height, input_width])
+        resized = tf.compat.v1.image.resize_bilinear(
+            dims_expander, [input_height, input_width])
         normalized = tf.divide(tf.subtract(resized, [input_mean]), [input_std])
         return normalized

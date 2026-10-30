@@ -1,25 +1,79 @@
-[tool.poetry]
-name = "python_project_template"
-version = "0.1.0"
-description = ""
-authors = ["davidtnfsh <davidtnfsh@gmail.com>"]
-
-[tool.poetry.dependencies]
-python = "^3.7"
-requests = "^2.23.0"
-opencv-python = "^4.3.0"
-tensorflow = "1.14.*"
-
-[tool.poetry.dev-dependencies]
-safety = "^1.8.7"
-bandit = "^1.6.2"
-isort = "^4.3.21"
-pytest-cov = "^2.8.1"
-black = "^19.10b0"
-mypy = "^0.770"
-pytest = "^5.4.1"
-pylint = "^2.4.4"
-
 [build-system]
-requires = ["poetry>=0.12"]
-build-backend = "poetry.masonry.api"
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "berrynet"
+version = "3.10.2"
+description = "Deep learning gateway on Raspberry Pi and other edge devices."
+readme = "README.md"
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE.txt"]
+authors = [{ name = "DT42 Inc.", email = "berrynet@dt42.io" }]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
+]
+requires-python = ">=3.11"
+dependencies = [
+    "logzero",
+    "numpy",
+    "paho-mqtt",
+    "PyOpenGL",
+    "PyOpenGL-accelerate",
+]
+
+# Without TF:                  uv sync / pip install berrynet
+# TF CPU mode:                 uv sync --extra tf / pip install berrynet[tf]
+# TF GPU mode:                 uv sync --extra tf-gpu / pip install berrynet[tf-gpu]
+# TF and wheel-version OpenCV: uv sync --extra tf --extra opencv
+#
+# TensorFlow does not publish wheels for Python 3.14+ yet, so the tf extras
+# install nothing there.
+[project.optional-dependencies]
+tf = ["tensorflow>=2.16; python_version < '3.14'"]
+tf-gpu = ["tensorflow[and-cuda]>=2.16; python_version < '3.14' and sys_platform == 'linux'"]
+opencv = ["opencv-python"]
+
+[project.scripts]
+bn_camera = "berrynet.client.camera:main"
+bn_dashboard = "berrynet.client.fbdashboard:main"
+bn_data_collector = "berrynet.client.data_collector:main"
+bn_gmail = "berrynet.client.gmail:main"
+bn_telegram = "berrynet.client.telegram_bot:main"
+bn_tflite = "berrynet.service.tflite_service:main"
+bn_openvino = "berrynet.service.openvino_service:main"
+bn_darknet = "berrynet.service.darknet_service:main"
+bn_pipeline = "berrynet.bndyda.bnpipeline:main"
+
+[project.urls]
+Homepage = "https://github.com/DT42/BerryNet"
+
+[dependency-groups]
+dev = [
+    "bandit",
+    "black",
+    "isort",
+    "mypy",
+    # berrynet.service and the tests import cv2.
+    "opencv-python",
+    "pip-audit",
+    "pylint",
+    "pytest",
+    "pytest-cov",
+]
+
+[tool.setuptools.packages.find]
+include = ["berrynet", "berrynet.*"]
+
+[tool.uv]
+# Only resolve releases that have been public for a week (supply-chain cooldown).
+exclude-newer = "7 days"
