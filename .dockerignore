@@ -1,0 +1,8 @@
+.git
+.venv
+**/__pycache__
+*.egg-info
+build
+dist
+models
+berrynet-install.log

@@ -20,15 +20,91 @@
 import argparse
 import json
 import logging
+import subprocess
 import time
 
 from datetime import datetime
 
 import cv2
+import numpy as np
 
 from berrynet import logger
 from berrynet.comm import Communicator
 from berrynet.comm import payload
+
+
+class RpicamCapture(object):
+    """cv2.VideoCapture-like reader of the Raspberry Pi camera module.
+
+    Raspberry Pi OS Bookworm and later access camera modules through
+    libcamera, which OpenCV can not open, so read the MJPEG stream of
+    rpicam-vid instead.
+    """
+
+    def __init__(self, width=1280, height=720, fps=30):
+        self.fps = fps
+        self.process = subprocess.Popen(
+            ['rpicam-vid', '--nopreview', '--timeout', '0',
+             '--codec', 'mjpeg', '--width', str(width),
+             '--height', str(height), '--framerate', str(fps),
+             '--output', '-'],
+            stdout=subprocess.PIPE)
+        self.buffer = bytearray()
+        self.jpg_bytes = None
+
+    def read_jpg(self):
+        """Return the next JPEG frame, or None at the end of the stream."""
+        scanned = 2
+        while True:
+            start = self.buffer.find(b'\xff\xd8')
+            if start < 0:
+                # Keep the last byte, it may start an SOI marker.
+                del self.buffer[:-1]
+                scanned = 2
+            else:
+                if start > 0:
+                    del self.buffer[:start]
+                    scanned = 2
+                end = self.buffer.find(b'\xff\xd9', scanned)
+                if end >= 0:
+                    jpg_bytes = bytes(self.buffer[:end + 2])
+                    del self.buffer[:end + 2]
+                    return jpg_bytes
+                # Do not search the same bytes again, except the last one
+                # which may start an EOI marker.
+                scanned = max(len(self.buffer) - 1, 2)
+            chunk = self.process.stdout.read1(1 << 16)
+            if not chunk:
+                return None
+            self.buffer += chunk
+
+    def grab(self):
+        self.jpg_bytes = self.read_jpg()
+        return self.jpg_bytes is not None
+
+    def retrieve(self):
+        if self.jpg_bytes is None:
+            return False, None
+        im = cv2.imdecode(np.frombuffer(self.jpg_bytes, np.uint8),
+                          cv2.IMREAD_COLOR)
+        return im is not None, im
+
+    def get(self, prop):
+        return self.fps if prop == cv2.CAP_PROP_FPS else 0
+
+    def release(self):
+        self.process.terminate()
+        self.process.wait()
+
+
+def open_capture(stream_src):
+    if stream_src == 'picamera':
+        return RpicamCapture()
+    if stream_src.isdigit():
+        # source is a physically connected camera
+        return cv2.VideoCapture(int(stream_src))
+    # source is an IP camera
+    return cv2.VideoCapture(stream_src)
 
 
 def parse_args():
@@ -43,7 +119,8 @@ def parse_args():
         type=str,
         default='0',
         help=('Camera stream source. '
-              'It can be device node ID or RTSP URL. '
+              'It can be device node ID, RTSP URL, or "picamera" for '
+              'the Raspberry Pi camera module. '
               '(default: 0)')
     )
     ap.add_argument(
@@ -117,20 +194,14 @@ def main():
         counter = 0
         fail_counter = 0
 
-        # Check input stream source
-        if args['stream_src'].isdigit():
-            # source is a physically connected camera
-            stream_source = int(args['stream_src'])
-        else:
-            # source is an IP camera
-            stream_source = args['stream_src']
-        capture = cv2.VideoCapture(stream_source)
+        stream_source = args['stream_src']
+        capture = open_capture(stream_source)
         cam_fps = capture.get(cv2.CAP_PROP_FPS)
         if cam_fps > 30 or cam_fps < 1:
             logger.warn('Camera FPS is {} (>30 or <1). Set it to 30.'.format(cam_fps))
             cam_fps = 30
         out_fps = args['fps']
-        interval = int(cam_fps / out_fps)
+        interval = max(int(cam_fps / out_fps), 1)
 
         # warmup
         #t_warmup_start = time.time()
@@ -144,6 +215,8 @@ def main():
         logger.debug('===== VideoCapture Information =====')
         if stream_source.isdigit():
             stream_source_uri = '/dev/video{}'.format(stream_source)
+        elif stream_source == 'picamera':
+            stream_source_uri = 'Raspberry Pi camera module (rpicam-vid)'
         else:
             stream_source_uri = stream_source
         logger.debug('Stream Source: {}'.format(stream_source_uri))
@@ -155,10 +228,16 @@ def main():
         logger.debug('====================================')
 
         while True:
-            status, im = capture.read()
+            # Only decode the frames to send.
+            status = capture.grab()
+            if status is True:
+                counter += 1
+                if counter == interval:
+                    status, im = capture.retrieve()
 
             # To verify whether the input source is alive, you should use the
-            # return value of capture.read(). It will not work by capturing
+            # return values of capture.grab() and capture.retrieve().
+            # It will not work by capturing
             # exception of a capture instance, or by checking the return value
             # of capture.isOpened().
             #
@@ -171,7 +250,6 @@ def main():
             #    the capture return value (capture status) to determine
             #    whether a stream is alive or not.
             if (status is True):
-                counter += 1
                 if counter == interval:
                     logger.debug('Drop frames: {}'.format(counter-1))
                     counter = 0
@@ -191,13 +269,14 @@ def main():
                     pass
             else:
                 fail_counter += 1
+                counter = 0
                 logger.critical('ERROR: Failure #{} happened when reading frame'.format(fail_counter))
 
                 # Re-create capture.
                 capture.release()
                 logger.critical('Re-create a capture and reconnect to {} after 5s'.format(stream_source))
                 time.sleep(5)
-                capture = cv2.VideoCapture(stream_source)
+                capture = open_capture(stream_source)
     elif args['mode'] == 'file':
         # Prepare MQTT payload
         im = cv2.imread(args['filepath'])

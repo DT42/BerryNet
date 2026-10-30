@@ -11,6 +11,9 @@ dist
 env
 venv
 .venv
+
+# Models downloaded by "python -m tests.data"
+models
 .vscode
 
 # Others

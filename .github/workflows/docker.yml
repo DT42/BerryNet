@@ -11,9 +11,10 @@ env:
   RC_NAME: dt42/berrynet
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # Raspberry Pi 4 and 5 run 64-bit Arm.
+    runs-on: ubuntu-24.04-arm
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v7
       # need to set dockerhub password in GitHub secrets
       #   - name: Login to docker hub
       #     uses: actions-hub/docker/login@master
@@ -27,11 +28,32 @@ jobs:
       #       docker pull ${RC_NAME}:cache
 
       - name: Build image
-        if: always()
         run: |
-          docker build --cache-from ${RC_NAME}:cache -t ${RC_NAME} -f docker/Dockerfile .
+          docker build -t ${RC_NAME} -f docker/Dockerfile .
           docker tag ${RC_NAME} ${RC_NAME}:${GITHUB_SHA}
           docker tag ${RC_NAME} ${RC_NAME}:cache
+
+      - name: Test image
+        run: |
+          docker run -d --name berrynet ${RC_NAME}
+          sleep 20
+          # There is no camera on the runner, so feed an image file.
+          docker exec berrynet supervisorctl status litert-service dashboard
+          docker cp berrynet/engine/grace_hopper.jpg berrynet:/tmp/test.jpg
+          docker exec berrynet sh -c '
+            mosquitto_sub -t berrynet/engine/litertdetector/result -C 1 -W 60 > /tmp/result.json &
+            pid=$!
+            sleep 2
+            bn_camera --mode file --filepath /tmp/test.jpg
+            wait $pid'
+          docker exec berrynet python3 -c "import json; print(json.load(open('/tmp/result.json'))['annotations'])"
+          docker exec berrynet curl -fsS -o /dev/null http://localhost:8080/
+
+      - name: Show logs
+        if: failure()
+        run: |
+          docker logs berrynet
+          docker exec berrynet sh -c 'tail -n 20 /var/log/berrynet/*.log'
 
     # need to set dockerhub password in GitHub secrets
     #   - name: Push to docker registry
@@ -45,14 +67,22 @@ jobs:
     #     with:
     #       args: push ${RC_NAME}:cache
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
 
     strategy:
       fail-fast: false
       matrix:
-        # TensorFlow has no wheels for Python 3.14+ yet, so the TensorFlow
-        # engine test is skipped on 3.15.
+        os: [ubuntu-latest]
+        # LiteRT and ONNX Runtime have no wheels for Python 3.15 yet, so the
+        # engine tests are skipped on 3.15.
         python-version: ["3.11", "3.13", "3.15"]
+        include:
+          # Raspberry Pi 4 and 5 run 64-bit Arm.
+          - os: ubuntu-24.04-arm
+            python-version: "3.13"
+
+    env:
+      BERRYNET_MODEL_DIR: ${{ github.workspace }}/models
 
     steps:
       - uses: actions/checkout@v7
@@ -61,11 +91,16 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
-        run: uv sync --locked --extra tf --extra opencv
-      - name: Download inception models
-        run: |
-          wget "https://storage.googleapis.com/download.tensorflow.org/models/inception_v3_2016_08_28_frozen.pb.tar.gz" -O berrynet/engine/inception_v3_2016_08_28_frozen.pb.tar.gz
-          tar -zxvf berrynet/engine/inception_v3_2016_08_28_frozen.pb.tar.gz -C berrynet/engine
+        run: uv sync --locked --all-extras
+      - name: Cache models
+        if: matrix.python-version != '3.15'
+        uses: actions/cache@v6
+        with:
+          path: models
+          key: models-${{ hashFiles('berrynet/dlmodelmgr.py', 'tests/data.py') }}
+      - name: Download models
+        if: matrix.python-version != '3.15'
+        run: uv run python -m tests.data
 
       - name: Test with unittest
         run: |

@@ -2,25 +2,17 @@
 
 Steps to connect your IP camera to BerryNet:
 
-1. Get snapshot URL of the IP camera.
+1. Get stream URL of the IP camera.
 
-    The [camera connection database](https://www.ispyconnect.com/sources.aspx) can generate snapshot URL if your IP camera is supported.
+    The [camera connection database](https://www.ispyconnect.com/sources.aspx) can generate stream URL if your IP camera is supported.
 
-    The key is that the IP camera supports retrieving snapshots via HTTP. For example, my IP camera provides the interface to retrieve snapshot:
+    Most IP cameras provide an RTSP stream, for example:
 
     ```
-    http://<ip-address>/cgi-bin/encoder?USER=<username>&PWD=<password>&Channel=1&SNAPSHOT
+    rtsp://<username>:<password>@<ip-address>:554/<stream-path>
     ```
 
 1. Configure BerryNet
 
-    1. Edit `config.ipcameraSnapshot` in `/usr/local/berrynet/config.js`.
-    2. Restart BerryNet.
-
-# Get Nest Camera's Snapshot URL
-
-Follow the [quick start guide](https://codelabs.developers.google.com/codelabs/wwn-api-quickstart/#0) to get snapshot URL. The high-level steps are:
-
-1. Create a "product" (the concept is like a project, we will use it for personal usage).
-1. Get access token from Nest cloud service.
-1. Get snapshot URL with the access token Nest cloud service.
+    1. Add `--stream-src <stream-url>` to the `bn_camera` command in `/etc/supervisor/conf.d/berrynet-litert.conf`.
+    2. Apply the change with `sudo supervisorctl update`.
