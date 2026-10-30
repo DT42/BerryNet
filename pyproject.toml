@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "berrynet"
 version = "3.10.2"
-description = "Deep learning gateway on Raspberry Pi and other edge devices."
+description = "Deep learning gateway on Raspberry Pi."
 readme = "README.md"
 license = "GPL-3.0-or-later"
 license-files = ["LICENSE.txt"]
@@ -28,19 +28,17 @@ dependencies = [
     "numpy",
     "paho-mqtt",
     "PyOpenGL",
-    "PyOpenGL-accelerate",
 ]
 
-# Without TF:                  uv sync / pip install berrynet
-# TF CPU mode:                 uv sync --extra tf / pip install berrynet[tf]
-# TF GPU mode:                 uv sync --extra tf-gpu / pip install berrynet[tf-gpu]
-# TF and wheel-version OpenCV: uv sync --extra tf --extra opencv
+# Inference engines:     uv sync --extra litert --extra onnx
+#                        pip install berrynet[litert,onnx]
+# Wheel-version OpenCV:  uv sync --extra opencv / pip install berrynet[opencv]
 #
-# TensorFlow does not publish wheels for Python 3.14+ yet, so the tf extras
-# install nothing there.
+# LiteRT and ONNX Runtime do not publish wheels for Python 3.15 yet, so
+# their extras install nothing there.
 [project.optional-dependencies]
-tf = ["tensorflow>=2.16; python_version < '3.14'"]
-tf-gpu = ["tensorflow[and-cuda]>=2.16; python_version < '3.14' and sys_platform == 'linux'"]
+litert = ["ai-edge-litert; python_version < '3.15'"]
+onnx = ["onnxruntime; python_version < '3.15'"]
 opencv = ["opencv-python"]
 
 [project.scripts]
@@ -49,9 +47,9 @@ bn_dashboard = "berrynet.client.fbdashboard:main"
 bn_data_collector = "berrynet.client.data_collector:main"
 bn_gmail = "berrynet.client.gmail:main"
 bn_telegram = "berrynet.client.telegram_bot:main"
-bn_tflite = "berrynet.service.tflite_service:main"
-bn_openvino = "berrynet.service.openvino_service:main"
-bn_darknet = "berrynet.service.darknet_service:main"
+bn_litert = "berrynet.service.litert_service:main"
+bn_model = "berrynet.dlmodelmgr:main"
+bn_onnx = "berrynet.service.onnx_service:main"
 bn_pipeline = "berrynet.bndyda.bnpipeline:main"
 
 [project.urls]
