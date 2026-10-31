@@ -64,7 +64,7 @@ Figure 2 shows how the components work together. They exchange data as MQTT mess
 
 <p align="center">Figure 3: Classification vs detection</p>
 
-One of the application of this intelligent gateway is to use the camera to monitor the place you care about. For example, Figure 4 shows the analyzed results from the camera hosted in the DT42 office. The frames were captured by the IP camera and they were submitted into the AI engine. The output from the AI engine will be shown in the dashboard. We are working on the Email and IM notification so you can get a notification when there is a dog coming into the meeting area with the next release.
+One of the application of this intelligent gateway is to use the camera to monitor the place you care about. For example, Figure 4 shows the analyzed results from the camera hosted in the DT42 office. The frames were captured by the IP camera and they were submitted into the AI engine. The output from the AI engine will be shown in the dashboard. To get a notification when there is a dog coming into the meeting area, run the Telegram client `bn_telegram` or the email client `bn_gmail` with `--target-label dog`.
 
 ![Figure 4](https://cloud.githubusercontent.com/assets/292790/25498294/0ab79976-2bba-11e7-9114-46e328d15a18.gif)
 
