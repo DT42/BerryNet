@@ -143,6 +143,21 @@ def non_max_suppression(boxes, scores, iou_threshold):
     return np.array(keep, dtype=int)
 
 
+def batched_non_max_suppression(boxes, scores, classes, iou_threshold):
+    """Non-maximum suppression of each class.
+
+    Boxes of different classes are moved apart, so that one
+    non_max_suppression() call only suppresses boxes of the same class.
+
+    Returns:
+        Indexes of the kept boxes, highest score first.
+    """
+    if len(boxes) == 0:
+        return np.array([], dtype=int)
+    offsets = classes[:, np.newaxis] * (np.abs(boxes).max() + 1)
+    return non_max_suppression(boxes + offsets, scores, iou_threshold)
+
+
 def letterbox(bgr_array, height, width):
     """Resize an image into height x width keeping its aspect ratio, and
     pad the borders with gray, the same as Ultralytics YOLO.
@@ -182,7 +197,8 @@ def yolo_detections(output, input_h, input_w, threshold, iou_threshold,
         boxes, scores, classes = pred[:, :4], pred[:, 4], pred[:, 5]
         keep = scores >= threshold
         boxes, scores = boxes[keep], scores[keep]
-        classes = classes[keep].astype(int)
+        # Round dequantized class indexes of quantized models.
+        classes = np.rint(classes[keep]).astype(int)
     else:
         pred = pred.T
         classes = pred[:, 4:].argmax(axis=1)
@@ -191,12 +207,8 @@ def yolo_detections(output, input_h, input_w, threshold, iou_threshold,
         xywh, classes, scores = pred[keep, :4], classes[keep], scores[keep]
         boxes = np.concatenate([xywh[:, :2] - xywh[:, 2:] / 2,
                                 xywh[:, :2] + xywh[:, 2:] / 2], axis=1)
-        keep = []
-        for class_id in np.unique(classes):
-            index = np.flatnonzero(classes == class_id)
-            keep.extend(index[non_max_suppression(
-                boxes[index], scores[index], iou_threshold)])
-        keep = np.array(keep, dtype=int)
+        keep = batched_non_max_suppression(boxes, scores, classes,
+                                           iou_threshold)
         boxes, classes, scores = boxes[keep], classes[keep], scores[keep]
     order = scores.argsort()[::-1][:max_detections]
     boxes, classes, scores = boxes[order], classes[order], scores[order]
@@ -232,13 +244,19 @@ def ultralytics_labels(names):
     """
     if isinstance(names, str):
         names = ast.literal_eval(names)
-    return [names[k] for k in sorted(names, key=int)]
+    names = {int(k): v for k, v in names.items()}
+    # Keep labels at their class indexes even if some are missing.
+    return [names.get(i, str(i)) for i in range(max(names) + 1)]
 
 
 def tflite_ultralytics_labels(model):
     """Labels from the metadata.json which Ultralytics appends to its
     exported .tflite models.
     """
-    with zipfile.ZipFile(model) as archive:
-        metadata = json.loads(archive.read('metadata.json'))
-    return ultralytics_labels(metadata['names'])
+    try:
+        with zipfile.ZipFile(model) as archive:
+            metadata = json.loads(archive.read('metadata.json'))
+        return ultralytics_labels(metadata['names'])
+    except (zipfile.BadZipFile, KeyError) as e:
+        raise ValueError('{} has no class names of Ultralytics, give a label '
+                         'file instead'.format(model)) from e

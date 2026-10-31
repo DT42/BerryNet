@@ -9,11 +9,11 @@ import numpy as np
 from ai_edge_litert.interpreter import Interpreter
 
 from berrynet.engine import DLEngine
+from berrynet.engine import batched_non_max_suppression
 from berrynet.engine import classification_annotations
 from berrynet.engine import detection_annotations
 from berrynet.engine import letterbox
 from berrynet.engine import load_labels
-from berrynet.engine import non_max_suppression
 from berrynet.engine import tflite_ultralytics_labels
 from berrynet.engine import yolo_annotations
 from berrynet.engine import yolo_detections
@@ -217,13 +217,9 @@ class LiteRTYoloV4DetectorEngine(DLEngine):
         boxes = np.concatenate([(center_yx - half_hw) / input_hw,
                                 (center_yx + half_hw) / input_hw], axis=-1)
 
-        keep = []
-        for class_id in np.unique(class_ids):
-            index = np.flatnonzero(class_ids == class_id)
-            keep.extend(index[non_max_suppression(
-                boxes[index], confidences[index], self.iou_threshold)])
-        keep = np.array(keep, dtype=int)
-        keep = keep[confidences[keep].argsort()[::-1]][:self.max_detections]
+        keep = batched_non_max_suppression(boxes, confidences, class_ids,
+                                           self.iou_threshold)
+        keep = keep[:self.max_detections]
         return np.clip(boxes[keep], 0.0, 1.0), class_ids[keep], confidences[keep]
 
     def inference(self, tensor):
@@ -293,11 +289,15 @@ class LiteRTYoloDetectorEngine(DLEngine):
         frame = np.expand_dims(frame, axis=0)
         details = self.input_details[0]
         if np.issubdtype(details['dtype'], np.integer):
-            # Quantize the input of full-integer models.
             scale, zero_point = details['quantization']
+            if scale > 0:
+                # Quantize the input of full-integer models.
+                frame = np.rint(frame / scale + zero_point)
+            else:
+                # Integer input without quantization takes pixel values.
+                frame = np.rint(frame * 255.0)
             limits = np.iinfo(details['dtype'])
-            frame = np.clip(np.rint(frame / scale + zero_point),
-                            limits.min, limits.max)
+            frame = np.clip(frame, limits.min, limits.max)
             frame = frame.astype(details['dtype'])
         return frame
 
@@ -306,8 +306,8 @@ class LiteRTYoloDetectorEngine(DLEngine):
         self.interpreter.invoke()
         details = self.output_details[0]
         output = self.interpreter.get_tensor(details['index'])
-        if np.issubdtype(details['dtype'], np.integer):
-            scale, zero_point = details['quantization']
+        scale, zero_point = details['quantization']
+        if np.issubdtype(details['dtype'], np.integer) and scale > 0:
             output = (output.astype(np.float32) - zero_point) * scale
         return {
             'output': output

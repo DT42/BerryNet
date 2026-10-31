@@ -164,12 +164,18 @@ class ONNXYoloDetectorEngine(DLEngine):
         # Dynamic dimensions are names instead of numbers.
         self.input_h, self.input_w = [d if isinstance(d, int) else input_size
                                       for d in model_input.shape[2:4]]
+        # Models exported with half precision take float16 input.
+        self.input_dtype = (np.float16 if model_input.type == 'tensor(float16)'
+                            else np.float32)
 
         # Load labels, or the class names in the model metadata
         if labels:
             self.labels = load_labels(labels)
         else:
             metadata = self.session.get_modelmeta().custom_metadata_map
+            if 'names' not in metadata:
+                raise ValueError('{} has no class names of Ultralytics, give '
+                                 'a label file instead'.format(model))
             self.labels = ultralytics_labels(metadata['names'])
         self.classes = len(self.labels)
         self.threshold = threshold
@@ -184,7 +190,7 @@ class ONNXYoloDetectorEngine(DLEngine):
         frame, self.scale, self.pad = letterbox(tensor, self.input_h,
                                                 self.input_w)
         frame = frame.astype(np.float32).transpose(2, 0, 1) / 255.0
-        return np.expand_dims(frame, axis=0)
+        return np.expand_dims(frame, axis=0).astype(self.input_dtype)
 
     def inference(self, tensor):
         output = self.session.run(None, {self.input_name: tensor})[0]

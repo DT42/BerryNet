@@ -47,6 +47,11 @@ class TestYoloHelpers(unittest.TestCase):
         np.testing.assert_allclose(boxes, [[300, 300, 400, 400],
                                            [10, 20, 110, 220]])
 
+    def test_dequantized_end2end_classes(self):
+        output = end2end_output([[10, 20, 110, 220, 0.6, 15.98]])
+        boxes, classes, scores = yolo_detections(output, 640, 640, 0.25, 0.7)
+        np.testing.assert_array_equal(classes, [16])
+
     def test_normalized_end2end_output(self):
         output = end2end_output([[0.1, 0.2, 0.5, 0.6, 0.8, 2]])
         boxes, classes, scores = yolo_detections(output, 320, 640, 0.25, 0.7)
@@ -90,6 +95,9 @@ class TestYoloHelpers(unittest.TestCase):
                          ['person', 'bicycle'])
         names = {str(i): 'class{}'.format(i) for i in range(12)}
         self.assertEqual(ultralytics_labels(names)[10], 'class10')
+        # Labels stay at their class indexes.
+        self.assertEqual(ultralytics_labels({0: 'cat', 2: 'dog'}),
+                         ['cat', '1', 'dog'])
 
     def test_tflite_ultralytics_labels(self):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -101,6 +109,13 @@ class TestYoloHelpers(unittest.TestCase):
                     {'names': {'0': 'person', '1': 'bicycle'}}))
             self.assertEqual(tflite_ultralytics_labels(model),
                              ['person', 'bicycle'])
+
+    def test_tflite_without_ultralytics_labels(self):
+        with tempfile.NamedTemporaryFile(suffix='.tflite') as f:
+            f.write(b'\x1c\x00\x00\x00TFL3 model data')
+            f.flush()
+            with self.assertRaisesRegex(ValueError, 'give a label file'):
+                tflite_ultralytics_labels(f.name)
 
 
 @unittest.skipUnless(HAS_LITERT, 'LiteRT is not installed')
@@ -132,6 +147,9 @@ class TestLiteRTYoloDetectorEngine(unittest.TestCase):
                                 (1 / 255, -128)).process_input(bgr_array)
         self.assertEqual(quantized.dtype, np.int8)
         self.assertEqual(int(quantized[0, 0, 32, 32]), 127)
+        # Integer input without quantization takes pixel values.
+        pixels = self.engine([1, 3, 64, 64], np.uint8).process_input(bgr_array)
+        self.assertEqual(int(pixels[0, 0, 32, 32]), 255)
 
     def test_process_output(self):
         engine = self.engine([1, 3, 640, 640])
@@ -152,12 +170,17 @@ class TestONNXYoloDetectorEngine(unittest.TestCase):
 
         engine = ONNXYoloDetectorEngine.__new__(ONNXYoloDetectorEngine)
         engine.input_h = engine.input_w = 640
+        engine.input_dtype = np.float32
         engine.labels = ['person', 'bicycle']
         engine.threshold = 0.25
         engine.iou_threshold = 0.7
         tensor = engine.process_input(np.zeros((100, 200, 3), dtype=np.uint8))
         self.assertEqual(tensor.shape, (1, 3, 640, 640))
         self.assertEqual(tensor.dtype, np.float32)
+        # Models exported with half precision
+        engine.input_dtype = np.float16
+        tensor = engine.process_input(np.zeros((100, 200, 3), dtype=np.uint8))
+        self.assertEqual(tensor.dtype, np.float16)
         output = end2end_output([[64, 192, 320, 352, 0.9, 1]])
         self.assertEqual(engine.process_output({'output': output}), {
             'annotations': [{'label': 'bicycle',
