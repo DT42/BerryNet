@@ -1,3 +1,4 @@
+import importlib
 import importlib.util
 import json
 import os
@@ -164,3 +165,38 @@ class TestONNXYoloDetectorEngine(unittest.TestCase):
                              'left': 20, 'top': 10, 'right': 100,
                              'bottom': 60}]
         })
+
+
+# Directory of yolo26n.onnx and yolo26n.tflite exported by Ultralytics, e.g.
+#     $ yolo export model=yolo26n.pt format=onnx nms=False
+#     $ yolo export model=yolo26n.pt format=litert nms=False
+YOLO_MODEL_DIR = os.environ.get('BERRYNET_TEST_YOLO_MODELS', '')
+
+
+@unittest.skipUnless(YOLO_MODEL_DIR, 'BERRYNET_TEST_YOLO_MODELS is not set')
+class TestYoloModels(unittest.TestCase):
+    def check_engine(self, module, engine_name, filename, runtime):
+        from tests import data
+
+        if not runtime:
+            self.skipTest('Runtime of {} is not installed'.format(filename))
+        if not os.path.isfile(data.dog_jpg_path()):
+            self.skipTest('dog.jpg does not exist, run "python -m tests.data"')
+        import cv2
+
+        engine_class = getattr(importlib.import_module(module), engine_name)
+        engine = engine_class(os.path.join(YOLO_MODEL_DIR, filename))
+        bgr_array = cv2.imread(data.dog_jpg_path())
+        output = engine.inference(engine.process_input(bgr_array))
+        annotations = engine.process_output(output)['annotations']
+        self.assertLessEqual({'bicycle', 'dog', 'truck'},
+                             {a['label'] for a in annotations})
+
+    def test_litert(self):
+        self.check_engine('berrynet.engine.litert_engine',
+                          'LiteRTYoloDetectorEngine', 'yolo26n.tflite',
+                          HAS_LITERT)
+
+    def test_onnx(self):
+        self.check_engine('berrynet.engine.onnx_engine',
+                          'ONNXYoloDetectorEngine', 'yolo26n.onnx', HAS_ONNX)
