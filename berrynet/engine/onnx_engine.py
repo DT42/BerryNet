@@ -10,7 +10,11 @@ import onnxruntime as ort
 from berrynet.engine import DLEngine
 from berrynet.engine import classification_annotations
 from berrynet.engine import detection_annotations
+from berrynet.engine import letterbox
 from berrynet.engine import load_labels
+from berrynet.engine import ultralytics_labels
+from berrynet.engine import yolo_annotations
+from berrynet.engine import yolo_detections
 from berrynet import logger
 
 
@@ -144,15 +148,74 @@ class ONNXDetectorEngine(DLEngine):
         return {'annotations': annotations}
 
 
+class ONNXYoloDetectorEngine(DLEngine):
+    """Ultralytics YOLO detector, e.g. YOLO26, YOLO11 or YOLOv8 exported by
+    "yolo export format=onnx".
+    """
+
+    def __init__(self, model, labels=None, threshold=0.25, num_threads=1,
+                 iou_threshold=0.7, input_size=640):
+        super(ONNXYoloDetectorEngine, self).__init__()
+
+        # Load ONNX model into memory
+        self.session = create_session(model, num_threads)
+        model_input = self.session.get_inputs()[0]
+        self.input_name = model_input.name
+        # Dynamic dimensions are names instead of numbers.
+        self.input_h, self.input_w = [d if isinstance(d, int) else input_size
+                                      for d in model_input.shape[2:4]]
+        # Models exported with half precision take float16 input.
+        self.input_dtype = (np.float16 if model_input.type == 'tensor(float16)'
+                            else np.float32)
+
+        # Load labels, or the class names in the model metadata
+        if labels:
+            self.labels = load_labels(labels)
+        else:
+            metadata = self.session.get_modelmeta().custom_metadata_map
+            if 'names' not in metadata:
+                raise ValueError('{} has no class names of Ultralytics, give '
+                                 'a label file instead'.format(model))
+            self.labels = ultralytics_labels(metadata['names'])
+        self.classes = len(self.labels)
+        self.threshold = threshold
+        self.iou_threshold = iou_threshold
+
+    def process_input(self, tensor):
+        """Letterbox and normalize image for network input"""
+
+        self.img_w = tensor.shape[1]
+        self.img_h = tensor.shape[0]
+
+        frame, self.scale, self.pad = letterbox(tensor, self.input_h,
+                                                self.input_w)
+        frame = frame.astype(np.float32).transpose(2, 0, 1) / 255.0
+        return np.expand_dims(frame, axis=0).astype(self.input_dtype)
+
+    def inference(self, tensor):
+        output = self.session.run(None, {self.input_name: tensor})[0]
+        return {
+            'output': output
+        }
+
+    def process_output(self, output):
+        boxes, classes, scores = yolo_detections(
+            output['output'], self.input_h, self.input_w, self.threshold,
+            self.iou_threshold)
+        annotations = yolo_annotations(
+            boxes, classes, scores, self.labels, self.scale, self.pad,
+            self.img_w, self.img_h)
+        return {'annotations': annotations}
+
+
 def parse_args():
     parser = ArgumentParser()
     parser.add_argument(
         "-e", "--engine",
-        help=("Classifier or Detector engine. "
-              "classifier, or detector is acceptable. "
+        help=("Classifier, detector or yolo engine. "
               "(classifier by default)"),
         default="classifier",
-        choices=["classifier", "detector"],
+        choices=["classifier", "detector", "yolo"],
         type=str)
     parser.add_argument(
         "-m", "--model",
@@ -206,8 +269,13 @@ def main():
                      labels = args.labels,
                      top_k = args.top_k,
                      num_threads = args.num_threads)
-    else:
+    elif args.engine == 'detector':
         engine = ONNXDetectorEngine(
+                     model = args.model,
+                     labels = args.labels,
+                     num_threads = args.num_threads)
+    else:
+        engine = ONNXYoloDetectorEngine(
                      model = args.model,
                      labels = args.labels,
                      num_threads = args.num_threads)

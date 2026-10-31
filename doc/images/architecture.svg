@@ -32,7 +32,7 @@
   <rect x="583" y="226" width="170" height="48" fill="#22486D"/>
   <text x="668.0" y="250.0" font-size="24.0" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">SSD MobileNet</text>
   <rect x="583" y="289" width="170" height="48" fill="#22486D"/>
-  <text x="668.0" y="313.0" font-size="24.0" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">YOLOv4</text>
+  <text x="668.0" y="313.0" font-size="24.0" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">YOLO26</text>
   <rect x="583" y="352" width="170" height="48" fill="#22486D"/>
   <text x="668.0" y="376.0" font-size="24.0" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">...</text>
   <!-- Communication -->

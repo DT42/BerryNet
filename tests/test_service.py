@@ -99,3 +99,16 @@ class TestEngineServiceArgs(unittest.TestCase):
         with mock.patch('sys.stderr'):
             with self.assertRaises(SystemExit):
                 self.parse('-m', 'model.tflite')
+
+    def test_labels_in_model(self):
+        argv = ['bn_litert', '--service', 'yolo', '-m', 'yolo26n.tflite']
+        with mock.patch.object(sys, 'argv', argv):
+            args = parse_engine_service_args('litert', ['detector', 'yolo'],
+                                             labels_in_model=['yolo'])
+        self.assertEqual(args['service_name'], 'litertyolo')
+        self.assertIsNone(args['label'])
+        argv = ['bn_litert', '--service', 'yolo']
+        with mock.patch.object(sys, 'argv', argv), mock.patch('sys.stderr'):
+            with self.assertRaises(SystemExit):
+                parse_engine_service_args('litert', ['detector', 'yolo'],
+                                          labels_in_model=['yolo'])

@@ -132,7 +132,12 @@ class DLModelManager(object):
         with open(meta_filepath, 'r') as f:
             meta = json.load(f)
         meta['model'] = os.path.join(self.basedir, modelname, meta['model'])
-        meta['label'] = os.path.join(self.basedir, modelname, meta['label'])
+        # Models such as Ultralytics YOLO contain their labels.
+        if meta.get('label'):
+            meta['label'] = os.path.join(self.basedir, modelname,
+                                         meta['label'])
+        else:
+            meta['label'] = None
         for k, v in meta['config'].items():
             meta['config'][k] = os.path.join(self.basedir, modelname,
                                              meta['config'][k])

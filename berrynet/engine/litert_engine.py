@@ -9,9 +9,14 @@ import numpy as np
 from ai_edge_litert.interpreter import Interpreter
 
 from berrynet.engine import DLEngine
+from berrynet.engine import batched_non_max_suppression
 from berrynet.engine import classification_annotations
 from berrynet.engine import detection_annotations
+from berrynet.engine import letterbox
 from berrynet.engine import load_labels
+from berrynet.engine import tflite_ultralytics_labels
+from berrynet.engine import yolo_annotations
+from berrynet.engine import yolo_detections
 from berrynet import logger
 
 
@@ -140,33 +145,6 @@ class LiteRTClassifierEngine(DLEngine):
         }
 
 
-def non_max_suppression(boxes, scores, iou_threshold):
-    """Greedy non-maximum suppression.
-
-    Args:
-        boxes: [ymin, xmin, ymax, xmax] boxes.
-        scores: Score of each box.
-
-    Returns:
-        Indexes of the kept boxes, highest score first.
-    """
-    areas = (boxes[:, 2] - boxes[:, 0]) * (boxes[:, 3] - boxes[:, 1])
-    order = scores.argsort()[::-1]
-    keep = []
-    while order.size > 0:
-        i = order[0]
-        keep.append(i)
-        rest = order[1:]
-        ymin = np.maximum(boxes[i, 0], boxes[rest, 0])
-        xmin = np.maximum(boxes[i, 1], boxes[rest, 1])
-        ymax = np.minimum(boxes[i, 2], boxes[rest, 2])
-        xmax = np.minimum(boxes[i, 3], boxes[rest, 3])
-        inter = np.clip(ymax - ymin, 0, None) * np.clip(xmax - xmin, 0, None)
-        iou = inter / np.maximum(areas[i] + areas[rest] - inter, 1e-9)
-        order = rest[iou <= iou_threshold]
-    return np.array(keep, dtype=int)
-
-
 class LiteRTYoloV4DetectorEngine(DLEngine):
     """YOLOv4 detector whose outputs are boxes in (x, y, w, h) input
     pixels and per-class scores, e.g. models converted by
@@ -239,13 +217,9 @@ class LiteRTYoloV4DetectorEngine(DLEngine):
         boxes = np.concatenate([(center_yx - half_hw) / input_hw,
                                 (center_yx + half_hw) / input_hw], axis=-1)
 
-        keep = []
-        for class_id in np.unique(class_ids):
-            index = np.flatnonzero(class_ids == class_id)
-            keep.extend(index[non_max_suppression(
-                boxes[index], confidences[index], self.iou_threshold)])
-        keep = np.array(keep, dtype=int)
-        keep = keep[confidences[keep].argsort()[::-1]][:self.max_detections]
+        keep = batched_non_max_suppression(boxes, confidences, class_ids,
+                                           self.iou_threshold)
+        keep = keep[:self.max_detections]
         return np.clip(boxes[keep], 0.0, 1.0), class_ids[keep], confidences[keep]
 
     def inference(self, tensor):
@@ -271,14 +245,92 @@ class LiteRTYoloV4DetectorEngine(DLEngine):
         return {'annotations': annotations}
 
 
+class LiteRTYoloDetectorEngine(DLEngine):
+    """Ultralytics YOLO detector, e.g. YOLO26, YOLO11 or YOLOv8 exported by
+    "yolo export format=litert".
+    """
+
+    def __init__(self, model, labels=None, threshold=0.25, num_threads=1,
+                 iou_threshold=0.7):
+        super(LiteRTYoloDetectorEngine, self).__init__()
+
+        # Load LiteRT model into memory
+        self.interpreter = Interpreter(
+            model_path=model,
+            num_threads=num_threads)
+        self.interpreter.allocate_tensors()
+        self.input_details = self.interpreter.get_input_details()
+        self.output_details = self.interpreter.get_output_details()
+        shape = self.input_details[0]['shape']
+        # litert-torch exports are NCHW, onnx2tf exports are NHWC.
+        self.nchw = shape[1] == 3
+        self.input_h, self.input_w = shape[2:4] if self.nchw else shape[1:3]
+
+        # Load labels, or the class names in the model metadata
+        if labels:
+            self.labels = load_labels(labels)
+        else:
+            self.labels = tflite_ultralytics_labels(model)
+        self.classes = len(self.labels)
+        self.threshold = threshold
+        self.iou_threshold = iou_threshold
+
+    def process_input(self, tensor):
+        """Letterbox and normalize image for network input"""
+
+        self.img_w = tensor.shape[1]
+        self.img_h = tensor.shape[0]
+
+        frame, self.scale, self.pad = letterbox(tensor, self.input_h,
+                                                self.input_w)
+        frame = frame.astype(np.float32) / 255.0
+        if self.nchw:
+            frame = frame.transpose(2, 0, 1)
+        frame = np.expand_dims(frame, axis=0)
+        details = self.input_details[0]
+        if np.issubdtype(details['dtype'], np.integer):
+            scale, zero_point = details['quantization']
+            if scale > 0:
+                # Quantize the input of full-integer models.
+                frame = np.rint(frame / scale + zero_point)
+            else:
+                # Integer input without quantization takes pixel values.
+                frame = np.rint(frame * 255.0)
+            limits = np.iinfo(details['dtype'])
+            frame = np.clip(frame, limits.min, limits.max)
+            frame = frame.astype(details['dtype'])
+        return frame
+
+    def inference(self, tensor):
+        self.interpreter.set_tensor(self.input_details[0]['index'], tensor)
+        self.interpreter.invoke()
+        details = self.output_details[0]
+        output = self.interpreter.get_tensor(details['index'])
+        scale, zero_point = details['quantization']
+        if np.issubdtype(details['dtype'], np.integer) and scale > 0:
+            output = (output.astype(np.float32) - zero_point) * scale
+        return {
+            'output': output
+        }
+
+    def process_output(self, output):
+        boxes, classes, scores = yolo_detections(
+            output['output'], self.input_h, self.input_w, self.threshold,
+            self.iou_threshold)
+        annotations = yolo_annotations(
+            boxes, classes, scores, self.labels, self.scale, self.pad,
+            self.img_w, self.img_h)
+        return {'annotations': annotations}
+
+
 def parse_args():
     parser = ArgumentParser()
     parser.add_argument(
         "-e", "--engine",
-        help=("Classifier, detector or yolov4 engine. "
+        help=("Classifier, detector, yolo or yolov4 engine. "
               "(classifier by default)"),
         default="classifier",
-        choices=["classifier", "detector", "yolov4"],
+        choices=["classifier", "detector", "yolo", "yolov4"],
         type=str)
     parser.add_argument(
         "-m", "--model",
@@ -333,6 +385,11 @@ def main():
                      num_threads = args.num_threads)
     elif args.engine == 'detector':
         engine = LiteRTDetectorEngine(
+                     model = args.model,
+                     labels = args.labels,
+                     num_threads = args.num_threads)
+    elif args.engine == 'yolo':
+        engine = LiteRTYoloDetectorEngine(
                      model = args.model,
                      labels = args.labels,
                      num_threads = args.num_threads)

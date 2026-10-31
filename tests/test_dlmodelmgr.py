@@ -1,4 +1,5 @@
 import hashlib
+import json
 import os
 import pathlib
 import tempfile
@@ -69,6 +70,16 @@ class TestDLModelManager(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'Checksum mismatch'):
                 dlmm.install('test-model')
         self.assertEqual(os.listdir(self.basedir), [])
+
+    def test_model_meta_without_label(self):
+        # Models such as Ultralytics YOLO contain their labels.
+        os.makedirs(os.path.join(self.basedir, 'yolo'))
+        with open(os.path.join(self.basedir, 'yolo', 'meta.json'), 'w') as f:
+            json.dump({'model': 'yolo26n.tflite', 'config': {}}, f)
+        meta = DLModelManager(self.basedir).get_model_meta('yolo')
+        self.assertEqual(meta['model'],
+                         os.path.join(self.basedir, 'yolo', 'yolo26n.tflite'))
+        self.assertIsNone(meta['label'])
 
     def test_basedir_from_environment(self):
         with mock.patch.dict(os.environ, {'BERRYNET_MODEL_DIR': self.basedir}):

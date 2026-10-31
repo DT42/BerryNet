@@ -19,7 +19,7 @@ At DT42, we believe that bringing deep learning to edge devices is the trend tow
 
 <p align="center">Figure 1: BerryNet architecture</p>
 
-Figure 1 shows the software architecture of the project, we use Python, MQTT and AI engines to analyze images or video frames with deep learning. The AI engines run models with [LiteRT](https://ai.google.dev/edge/litert) or [ONNX Runtime](https://onnxruntime.ai/). There are two types of AI engines, the classification engine (with MobileNet [[1]](https://arxiv.org/pdf/1704.04861.pdf) models) and the object detection engine (with SSD MobileNet [[2]](https://arxiv.org/pdf/1512.02325.pdf) or YOLOv4 [[3]](https://arxiv.org/pdf/2004.10934.pdf) models).
+Figure 1 shows the software architecture of the project, we use Python, MQTT and AI engines to analyze images or video frames with deep learning. The AI engines run models with [LiteRT](https://ai.google.dev/edge/litert) or [ONNX Runtime](https://onnxruntime.ai/). There are two types of AI engines, the classification engine (with MobileNet [[1]](https://arxiv.org/pdf/1704.04861.pdf) models) and the object detection engine (with SSD MobileNet [[2]](https://arxiv.org/pdf/1512.02325.pdf) or Ultralytics YOLO such as YOLO26 [[3]](https://docs.ultralytics.com/models/yolo26) models).
 
 ```mermaid
 flowchart LR
@@ -113,6 +113,21 @@ $ bn_onnx --service classifier --model_package mobilenet-v2-imagenet-onnx
 ```
 
 You can also give model and label files with `--model` and `--label`. An engine publishes results to the MQTT topic `berrynet/engine/<service_name>/result`, and the service name is `<engine><service>` by default, e.g. `litertdetector` or `onnxclassifier`.
+
+To detect objects with the latest Ultralytics YOLO, YOLO26, export it to LiteRT or ONNX with [Ultralytics](https://docs.ultralytics.com/models/yolo26) on a Linux x86 or macOS computer, and copy the model to Raspberry Pi:
+
+```
+# On the computer
+$ pip install ultralytics
+$ yolo export model=yolo26n.pt format=litert nms=False
+$ yolo export model=yolo26n.pt format=onnx nms=False
+
+# On Raspberry Pi
+$ bn_litert --service yolo --model yolo26n.tflite
+$ bn_onnx --service yolo --model yolo26n.onnx
+```
+
+`nms=False` exports the end-to-end YOLO26 model, which outputs detections without NMS and runs faster. The `yolo` engines read labels from the model, and also run models exported without `nms=False`, and YOLO11 or YOLOv8 models. Ultralytics YOLO models are licensed under AGPL-3.0.
 
 ### Development Environment
 

@@ -20,6 +20,7 @@
 
 from berrynet.engine.litert_engine import LiteRTClassifierEngine
 from berrynet.engine.litert_engine import LiteRTDetectorEngine
+from berrynet.engine.litert_engine import LiteRTYoloDetectorEngine
 from berrynet.engine.litert_engine import LiteRTYoloV4DetectorEngine
 from berrynet.service import ClassifierService
 from berrynet.service import DetectorService
@@ -29,7 +30,8 @@ from berrynet.service import parse_engine_service_args
 
 def main():
     args = parse_engine_service_args(
-        'litert', ['classifier', 'detector', 'yolov4'])
+        'litert', ['classifier', 'detector', 'yolo', 'yolov4'],
+        labels_in_model=['yolo'])
 
     if args['service'] == 'classifier':
         engine = LiteRTClassifierEngine(
@@ -40,6 +42,12 @@ def main():
         service_functor = ClassifierService
     elif args['service'] == 'detector':
         engine = LiteRTDetectorEngine(
+                     model = args['model'],
+                     labels = args['label'],
+                     num_threads = args['num_threads'])
+        service_functor = DetectorService
+    elif args['service'] == 'yolo':
+        engine = LiteRTYoloDetectorEngine(
                      model = args['model'],
                      labels = args['label'],
                      num_threads = args['num_threads'])

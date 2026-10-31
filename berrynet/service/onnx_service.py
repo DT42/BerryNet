@@ -20,6 +20,7 @@
 
 from berrynet.engine.onnx_engine import ONNXClassifierEngine
 from berrynet.engine.onnx_engine import ONNXDetectorEngine
+from berrynet.engine.onnx_engine import ONNXYoloDetectorEngine
 from berrynet.service import ClassifierService
 from berrynet.service import DetectorService
 from berrynet.service import default_comm_config
@@ -27,7 +28,8 @@ from berrynet.service import parse_engine_service_args
 
 
 def main():
-    args = parse_engine_service_args('onnx', ['classifier', 'detector'])
+    args = parse_engine_service_args('onnx', ['classifier', 'detector', 'yolo'],
+                                     labels_in_model=['yolo'])
 
     if args['service'] == 'classifier':
         engine = ONNXClassifierEngine(
@@ -36,8 +38,14 @@ def main():
                      top_k = args['top_k'],
                      num_threads = args['num_threads'])
         service_functor = ClassifierService
-    else:
+    elif args['service'] == 'detector':
         engine = ONNXDetectorEngine(
+                     model = args['model'],
+                     labels = args['label'],
+                     num_threads = args['num_threads'])
+        service_functor = DetectorService
+    else:
+        engine = ONNXYoloDetectorEngine(
                      model = args['model'],
                      labels = args['label'],
                      num_threads = args['num_threads'])
