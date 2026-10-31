@@ -139,12 +139,14 @@ class DetectorService(ClassifierService):
                        self.engine.labels)
 
 
-def parse_engine_service_args(backend, services):
+def parse_engine_service_args(backend, services, labels_in_model=()):
     """Parse command line arguments of an engine service.
 
     Args:
         backend: Backend name, e.g. litert.
         services: Accepted service types, the first one is the default.
+        labels_in_model: Service types whose models contain their labels,
+            so --label is optional.
 
     Returns:
         Dict of arguments, with model and label resolved from the model
@@ -203,10 +205,13 @@ def parse_engine_service_args(backend, services):
         meta = DLModelManager().get_model_meta(args['model_package'])
         args['model'] = meta['model']
         args['label'] = meta['label']
-    if not (args['model'] and args['label']):
+    if args['service'] in labels_in_model:
+        if not args['model']:
+            ap.error('--model_package or --model is required')
+    elif not (args['model'] and args['label']):
         ap.error('--model_package, or both --model and --label are required')
     logger.debug('model filepath: ' + args['model'])
-    logger.debug('label filepath: ' + args['label'])
+    logger.debug('label filepath: {}'.format(args['label']))
     return args
 
 
